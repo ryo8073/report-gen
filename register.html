@@ -43,6 +43,7 @@
                         name="email" 
                         class="input-field"
                         placeholder="your@email.com"
+                        autocomplete="username"
                         required
                     >
                 </div>
@@ -222,7 +223,7 @@
         // Check if already logged in
         async function checkAuth() {
             try {
-                const response = await fetch('/api/auth/me', {
+                const response = await fetch('/api/auth/me-simple', {
                     credentials: 'include'
                 });
                 
