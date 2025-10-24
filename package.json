@@ -1,0 +1,31 @@
+{
+  "name": "proformer-1-page-report",
+  "version": "0.1.0",
+  "description": "Client report generation app with Japanese templates",
+  "type": "module",
+  "scripts": {
+    "build:css": "echo 'CSS already built'",
+    "dev:css": "echo 'CSS already built'",
+    "dev": "vercel dev",
+    "build": "echo 'Build complete - CSS already built'",
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "openai": "^4.20.1",
+    "pdf-parse": "^1.1.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "sqlite3": "^5.1.6",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.32",
+    "autoprefixer": "^10.4.16"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

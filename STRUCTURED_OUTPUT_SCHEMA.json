@@ -1,0 +1,37 @@
+{
+  "title": "string",
+  "sections": [{"heading":"string","body_md":"string"}],
+  "tables": [{"title":"string","headers":["string"],"rows":[["string"]]}],
+  "glossary": {"FCR":"string","K_percent":"string","DCR":"string","BER":"string","IRR":"string","NPV":"string"},
+  "jp_investment_4part": {
+    "schema_summary":"string",
+    "benefits":["string"],
+    "risks":[{"category":"market|property|finance|tax","risk":"string","mitigation":"string","early_indicators":["string"]}],
+    "evidence":{
+      "basic":{"name":"string","location":"string","structure":"string","age_years":"number"},
+      "initial":{"FCR":"number","K_percent":"number","yield_gap":"number","DCR":"number","BER":"number"},
+      "overall":{"IRR_pre_tax_levered":"number","IRR_post_tax_levered":"number","IRR_pre_tax_unlevered":"number","IRR_post_tax_unlevered":"number","NPV":"number"}
+    }
+  },
+  "jp_tax_strategy": {
+    "summary":{"core":"string","tax_savings_total":"number","tax_savings_avg_per_year":"number","final_recommendation":"string"},
+    "mechanism":{"narrative":"string","formula_demo_md":"string"},
+    "simulation":{"years":[{"year_index":"number","depreciation":"number","property_loss":"number","annual_tax_saving":"number"}],"total_tax_saving":"number"},
+    "risks":[{"category":"depreciation_end|capital_gains|law_change|business","risk":"string","mitigation":"string","early_indicators":["string"]}],
+    "assumptions":{"client":{"employment_income":"number","taxable_income":"number","effective_tax_rate":"number"},"property":{"building_price":"number","structure":"string","age_years":"number"},"derived":{"legal_useful_life":"number","applicable_depr_years":"number","annual_depreciation":"number","annual_property_loss":"number"}},
+    "disclaimer":"string"
+  },
+  "jp_inheritance_strategy": {
+    "scheme_summary_md":"string",
+    "benefits":["string"],
+    "risks":[{"category":"tax_denial|property|family_division","risk":"string","mitigation":"string"}],
+    "evidence":{
+      "heirs_count":"number",
+      "basic_deduction":"number",
+      "before":{"cash_assets":"number","income_property_value":"number","estate_total":"number","tax_base":"number","tax_total":"number"},
+      "after":{"cash_assets":"number","income_property_valuation":"number","estate_total":"number","tax_base":"number","tax_total":"number"},
+      "results":{"valuation_reduction_pct":"number","tax_saving_amount":"number"}
+    },
+    "disclaimer":"string"
+  }
+}

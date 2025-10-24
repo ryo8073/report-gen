@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン - クライアント向けレポート生成</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>ログイン</h1>
+            <p>アカウントにログインしてレポート生成を開始</p>
+        </header>
+
+        <!-- Login Form -->
+        <div class="card" style="max-width: 400px; margin: 0 auto;">
+            <form id="loginForm">
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        メールアドレス
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        class="input-field"
+                        placeholder="your@email.com"
+                        required
+                    >
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        パスワード
+                    </label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="input-field"
+                        placeholder="パスワードを入力"
+                        required
+                    >
+                </div>
+
+                <!-- Submit Button -->
+                <div style="text-align: center; margin-top: var(--space-8);">
+                    <button type="submit" id="loginBtn" class="btn btn-primary">
+                        ログイン
+                    </button>
+                </div>
+            </form>
+
+            <!-- Links -->
+            <div style="text-align: center; margin-top: var(--space-6);">
+                <p style="color: var(--color-gray-600); font-size: var(--font-size-sm);">
+                    アカウントをお持ちでない方は
+                    <a href="/register.html" style="color: var(--color-primary); text-decoration: none; font-weight: 500;">
+                        新規登録
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusSection" class="hidden status-section">
+            <div class="alert-content">
+                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 alert-icon"></div>
+                <span id="statusText">ログイン中...</span>
+            </div>
+        </div>
+
+        <div id="errorSection" class="hidden error-section">
+            <div class="alert-content">
+                <svg class="alert-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <span id="errorText"></span>
+            </div>
+        </div>
+
+        <div id="successSection" class="hidden success-section">
+            <div class="alert-content">
+                <svg class="alert-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span id="successText">ログイン成功！リダイレクト中...</span>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const email = formData.get('email');
+            const password = formData.get('password');
+
+            try {
+                showStatus('ログイン中...');
+                hideError();
+                hideSuccess();
+
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf-8'
+                    },
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include' // Include cookies
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'ログインに失敗しました');
+                }
+
+                showSuccess('ログイン成功！リダイレクト中...');
+                hideStatus();
+
+                // Redirect to main page after successful login
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1500);
+
+            } catch (error) {
+                console.error('Login error:', error);
+                showError(`ログインエラー: ${error.message}`);
+                hideStatus();
+            }
+        });
+
+        function showStatus(message) {
+            document.getElementById('statusText').textContent = message;
+            document.getElementById('statusSection').classList.remove('hidden');
+        }
+
+        function hideStatus() {
+            document.getElementById('statusSection').classList.add('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorSection').classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('errorSection').classList.add('hidden');
+        }
+
+        function showSuccess(message) {
+            document.getElementById('successText').textContent = message;
+            document.getElementById('successSection').classList.remove('hidden');
+        }
+
+        function hideSuccess() {
+            document.getElementById('successSection').classList.add('hidden');
+        }
+
+        // Check if already logged in
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    // Already logged in, redirect to main page
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                // Not logged in, stay on login page
+                console.log('Not authenticated');
+            }
+        }
+
+        // Check authentication on page load
+        checkAuth();
+    </script>
+</body>
+</html>
