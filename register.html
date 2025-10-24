@@ -163,7 +163,7 @@
                 hideError();
                 hideSuccess();
 
-                const response = await fetch('/api/auth/register-simple', {
+                const response = await fetch('/api/auth/register-firebase', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json; charset=utf-8'
@@ -223,7 +223,7 @@
         // Check if already logged in
         async function checkAuth() {
             try {
-                const response = await fetch('/api/auth/me-simple', {
+                const response = await fetch('/api/auth/me-firebase', {
                     credentials: 'include'
                 });
                 

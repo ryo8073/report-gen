@@ -163,7 +163,7 @@
         
         async function checkAuth() {
             try {
-                const response = await fetch('/api/auth/me-simple', {
+                const response = await fetch('/api/auth/me-firebase', {
                     credentials: 'include'
                 });
                 
@@ -366,7 +366,7 @@
                 hideError();
                 hideResults();
 
-                const response = await fetch('/api/generate', {
+                const response = await fetch('/api/generate-firebase', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json; charset=utf-8'

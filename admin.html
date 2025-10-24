@@ -90,7 +90,7 @@
         async function loadDashboardData() {
             try {
                 // Load usage stats
-                const statsResponse = await fetch('/api/admin/stats', {
+                const statsResponse = await fetch('/api/admin/stats-firebase', {
                     credentials: 'include'
                 });
                 
@@ -100,7 +100,7 @@
                 }
 
                 // Load usage chart data
-                const chartResponse = await fetch('/api/admin/usage-chart', {
+                const chartResponse = await fetch('/api/admin/usage-chart-firebase', {
                     credentials: 'include'
                 });
                 
@@ -110,7 +110,7 @@
                 }
 
                 // Load recent activity
-                const activityResponse = await fetch('/api/admin/recent-activity', {
+                const activityResponse = await fetch('/api/admin/recent-activity-firebase', {
                     credentials: 'include'
                 });
                 
