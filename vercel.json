@@ -1,8 +1,28 @@
 {
   "functions": {
     "api/generate.js": {
-      "runtime": "nodejs18.x",
       "maxDuration": 60
+    },
+    "api/auth/register.js": {
+      "maxDuration": 30
+    },
+    "api/auth/login.js": {
+      "maxDuration": 30
+    },
+    "api/auth/logout.js": {
+      "maxDuration": 30
+    },
+    "api/auth/me.js": {
+      "maxDuration": 30
+    },
+    "api/admin/stats.js": {
+      "maxDuration": 30
+    },
+    "api/admin/usage-chart.js": {
+      "maxDuration": 30
+    },
+    "api/admin/recent-activity.js": {
+      "maxDuration": 30
     }
   },
   "headers": [
