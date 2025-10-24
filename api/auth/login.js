@@ -1,9 +1,9 @@
 import { 
-  authenticateUser, 
   validateEmail,
   createAuthRateLimit,
   setSecurityHeaders 
 } from '../../lib/auth.js';
+import SimpleDatabase from '../../lib/simple-db.js';
 
 // Apply rate limiting
 const rateLimit = createAuthRateLimit();
