@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trial Site Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #7f8c8d;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+
+        .error-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-left: 4px solid #e74c3c;
+            background: #fdf2f2;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .error-item.medium {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+
+        .error-item.low {
+            border-left-color: #27ae60;
+            background: #eafaf1;
+        }
+
+        .recommendation {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .recommendation.critical {
+            background: #fdf2f2;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .recommendation.high {
+            background: #fef9e7;
+            border-left: 4px solid #f39c12;
+        }
+
+        .recommendation.medium {
+            background: #e8f4fd;
+            border-left: 4px solid #3498db;
+        }
+
+        .recommendation.low {
+            background: #eafaf1;
+            border-left: 4px solid #27ae60;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .error-message {
+            background: #fdf2f2;
+            color: #e74c3c;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .refresh-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .refresh-btn:hover {
+            background: #2980b9;
+        }
+
+        .time-filter {
+            margin-bottom: 20px;
+        }
+
+        .time-filter select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Trial Site Analytics Dashboard</h1>
+            <p>Monitor report generation attempts, success rates, and common errors</p>
+            <button class="refresh-btn" onclick="loadAnalytics()">Refresh Data</button>
+        </div>
+
+        <div class="time-filter">
+            <label for="timeRange">Time Range:</label>
+            <select id="timeRange" onchange="loadAnalytics()">
+                <option value="1">Last 24 hours</option>
+                <option value="7" selected>Last 7 days</option>
+                <option value="30">Last 30 days</option>
+            </select>
+        </div>
+
+        <div id="loading" class="loading">
+            Loading analytics data...
+        </div>
+
+        <div id="error" class="error-message" style="display: none;">
+            Failed to load analytics data. Please try again.
+        </div>
+
+        <div id="content" style="display: none;">
+            <!-- Summary Metrics -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalAttempts">-</div>
+                    <div class="metric-label">Total Report Attempts</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="successRate">-</div>
+                    <div class="metric-label">Success Rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="uniqueSessions">-</div>
+                    <div class="metric-label">Unique Sessions</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="avgProcessingTime">-</div>
+                    <div class="metric-label">Avg Processing Time (ms)</div>
+                </div>
+            </div>
+
+            <!-- Report Type Statistics -->
+            <div class="section">
+                <h2>Report Type Performance</h2>
+                <div id="reportTypeStats"></div>
+            </div>
+
+            <!-- Error Statistics -->
+            <div class="section">
+                <h2>Common Errors</h2>
+                <div id="errorStats"></div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="section">
+                <h2>Recommendations</h2>
+                <div id="recommendations"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadAnalytics() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const content = document.getElementById('content');
+            const timeRange = document.getElementById('timeRange').value;
+
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            content.style.display = 'none';
+
+            try {
+                // Load summary data
+                const summaryResponse = await fetch('/api/analytics?type=summary');
+                const summaryData = await summaryResponse.json();
+
+                // Load detailed metrics
+                const metricsResponse = await fetch(`/api/analytics?type=metrics&days=${timeRange}`);
+                const metricsData = await metricsResponse.json();
+
+                if (!summaryData.success || !metricsData.success) {
+                    throw new Error('Failed to load analytics data');
+                }
+
+                displayAnalytics(summaryData.summary, metricsData.data);
+                
+                loading.style.display = 'none';
+                content.style.display = 'block';
+
+            } catch (err) {
+                console.error('Error loading analytics:', err);
+                loading.style.display = 'none';
+                error.style.display = 'block';
+            }
+        }
+
+        function displayAnalytics(summary, metrics) {
+            // Display summary metrics
+            const timeRangeData = parseInt(document.getElementById('timeRange').value) <= 7 ? 
+                summary.lastWeek : summary.lastMonth;
+
+            document.getElementById('totalAttempts').textContent = timeRangeData.totalAttempts;
+            document.getElementById('successRate').textContent = timeRangeData.successRate + '%';
+            document.getElementById('uniqueSessions').textContent = timeRangeData.uniqueUsers;
+            document.getElementById('avgProcessingTime').textContent = timeRangeData.avgProcessingTime;
+
+            // Display report type statistics
+            const reportTypeStats = document.getElementById('reportTypeStats');
+            reportTypeStats.innerHTML = '';
+            
+            Object.entries(metrics.reportTypeStats).forEach(([type, stats]) => {
+                const div = document.createElement('div');
+                div.className = 'error-item low';
+                div.innerHTML = `
+                    <div>
+                        <strong>${type}</strong><br>
+                        <small>Success Rate: ${stats.successRate.toFixed(1)}% | Avg Time: ${stats.avgProcessingTime.toFixed(0)}ms</small>
+                    </div>
+                    <div>
+                        <strong>${stats.total}</strong> attempts
+                    </div>
+                `;
+                reportTypeStats.appendChild(div);
+            });
+
+            // Display error statistics
+            const errorStats = document.getElementById('errorStats');
+            errorStats.innerHTML = '';
+            
+            if (metrics.errorStats.totalErrors === 0) {
+                errorStats.innerHTML = '<p style="color: #27ae60;">No errors in the selected time period! 🎉</p>';
+            } else {
+                Object.entries(metrics.errorStats.errorsByType).forEach(([type, data]) => {
+                    const div = document.createElement('div');
+                    div.className = `error-item ${data.severity}`;
+                    div.innerHTML = `
+                        <div>
+                            <strong>${type}</strong><br>
+                            <small>Last: ${new Date(data.lastOccurrence).toLocaleString()}</small>
+                        </div>
+                        <div>
+                            <strong>${data.count}</strong> occurrences
+                        </div>
+                    `;
+                    errorStats.appendChild(div);
+                });
+            }
+
+            // Display recommendations
+            const recommendations = document.getElementById('recommendations');
+            recommendations.innerHTML = '';
+            
+            summary.topIssues.forEach(issue => {
+                const div = document.createElement('div');
+                div.className = `recommendation ${issue.severity}`;
+                div.innerHTML = `
+                    <strong>${issue.type}</strong>: ${issue.count} occurrences<br>
+                    <small>Severity: ${issue.severity}</small>
+                `;
+                recommendations.appendChild(div);
+            });
+        }
+
+        // Load analytics on page load
+        document.addEventListener('DOMContentLoaded', loadAnalytics);
+
+        // Auto-refresh every 5 minutes
+        setInterval(loadAnalytics, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

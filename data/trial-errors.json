@@ -1,0 +1,122 @@
+[
+  {
+    "id": "error_1761705919122_4gigwimga66",
+    "timestamp": "2025-10-29T02:45:19.122Z",
+    "errorType": "openai_rate_limit",
+    "errorMessage": "Rate limit exceeded",
+    "reportType": "jp_tax_strategy",
+    "sessionId": "test_session_2",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761712562157_79exrsbhth",
+    "timestamp": "2025-10-29T04:36:02.157Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761712562154_f2viffkx8h9",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761712562181_ppsmny1pcea",
+    "timestamp": "2025-10-29T04:36:02.181Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "invalid_report_type",
+    "sessionId": "session_1761712562180_7zxsi7md9m4",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761712562197_1z1ms3dx2vc",
+    "timestamp": "2025-10-29T04:36:02.197Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please provide either text input or upload files to generate a report.",
+    "reportType": "jp_investment_4part",
+    "sessionId": "session_1761712562195_oozpdn5hm1",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761712562214_twqd9m5ybpl",
+    "timestamp": "2025-10-29T04:36:02.214Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please provide either text input or upload files to generate a report.",
+    "reportType": "jp_investment_4part",
+    "sessionId": "session_1761712562209_m8419lkxq1n",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761712562229_cckh8sag0dm",
+    "timestamp": "2025-10-29T04:36:02.229Z",
+    "errorType": "validation_error",
+    "errorMessage": "Input text is too long. Please limit to 10,000 characters.",
+    "reportType": "custom",
+    "sessionId": "session_1761712562226_usawrnt4q8d",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761712562407_dm5g1yyalwm",
+    "timestamp": "2025-10-29T04:36:02.407Z",
+    "errorType": "validation_error",
+    "errorMessage": "Too many files uploaded. Please limit to 5 files.",
+    "reportType": "jp_investment_4part",
+    "sessionId": "session_1761712562406_ibjxk880tjb",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761712562418_sn9jw5m2v1",
+    "timestamp": "2025-10-29T04:36:02.418Z",
+    "errorType": "validation_error",
+    "errorMessage": "File type \"application/x-executable\" is not supported. Please use PDF, image, or text files.",
+    "reportType": "jp_investment_4part",
+    "sessionId": "session_1761712562414_cipuo3k1kmd",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761712562432_i3vnewosapc",
+    "timestamp": "2025-10-29T04:36:02.432Z",
+    "errorType": "validation_error",
+    "errorMessage": "File \"corrupted.pdf\" has invalid data format. Please try uploading again.",
+    "reportType": "jp_investment_4part",
+    "sessionId": "session_1761712562428_36tu9teadnh",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761712562447_g7hq9qj00og",
+    "timestamp": "2025-10-29T04:36:02.447Z",
+    "errorType": "validation_error",
+    "errorMessage": "File \"empty.txt\" appears to be corrupted. Please try uploading again.",
+    "reportType": "jp_investment_4part",
+    "sessionId": "session_1761712562443_ab1fjglmr7r",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761712562461_3fky8t2rl68",
+    "timestamp": "2025-10-29T04:36:02.461Z",
+    "errorType": "validation_error",
+    "errorMessage": "Input text is too long. Please limit to 10,000 characters.",
+    "reportType": "custom",
+    "sessionId": "session_1761712562456_d7kobamk9q",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761712583383_o3xnnp3rxe",
+    "timestamp": "2025-10-29T04:36:23.383Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761712583382_1nksg5aqwnci",
+    "context": {},
+    "severity": "medium"
+  }
+]

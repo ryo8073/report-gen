@@ -29,9 +29,12 @@
     "test:task-6-2": "node test-task-6-2.js",
     "test:task-6-3": "node test-task-6-3-mock.js",
     "openai:validate": "node scripts/validate-openai-config.js",
-    "test:openai": "node test-openai-setup.js"
+    "test:openai": "node test-openai-setup.js",
+    "google-ai:validate": "node scripts/validate-google-ai-config.js",
+    "test:google-ai": "node test-google-ai-setup.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",

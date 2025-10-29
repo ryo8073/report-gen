@@ -285,99 +285,11 @@
             </form>
         </div>
 
-        <!-- Enhanced Status/Progress -->
+        <!-- Status/Progress -->
         <div id="statusSection" class="hidden status-section">
-            <div class="progress-container">
-                <!-- Progress Header -->
-                <div class="progress-header">
-                    <div class="progress-title">
-                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 progress-spinner"></div>
-                        <span id="statusText">レポートを生成中...</span>
-                    </div>
-                    <div class="progress-time">
-                        <span id="progressTime">00:00</span>
-                    </div>
-                </div>
-                
-                <!-- Progress Bar -->
-                <div class="progress-bar-container">
-                    <div class="progress-bar">
-                        <div id="progressBarFill" class="progress-bar-fill"></div>
-                    </div>
-                    <div class="progress-percentage">
-                        <span id="progressPercentage">0%</span>
-                    </div>
-                </div>
-                
-                <!-- Progress Steps -->
-                <div class="progress-steps">
-                    <div id="step1" class="progress-step active">
-                        <div class="step-icon">
-                            <div class="step-number">1</div>
-                            <div class="step-spinner hidden animate-spin">⟳</div>
-                            <div class="step-check hidden">✓</div>
-                        </div>
-                        <div class="step-content">
-                            <div class="step-title">リクエスト準備</div>
-                            <div class="step-description">入力データを処理中...</div>
-                        </div>
-                    </div>
-                    
-                    <div id="step2" class="progress-step">
-                        <div class="step-icon">
-                            <div class="step-number">2</div>
-                            <div class="step-spinner hidden animate-spin">⟳</div>
-                            <div class="step-check hidden">✓</div>
-                        </div>
-                        <div class="step-content">
-                            <div class="step-title">ファイル処理</div>
-                            <div class="step-description">アップロードされたファイルを解析中...</div>
-                        </div>
-                    </div>
-                    
-                    <div id="step3" class="progress-step">
-                        <div class="step-icon">
-                            <div class="step-number">3</div>
-                            <div class="step-spinner hidden animate-spin">⟳</div>
-                            <div class="step-check hidden">✓</div>
-                        </div>
-                        <div class="step-content">
-                            <div class="step-title">AI分析</div>
-                            <div class="step-description">AIモデルがレポートを生成中...</div>
-                        </div>
-                    </div>
-                    
-                    <div id="step4" class="progress-step">
-                        <div class="step-icon">
-                            <div class="step-number">4</div>
-                            <div class="step-spinner hidden animate-spin">⟳</div>
-                            <div class="step-check hidden">✓</div>
-                        </div>
-                        <div class="step-content">
-                            <div class="step-title">最終調整</div>
-                            <div class="step-description">レポートを整形中...</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Progress Details -->
-                <div class="progress-details">
-                    <div class="detail-item">
-                        <span class="detail-label">処理時間:</span>
-                        <span id="processingTime" class="detail-value">計算中...</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">推定残り時間:</span>
-                        <span id="estimatedTime" class="detail-value">計算中...</span>
-                    </div>
-                </div>
-                
-                <!-- Cancel Button -->
-                <div class="progress-actions">
-                    <button id="cancelProgress" class="btn btn-secondary progress-cancel-btn">
-                        キャンセル
-                    </button>
-                </div>
+            <div class="alert-content">
+                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 alert-icon"></div>
+                <span id="statusText">レポートを生成中...</span>
             </div>
         </div>
 
@@ -392,72 +304,9 @@
                     <button id="downloadBtn" class="btn btn-secondary">
                         .md ダウンロード
                     </button>
-                    <button id="formatBtn" class="btn btn-secondary" onclick="formatMarkdown()">
-                        整形
-                    </button>
-                    <button id="wordCountBtn" class="btn btn-secondary" onclick="showWordCount()">
-                        文字数
-                    </button>
                 </div>
             </div>
-            
-            <!-- Enhanced Report Display with Tabs -->
-            <div class="report-display-container">
-                <!-- Tab Navigation -->
-                <div class="report-tabs">
-                    <button id="editTab" class="tab-button active" onclick="switchTab('edit')">
-                        編集
-                    </button>
-                    <button id="previewTab" class="tab-button" onclick="switchTab('preview')">
-                        プレビュー
-                    </button>
-                    <button id="splitTab" class="tab-button" onclick="switchTab('split')">
-                        分割表示
-                    </button>
-                </div>
-                
-                <!-- Word Count Display -->
-                <div id="wordCountDisplay" class="word-count-display hidden">
-                    <div class="word-count-stats">
-                        <span id="charCount">0文字</span>
-                        <span id="wordCount">0語</span>
-                        <span id="lineCount">0行</span>
-                    </div>
-                </div>
-                
-                <!-- Edit View -->
-                <div id="editView" class="report-view active">
-                    <textarea 
-                        id="reportContent" 
-                        class="report-textarea"
-                        placeholder="レポート内容がここに表示されます..."
-                    ></textarea>
-                </div>
-                
-                <!-- Preview View -->
-                <div id="previewView" class="report-view">
-                    <div id="reportPreview" class="report-preview"></div>
-                </div>
-                
-                <!-- Split View -->
-                <div id="splitView" class="report-view split-view">
-                    <div class="split-panel">
-                        <h4 class="split-panel-title">編集</h4>
-                        <textarea 
-                            id="reportContentSplit" 
-                            class="report-textarea split-textarea"
-                            placeholder="レポート内容がここに表示されます..."
-                        ></textarea>
-                    </div>
-                    <div class="split-panel">
-                        <h4 class="split-panel-title">プレビュー</h4>
-                        <div id="reportPreviewSplit" class="report-preview split-preview"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Legacy preview for backward compatibility -->
-            <div id="preview" class="results-preview prose hidden">
+            <div id="preview" class="results-preview prose">
                 <!-- Preview content will be inserted here -->
             </div>
         </div>
@@ -859,196 +708,6 @@
         .pricing-btn {
             width: 100%;
         }
-
-        /* Enhanced Report Display Styles */
-        .report-display-container {
-            border: 1px solid var(--color-gray-200);
-            border-radius: 8px;
-            overflow: hidden;
-            background: white;
-        }
-
-        .report-tabs {
-            display: flex;
-            border-bottom: 1px solid var(--color-gray-200);
-            background: var(--color-gray-50);
-        }
-
-        .tab-button {
-            flex: 1;
-            padding: var(--space-3) var(--space-4);
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            font-size: var(--font-size-sm);
-            font-weight: 500;
-            color: var(--color-gray-600);
-            transition: all 0.2s;
-            border-bottom: 2px solid transparent;
-        }
-
-        .tab-button:hover {
-            background: var(--color-gray-100);
-            color: var(--color-gray-800);
-        }
-
-        .tab-button.active {
-            background: white;
-            color: var(--color-primary);
-            border-bottom-color: var(--color-primary);
-        }
-
-        .word-count-display {
-            padding: var(--space-2) var(--space-4);
-            background: var(--color-gray-50);
-            border-bottom: 1px solid var(--color-gray-200);
-            font-size: var(--font-size-xs);
-        }
-
-        .word-count-stats {
-            display: flex;
-            gap: var(--space-4);
-            color: var(--color-gray-600);
-        }
-
-        .report-view {
-            display: none;
-            min-height: 400px;
-        }
-
-        .report-view.active {
-            display: block;
-        }
-
-        .report-textarea {
-            width: 100%;
-            min-height: 400px;
-            padding: var(--space-4);
-            border: none;
-            resize: vertical;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: var(--font-size-sm);
-            line-height: 1.6;
-            background: white;
-            outline: none;
-        }
-
-        .report-preview {
-            padding: var(--space-4);
-            min-height: 400px;
-            background: white;
-            overflow-y: auto;
-        }
-
-        .split-view {
-            display: none;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
-        }
-
-        .split-view.active {
-            display: grid;
-        }
-
-        .split-panel {
-            border-right: 1px solid var(--color-gray-200);
-        }
-
-        .split-panel:last-child {
-            border-right: none;
-        }
-
-        .split-panel-title {
-            padding: var(--space-2) var(--space-4);
-            margin: 0;
-            font-size: var(--font-size-sm);
-            font-weight: 600;
-            color: var(--color-gray-700);
-            background: var(--color-gray-50);
-            border-bottom: 1px solid var(--color-gray-200);
-        }
-
-        .split-textarea {
-            min-height: 360px;
-        }
-
-        .split-preview {
-            min-height: 360px;
-        }
-
-        /* Markdown Styling */
-        .markdown-h1 {
-            font-size: var(--font-size-2xl);
-            font-weight: 700;
-            margin: var(--space-6) 0 var(--space-4) 0;
-            color: var(--color-gray-900);
-            border-bottom: 2px solid var(--color-gray-200);
-            padding-bottom: var(--space-2);
-        }
-
-        .markdown-h2 {
-            font-size: var(--font-size-xl);
-            font-weight: 600;
-            margin: var(--space-5) 0 var(--space-3) 0;
-            color: var(--color-gray-800);
-        }
-
-        .markdown-h3 {
-            font-size: var(--font-size-lg);
-            font-weight: 600;
-            margin: var(--space-4) 0 var(--space-2) 0;
-            color: var(--color-gray-800);
-        }
-
-        .markdown-paragraph {
-            margin: var(--space-3) 0;
-            line-height: 1.7;
-            color: var(--color-gray-700);
-        }
-
-        .markdown-list {
-            margin: var(--space-3) 0;
-            padding-left: var(--space-5);
-        }
-
-        .markdown-list-item {
-            margin: var(--space-1) 0;
-            line-height: 1.6;
-            color: var(--color-gray-700);
-        }
-
-        .markdown-code-block {
-            background: var(--color-gray-100);
-            border: 1px solid var(--color-gray-200);
-            border-radius: 6px;
-            padding: var(--space-4);
-            margin: var(--space-3) 0;
-            overflow-x: auto;
-        }
-
-        .markdown-code-block code {
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: var(--font-size-sm);
-            color: var(--color-gray-800);
-        }
-
-        .markdown-inline-code {
-            background: var(--color-gray-100);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: var(--font-size-sm);
-            color: var(--color-gray-800);
-        }
-
-        .markdown-link {
-            color: var(--color-primary);
-            text-decoration: underline;
-        }
-
-        .markdown-link:hover {
-            color: var(--color-primary-dark);
-        }
     </style>
 
     <script type="module">
@@ -1283,15 +942,8 @@ ${inputText || ''}`;
                 hideError();
                 hideResults();
                 
-                // Adjust progress timing based on input complexity
-                adjustProgressSpeed(selectedFiles.length, finalInputText.length);
-                
-                // Show enhanced detailed progress
+                // Show detailed progress
                 showDetailedProgress();
-                startEstimationTimer();
-                
-                // Handle long-running request notifications
-                handleLongRunningRequest();
 
                 console.log('Sending request:', {
                     reportType: requestData.reportType,
@@ -1300,61 +952,38 @@ ${inputText || ''}`;
                     hasAdditionalInfo: !!requestData.additionalInfo
                 });
 
-                // Enhanced fetch with timeout and abort controller
-                const timeoutId = setTimeout(() => {
-                    if (progressState.abortController) {
-                        progressState.abortController.abort();
-                    }
-                }, 120000); // 2 minute timeout
-
                 const response = await fetch('/api/generate', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json; charset=utf-8'
                     },
-                    body: JSON.stringify(requestData),
-                    signal: progressState.abortController?.signal
+                    body: JSON.stringify(requestData)
                 });
 
-                clearTimeout(timeoutId);
                 console.log('Response status:', response.status);
 
                 const result = await response.json();
                 
                 // Handle API-specific errors
                 await handleApiError(response, result);
+                hideDetailedProgress();
+                displayResults(result);
+                hideStatus();
                 
-                // Complete progress animation
-                completeProgress();
-                
-                // Display results after progress completes
-                setTimeout(() => {
-                    displayResults(result);
-                    hideStatus();
-                    
-                    // Show success notification
-                    window.errorHandler.showNotification('レポートが正常に生成されました', 'success', 3000);
-                }, 1500);
+                // Show success notification
+                window.errorHandler.showNotification('レポートが正常に生成されました', 'success', 3000);
 
             } catch (error) {
                 // Enhanced error handling
                 hideDetailedProgress();
-                
-                if (error.name === 'AbortError') {
-                    // Request was cancelled
-                    console.log('Request was cancelled');
-                    return; // Don't show error for cancelled requests
-                } else if (error.message?.includes('timeout')) {
-                    showError('リクエストがタイムアウトしました。もう一度お試しください。');
-                    window.errorHandler.showNotification('リクエストがタイムアウトしました', 'error', 5000);
-                } else {
-                    window.errorHandler.handleError(error, 'report-generation');
-                    showError(window.errorHandler.getUserFriendlyMessage(error, 'report-generation'));
-                }
-                
+                window.errorHandler.handleError(error, 'report-generation');
                 hideStatus();
+                
+                // Show legacy error display as fallback
+                showError(window.errorHandler.getUserFriendlyMessage(error, 'report-generation'));
             } finally {
                 // Hide loading state
+                hideDetailedProgress();
                 window.errorHandler.hideLoading(submitBtn);
             }
         });
@@ -1390,329 +1019,49 @@ ${inputText || ''}`;
             document.getElementById('resultsSection').classList.add('hidden');
         }
 
-        // Enhanced Progress Management
-        let progressState = {
-            startTime: null,
-            currentStep: 0,
-            isActive: false,
-            estimatedDuration: 45000, // 45 seconds estimated
-            intervals: {
-                timer: null,
-                progress: null,
-                estimation: null
-            },
-            abortController: null
-        };
-
         function showDetailedProgress() {
-            progressState.startTime = Date.now();
-            progressState.currentStep = 0;
-            progressState.isActive = true;
-            progressState.abortController = new AbortController();
+            const statusText = document.getElementById('statusText');
+            let step = 0;
+            const steps = [
+                'リクエストを準備中...',
+                'ファイルを処理中...',
+                'AIモデルに送信中...',
+                'レポートを生成中...',
+                '最終調整中...'
+            ];
             
-            // Reset all progress elements
-            resetProgressElements();
+            const progressInterval = setInterval(() => {
+                if (step < steps.length) {
+                    statusText.textContent = steps[step];
+                    step++;
+                } else {
+                    clearInterval(progressInterval);
+                }
+            }, 1000);
             
-            // Start progress animations
-            startProgressTimer();
-            startProgressBar();
-            startStepProgression();
-            
-            // Setup cancel button
-            setupCancelButton();
-            
-            console.log('Enhanced progress started');
+            // Store interval ID to clear it later
+            window.currentProgressInterval = progressInterval;
         }
 
         function hideDetailedProgress() {
-            progressState.isActive = false;
-            
-            // Clear all intervals
-            Object.values(progressState.intervals).forEach(interval => {
-                if (interval) clearInterval(interval);
-            });
-            
-            // Reset intervals object
-            progressState.intervals = { timer: null, progress: null, estimation: null };
-            
-            console.log('Enhanced progress stopped');
-        }
-
-        function resetProgressElements() {
-            // Reset progress bar
-            const progressBarFill = document.getElementById('progressBarFill');
-            const progressPercentage = document.getElementById('progressPercentage');
-            if (progressBarFill) progressBarFill.style.width = '0%';
-            if (progressPercentage) progressPercentage.textContent = '0%';
-            
-            // Reset all steps
-            for (let i = 1; i <= 4; i++) {
-                const step = document.getElementById(`step${i}`);
-                if (step) {
-                    step.classList.remove('active', 'completed');
-                    const spinner = step.querySelector('.step-spinner');
-                    const check = step.querySelector('.step-check');
-                    const number = step.querySelector('.step-number');
-                    
-                    if (spinner) spinner.classList.add('hidden');
-                    if (check) check.classList.add('hidden');
-                    if (number) number.style.display = 'block';
-                }
+            if (window.currentProgressInterval) {
+                clearInterval(window.currentProgressInterval);
+                window.currentProgressInterval = null;
             }
-            
-            // Activate first step
-            const firstStep = document.getElementById('step1');
-            if (firstStep) {
-                firstStep.classList.add('active');
-                const spinner = firstStep.querySelector('.step-spinner');
-                const number = firstStep.querySelector('.step-number');
-                if (spinner) spinner.classList.remove('hidden');
-                if (number) number.style.display = 'none';
-            }
-        }
-
-        function startProgressTimer() {
-            const progressTimeEl = document.getElementById('progressTime');
-            const processingTimeEl = document.getElementById('processingTime');
-            
-            progressState.intervals.timer = setInterval(() => {
-                if (!progressState.isActive) return;
-                
-                const elapsed = Date.now() - progressState.startTime;
-                const minutes = Math.floor(elapsed / 60000);
-                const seconds = Math.floor((elapsed % 60000) / 1000);
-                
-                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                if (progressTimeEl) progressTimeEl.textContent = timeString;
-                if (processingTimeEl) processingTimeEl.textContent = timeString;
-            }, 1000);
-        }
-
-        function startProgressBar() {
-            const progressBarFill = document.getElementById('progressBarFill');
-            const progressPercentage = document.getElementById('progressPercentage');
-            let progress = 0;
-            
-            progressState.intervals.progress = setInterval(() => {
-                if (!progressState.isActive) return;
-                
-                const elapsed = Date.now() - progressState.startTime;
-                const baseProgress = Math.min((elapsed / progressState.estimatedDuration) * 100, 95);
-                
-                // Add some randomness to make it feel more realistic
-                const randomFactor = Math.random() * 2 - 1; // -1 to 1
-                progress = Math.min(baseProgress + randomFactor, 95);
-                
-                if (progressBarFill) progressBarFill.style.width = `${progress}%`;
-                if (progressPercentage) progressPercentage.textContent = `${Math.round(progress)}%`;
-            }, 500);
-        }
-
-        function startStepProgression() {
-            const steps = [
-                { id: 'step1', duration: 3000, message: 'リクエストを準備中...' },
-                { id: 'step2', duration: 8000, message: 'ファイルを処理中...' },
-                { id: 'step3', duration: 25000, message: 'AIモデルがレポートを生成中...' },
-                { id: 'step4', duration: 9000, message: 'レポートを整形中...' }
-            ];
-            
-            let currentStepIndex = 0;
-            
-            const progressToNextStep = () => {
-                if (!progressState.isActive || currentStepIndex >= steps.length) return;
-                
-                const currentStep = steps[currentStepIndex];
-                const statusText = document.getElementById('statusText');
-                
-                // Update status message
-                if (statusText) statusText.textContent = currentStep.message;
-                
-                // Complete current step and move to next
-                setTimeout(() => {
-                    if (!progressState.isActive) return;
-                    
-                    completeStep(currentStep.id);
-                    currentStepIndex++;
-                    
-                    if (currentStepIndex < steps.length) {
-                        activateStep(steps[currentStepIndex].id);
-                        progressToNextStep();
-                    }
-                }, currentStep.duration);
-            };
-            
-            // Start the progression
-            progressToNextStep();
-        }
-
-        function activateStep(stepId) {
-            const step = document.getElementById(stepId);
-            if (!step) return;
-            
-            step.classList.add('active');
-            const spinner = step.querySelector('.step-spinner');
-            const number = step.querySelector('.step-number');
-            
-            if (spinner) spinner.classList.remove('hidden');
-            if (number) number.style.display = 'none';
-        }
-
-        function completeStep(stepId) {
-            const step = document.getElementById(stepId);
-            if (!step) return;
-            
-            step.classList.remove('active');
-            step.classList.add('completed');
-            
-            const spinner = step.querySelector('.step-spinner');
-            const check = step.querySelector('.step-check');
-            const number = step.querySelector('.step-number');
-            
-            if (spinner) spinner.classList.add('hidden');
-            if (check) check.classList.remove('hidden');
-            if (number) number.style.display = 'none';
-        }
-
-        function updateEstimatedTime() {
-            const estimatedTimeEl = document.getElementById('estimatedTime');
-            if (!estimatedTimeEl || !progressState.isActive) return;
-            
-            const elapsed = Date.now() - progressState.startTime;
-            const remaining = Math.max(0, progressState.estimatedDuration - elapsed);
-            
-            if (remaining > 0) {
-                const minutes = Math.floor(remaining / 60000);
-                const seconds = Math.floor((remaining % 60000) / 1000);
-                estimatedTimeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            } else {
-                estimatedTimeEl.textContent = '間もなく完了';
-            }
-        }
-
-        function setupCancelButton() {
-            const cancelBtn = document.getElementById('cancelProgress');
-            if (!cancelBtn) return;
-            
-            cancelBtn.onclick = () => {
-                if (confirm('レポート生成をキャンセルしますか？')) {
-                    cancelProgress();
-                }
-            };
-        }
-
-        function cancelProgress() {
-            if (progressState.abortController) {
-                progressState.abortController.abort();
-            }
-            
-            hideDetailedProgress();
-            hideStatus();
-            
-            // Re-enable form
-            const submitBtn = document.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                window.errorHandler.hideLoading(submitBtn);
-            }
-            
-            showError('レポート生成がキャンセルされました');
-            
-            window.errorHandler.showNotification('レポート生成をキャンセルしました', 'warning', 3000);
-        }
-
-        function completeProgress() {
-            // Complete all remaining steps
-            for (let i = 1; i <= 4; i++) {
-                completeStep(`step${i}`);
-            }
-            
-            // Set progress to 100%
-            const progressBarFill = document.getElementById('progressBarFill');
-            const progressPercentage = document.getElementById('progressPercentage');
-            if (progressBarFill) progressBarFill.style.width = '100%';
-            if (progressPercentage) progressPercentage.textContent = '100%';
-            
-            // Update status
-            const statusText = document.getElementById('statusText');
-            if (statusText) statusText.textContent = 'レポート生成完了！';
-            
-            // Hide progress after a short delay
-            setTimeout(() => {
-                hideDetailedProgress();
-            }, 1500);
-        }
-
-        // Start estimation timer
-        function startEstimationTimer() {
-            progressState.intervals.estimation = setInterval(updateEstimatedTime, 1000);
         }
 
         function displayResults(result) {
+            const preview = document.getElementById('preview');
             const content = result.content || result.markdown || '';
             
             if (!content) {
-                const reportContent = document.getElementById('reportContent');
-                if (reportContent) {
-                    reportContent.value = 'レポートが生成されましたが、内容を表示できません。';
-                }
+                preview.innerHTML = '<p style="color: var(--color-red-600);">レポートが生成されましたが、内容を表示できません。</p>';
                 document.getElementById('resultsSection').classList.remove('hidden');
                 return;
             }
 
-            // Set content in all textareas
-            const reportContent = document.getElementById('reportContent');
-            const reportContentSplit = document.getElementById('reportContentSplit');
-            
-            if (reportContent) {
-                reportContent.value = content;
-            }
-            if (reportContentSplit) {
-                reportContentSplit.value = content;
-            }
-            
-            // Initialize the enhanced report display
-            if (window.initializeReportDisplay) {
-                window.initializeReportDisplay();
-            }
-            
-            // Show usage information if available
-            if (result.usage) {
-                const usageInfo = document.createElement('div');
-                usageInfo.className = 'usage-info';
-                usageInfo.style.cssText = `
-                    padding: var(--space-2) var(--space-4);
-                    background: var(--color-gray-50);
-                    border-bottom: 1px solid var(--color-gray-200);
-                    font-size: var(--font-size-xs);
-                    color: var(--color-gray-600);
-                    text-align: right;
-                `;
-                usageInfo.innerHTML = `
-                    Token使用量: ${result.usage.totalTokens.toLocaleString()} 
-                    (入力: ${result.usage.promptTokens.toLocaleString()}, 
-                    出力: ${result.usage.completionTokens.toLocaleString()})
-                    ${result.usage.estimatedCost ? ` | 推定コスト: ${result.usage.estimatedCost}` : ''}
-                `;
-                
-                const reportContainer = document.querySelector('.report-display-container');
-                if (reportContainer) {
-                    // Remove existing usage info
-                    const existingUsage = reportContainer.querySelector('.usage-info');
-                    if (existingUsage) {
-                        existingUsage.remove();
-                    }
-                    reportContainer.insertBefore(usageInfo, reportContainer.firstChild);
-                }
-            }
-            
-            // Legacy preview is hidden, using enhanced display above
-            const preview = document.getElementById('preview');
-            if (preview) {
-                preview.style.display = 'none';
-            }
-            
-            // Remove old preview content setup
-            /*
+            // Enhanced report display with better formatting and markdown rendering
+            preview.innerHTML = `
                 <div style="margin-bottom: var(--space-4);">
                     <div style="display: flex; justify-content: between; align-items: center; margin-bottom: var(--space-2);">
                         <span style="font-size: var(--font-size-sm); color: var(--color-gray-600);">
@@ -1729,59 +1078,74 @@ ${inputText || ''}`;
                     </div>
                     <textarea 
                         id="reportContent" 
-                        class="report-textarea"
+                        style="
+                            width: 100%; 
+                            min-height: 400px; 
+                            padding: var(--space-4); 
+                            border: 1px solid var(--color-gray-300); 
+                            border-radius: 6px; 
+                            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif; 
+                            font-size: var(--font-size-sm); 
+                            line-height: 1.6;
+                            resize: vertical;
+                            background: white;
+                        "
                         placeholder="レポート内容がここに表示されます..."
                     >${content}</textarea>
                 </div>
                 
                 <div style="margin-bottom: var(--space-4);">
                     <h4 style="margin-bottom: var(--space-2); color: var(--color-gray-800);">プレビュー</h4>
-                    <div id="reportPreview" class="report-preview"></div>
+                    <div 
+                        id="reportPreview" 
+                        style="
+                            border: 1px solid var(--color-gray-300); 
+                            border-radius: 6px; 
+                            padding: var(--space-4); 
+                            background: var(--color-gray-50);
+                            min-height: 200px;
+                            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+                            line-height: 1.6;
+                        "
+                    ></div>
                 </div>
-            */
+            `;
+            
+            // Initialize the enhanced report display
+            initializeReportDisplay();
             
             document.getElementById('resultsSection').classList.remove('hidden');
 
             // Enhanced copy functionality
             const copyBtn = document.getElementById('copyBtn');
-            if (copyBtn) {
-                copyBtn.onclick = () => {
-                    const currentContent = window.getCurrentReportContent ? window.getCurrentReportContent() : content;
-                    navigator.clipboard.writeText(currentContent).then(() => {
-                        if (window.showButtonFeedback) {
-                            window.showButtonFeedback(copyBtn, 'コピー済み', 'success');
-                        }
-                    }).catch(() => {
-                        if (window.showButtonFeedback) {
-                            window.showButtonFeedback(copyBtn, 'コピー失敗', 'error');
-                        }
-                    });
-                };
-            }
+            copyBtn.onclick = () => {
+                const currentContent = getCurrentReportContent();
+                navigator.clipboard.writeText(currentContent).then(() => {
+                    showButtonFeedback(copyBtn, 'コピー済み', 'success');
+                }).catch(() => {
+                    showButtonFeedback(copyBtn, 'コピー失敗', 'error');
+                });
+            };
 
             // Enhanced download functionality
             const downloadBtn = document.getElementById('downloadBtn');
-            if (downloadBtn) {
-                downloadBtn.onclick = () => {
-                    const currentContent = window.getCurrentReportContent ? window.getCurrentReportContent() : content;
-                    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-                    const filename = `report_${timestamp}.md`;
-                    
-                    const blob = new Blob([currentContent], { type: 'text/markdown; charset=utf-8' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    
-                    if (window.showButtonFeedback) {
-                        window.showButtonFeedback(downloadBtn, 'ダウンロード済み', 'success');
-                    }
-                };
-            }
+            downloadBtn.onclick = () => {
+                const currentContent = getCurrentReportContent();
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                const filename = `report_${timestamp}.md`;
+                
+                const blob = new Blob([currentContent], { type: 'text/markdown; charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showButtonFeedback(downloadBtn, 'ダウンロード済み', 'success');
+            };
         }
 
         // Custom Prompt Management - Disabled for trial
@@ -1939,97 +1303,8 @@ ${inputText || ''}`;
             `;
         }
 
-        // Enhanced Progress Utilities
-        function adjustProgressSpeed(filesCount, inputLength) {
-            // Adjust estimated duration based on input complexity
-            let baseDuration = 30000; // 30 seconds base
-            
-            // Add time for files
-            baseDuration += filesCount * 5000; // 5 seconds per file
-            
-            // Add time for long text
-            if (inputLength > 1000) {
-                baseDuration += Math.min((inputLength - 1000) / 100 * 1000, 15000); // Up to 15 extra seconds
-            }
-            
-            progressState.estimatedDuration = Math.min(baseDuration, 90000); // Max 90 seconds
-            console.log(`Adjusted progress duration to ${progressState.estimatedDuration}ms`);
-        }
-
-        function handleProgressError(error) {
-            hideDetailedProgress();
-            
-            // Update status to show error state
-            const statusText = document.getElementById('statusText');
-            if (statusText) {
-                statusText.textContent = 'エラーが発生しました';
-            }
-            
-            // Mark current step as failed
-            const activeStep = document.querySelector('.progress-step.active');
-            if (activeStep) {
-                activeStep.classList.remove('active');
-                activeStep.classList.add('error');
-                
-                const icon = activeStep.querySelector('.step-icon');
-                if (icon) {
-                    icon.style.borderColor = 'var(--color-error)';
-                    icon.style.background = 'var(--color-error)';
-                    icon.innerHTML = '✕';
-                }
-            }
-            
-            setTimeout(() => {
-                hideStatus();
-            }, 3000);
-        }
-
-        // Progress state management
-        function getProgressState() {
-            return { ...progressState };
-        }
-
-        function isProgressActive() {
-            return progressState.isActive;
-        }
-
-        // Enhanced error handling for long requests
-        function handleLongRunningRequest() {
-            // Show additional message after 30 seconds
-            setTimeout(() => {
-                if (progressState.isActive) {
-                    const statusText = document.getElementById('statusText');
-                    if (statusText) {
-                        statusText.textContent = 'レポート生成には時間がかかる場合があります...';
-                    }
-                    
-                    window.errorHandler.showNotification(
-                        '複雑なレポートのため、通常より時間がかかっています', 
-                        'info', 
-                        5000
-                    );
-                }
-            }, 30000);
-            
-            // Show patience message after 60 seconds
-            setTimeout(() => {
-                if (progressState.isActive) {
-                    window.errorHandler.showNotification(
-                        'もうしばらくお待ちください。高品質なレポートを生成中です', 
-                        'info', 
-                        5000
-                    );
-                }
-            }, 60000);
-        }
-
-        // Make functions globally accessible
+        // Make removeFile globally accessible
         window.removeFile = removeFile;
-        window.showDetailedProgress = showDetailedProgress;
-        window.hideDetailedProgress = hideDetailedProgress;
-        window.cancelProgress = cancelProgress;
-        window.getProgressState = getProgressState;
-        window.isProgressActive = isProgressActive;
     </script>
 </body>
 </html>
