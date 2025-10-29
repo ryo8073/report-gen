@@ -2364,28 +2364,14 @@ ${inputText || ''}`;
                 return;
             }
 
-            // Set content in rich text editor and markdown textarea
+            // Set content in simple textarea
             const reportContent = document.getElementById('reportContent');
-            const reportContentMarkdown = document.getElementById('reportContentMarkdown');
-            const reportContentSplit = document.getElementById('reportContentSplit');
             
             if (reportContent) {
-                // Convert markdown to HTML for rich text editor
-                const htmlContent = markdownToHtml(content);
-                reportContent.innerHTML = htmlContent;
+                reportContent.value = content; // Set content in textarea
             }
             
-            if (reportContentMarkdown) {
-                // Store original markdown
-                reportContentMarkdown.value = content;
-            }
-            
-            if (reportContentSplit) {
-                reportContentSplit.value = content;
-            }
-            
-            // Update word count
-            updateWordCount();
+            // Word count functionality removed
             
             // Initialize the enhanced report display
             if (window.initializeReportDisplay) {
@@ -2761,27 +2747,14 @@ ${inputText || ''}`;
         }
 
         function updateWordCount() {
-            const editor = document.getElementById('reportContent');
-            const text = editor.textContent || editor.innerText || '';
-            
-            const charCount = text.length;
-            const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-            const lineCount = text.split('\n').length;
-            
-            document.getElementById('charCount').textContent = `${charCount.toLocaleString()}文字`;
-            document.getElementById('wordCount').textContent = `${wordCount.toLocaleString()}語`;
-            document.getElementById('lineCount').textContent = `${lineCount.toLocaleString()}行`;
-            
-            updateMarkdownFromEditor();
+            // Word count functionality removed - this is now a no-op function
+            // to prevent errors from existing references
+            return;
         }
 
         function updateMarkdownFromEditor() {
-            const editor = document.getElementById('reportContent');
-            const markdownTextarea = document.getElementById('reportContentMarkdown');
-            
-            // Convert HTML back to Markdown (simplified)
-            let markdown = htmlToMarkdown(editor.innerHTML);
-            markdownTextarea.value = markdown;
+            // Markdown conversion functionality removed
+            return;
         }
 
         function htmlToMarkdown(html) {
@@ -2868,14 +2841,11 @@ ${inputText || ''}`;
 
         // Enhanced getCurrentReportContent function
         window.getCurrentReportContent = function() {
-            const markdownTextarea = document.getElementById('reportContentMarkdown');
             const editor = document.getElementById('reportContent');
             
-            // Return markdown version if available, otherwise convert from editor
-            if (markdownTextarea && markdownTextarea.value) {
-                return markdownTextarea.value;
-            } else if (editor) {
-                return htmlToMarkdown(editor.innerHTML);
+            // Return content from textarea
+            if (editor && editor.value) {
+                return editor.value;
             }
             return '';
         };
