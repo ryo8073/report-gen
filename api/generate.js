@@ -132,13 +132,8 @@ async function handleComparisonAnalysis(req, res) {
     
     let fileContent = '';
     if (allFiles.length > 0) {
-      console.log(`[COMPARISON] Processing ${allFiles.length} files with vision capabilities`);
-      try {
-        fileContent = await processFilesWithVision(allFiles, 'comparison_analysis');
-      } catch (visionError) {
-        console.log('[COMPARISON] Vision processing failed, using legacy processing');
-        fileContent = await processFiles(allFiles);
-      }
+      console.log(`[COMPARISON] Processing ${allFiles.length} files with legacy processing`);
+      fileContent = await processFiles(allFiles);
     }
     
     // Build final prompt with file content
@@ -1090,25 +1085,18 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
     // Get the appropriate prompt using PromptManager
     let fullPrompt = promptManager.buildFullPrompt(reportType, inputText, files, additionalInfo);
   
-    // Process files with enhanced vision capabilities
+    // Process files with enhanced capabilities (temporarily disabled for debugging)
     let fileContent = '';
     if (files && files.length > 0) {
       try {
-        console.log(`[OPENAI] Processing ${files.length} files with vision capabilities`);
-        fileContent = await processFilesWithVision(files, reportType);
+        console.log(`[OPENAI] Processing ${files.length} files with legacy processing`);
+        fileContent = await processFiles(files);
         // Add file content to the prompt
-        fullPrompt += `\n\n【添付ファイル分析結果】\n${fileContent}`;
+        fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
         console.log(`[OPENAI] File processing completed, content length: ${fileContent.length} chars`);
       } catch (fileError) {
         console.error('[OPENAI] File processing error:', fileError);
-        // Fallback to legacy processing
-        console.log('[OPENAI] Falling back to legacy file processing');
-        try {
-          fileContent = await processFiles(files);
-          fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
-        } catch (legacyError) {
-          throw new Error(`file processing failed: ${fileError.message}`);
-        }
+        throw new Error(`file processing failed: ${fileError.message}`);
       }
     }
 
@@ -1172,45 +1160,23 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
     const basePrompt = promptManager.buildFullPrompt(reportType, inputText, files, additionalInfo);
     let fullPrompt = formatPromptForGemini(reportType, basePrompt);
     
-    // Gemini 2.0 Flash supports direct multimodal input
-    let parts = [{ text: fullPrompt }];
-    
+    // Process files with legacy processing (temporarily disabled multimodal for debugging)
+    let fileContent = '';
     if (files && files.length > 0) {
-      console.log(`[GEMINI] Processing ${files.length} files with native multimodal support`);
-      
-      // Add files directly to Gemini (native multimodal support)
-      for (const file of files) {
-        try {
-          if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
-            console.log(`[GEMINI] Adding ${file.name} (${file.type}) directly to multimodal input`);
-            parts.push({
-              inlineData: {
-                mimeType: file.type,
-                data: file.data
-              }
-            });
-          } else {
-            // For text files, process and add as text
-            const buffer = Buffer.from(file.data, 'base64');
-            const textContent = buffer.toString('utf8');
-            parts.push({
-              text: `\n\n【ファイル: ${file.name}】\n${textContent.substring(0, 2000)}`
-            });
-          }
-        } catch (fileError) {
-          console.error(`[GEMINI] Error processing file ${file.name}:`, fileError);
-          parts.push({
-            text: `\n\n【ファイル処理エラー: ${file.name}】\n${fileError.message}`
-          });
-        }
+      try {
+        console.log(`[GEMINI] Processing ${files.length} files with legacy processing`);
+        fileContent = await processFiles(files);
+        // Add file content to the prompt
+        fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
+      } catch (fileError) {
+        console.error('[GEMINI] File processing error:', fileError);
+        throw new Error(`file processing failed: ${fileError.message}`);
       }
-      
-      console.log(`[GEMINI] Prepared ${parts.length} parts for multimodal generation`);
     }
 
-  // Call Gemini API with multimodal parts
-  console.log(`[GEMINI] Calling Gemini 2.0 Flash with ${parts.length} parts`);
-  const result = await geminiModel.generateContent(parts);
+  // Call Gemini API with text prompt
+  console.log(`[GEMINI] Calling Gemini 2.0 Flash with text prompt`);
+  const result = await geminiModel.generateContent(fullPrompt);
   const response = await result.response;
   const content = response.text();
 
