@@ -59,8 +59,7 @@ try {
   console.error('Failed to initialize Gemini client:', error);
 }
 
-// Initialize PromptManager
-const promptManager = new PromptManager();
+// PromptManager will be initialized after class definition
 
 // Comparison Analysis Handler
 async function handleComparisonAnalysis(req, res) {
@@ -646,6 +645,9 @@ class PromptManager {
     return comparisonPrompt;
   }
 }
+
+// Initialize PromptManager after class definition
+const promptManager = new PromptManager();
 
 // Validate API keys function
 function validateApiKeys() {
