@@ -482,27 +482,35 @@ class PromptManager {
           const filePath = path.join(promptsDir, file);
           const content = await fs.readFile(filePath, 'utf8');
           this.prompts.set(file, content);
-          console.log(`[PROMPT MANAGER] Loaded prompt: ${file}`);
+          console.log(`[PROMPT MANAGER] Loaded prompt: ${file} (${content.length} chars)`);
         } catch (error) {
           console.error(`[PROMPT MANAGER] Failed to load prompt ${file}:`, error.message);
         }
       }
       
-      console.log(`[PROMPT MANAGER] Successfully loaded ${this.prompts.size} prompts`);
+      console.log(`[PROMPT MANAGER] Successfully loaded ${this.prompts.size} prompts from files`);
+      
+      // If no prompts were loaded from files, use fallback
+      if (this.prompts.size === 0) {
+        console.log('[PROMPT MANAGER] No prompts loaded from files, using fallback prompts');
+        this.loadFallbackPrompts();
+      }
     } catch (error) {
       console.error('[PROMPT MANAGER] Failed to read PROMPTS directory:', error.message);
+      console.log('[PROMPT MANAGER] Using fallback prompts due to directory read failure');
       // Load fallback prompts if directory read fails
       this.loadFallbackPrompts();
     }
   }
   
   loadFallbackPrompts() {
-    console.log('[PROMPT MANAGER] Loading fallback prompts');
+    console.log('[PROMPT MANAGER] Loading fallback prompts - using updated detailed prompts');
     // Use the existing REPORT_PROMPTS as fallback
     this.prompts.set('jp_investment_4part.md', REPORT_PROMPTS.jp_investment_4part);
     this.prompts.set('jp_tax_strategy.md', REPORT_PROMPTS.jp_tax_strategy);
     this.prompts.set('jp_inheritance_strategy.md', REPORT_PROMPTS.jp_inheritance_strategy);
     this.prompts.set('custom.md', REPORT_PROMPTS.custom);
+    console.log(`[PROMPT MANAGER] Fallback prompts loaded: ${this.prompts.size} prompts`);
   }
   
   getPrompt(reportType) {
@@ -511,11 +519,13 @@ class PromptManager {
     
     if (!prompt) {
       console.error(`[PROMPT MANAGER] Prompt not found: ${promptFile}, falling back to default`);
+      console.log(`[PROMPT MANAGER] Available prompts: ${Array.from(this.prompts.keys()).join(', ')}`);
       const fallbackPrompt = this.prompts.get('jp_investment_4part.md') || REPORT_PROMPTS.jp_investment_4part;
+      console.log(`[PROMPT MANAGER] Using fallback prompt (length: ${fallbackPrompt.length} chars)`);
       return fallbackPrompt;
     }
     
-    console.log(`[PROMPT MANAGER] Using prompt: ${promptFile} for report type: ${reportType}`);
+    console.log(`[PROMPT MANAGER] Using prompt: ${promptFile} for report type: ${reportType} (length: ${prompt.length} chars)`);
     return prompt;
   }
   
@@ -714,37 +724,142 @@ function shouldTryFallback(error) {
 
 // Report type prompts
 const REPORT_PROMPTS = {
-  jp_investment_4part: `あなたは経験豊富な投資アドバイザーです。以下の情報を基に、4部構成の投資分析レポートを作成してください。
+  jp_investment_4part: `# 投資分析レポート作成指示書
 
-構成:
-1. 投資概要と現状分析
-2. リスク評価と市場分析
-3. 推奨投資戦略
-4. 実行計画と注意事項
+## 指示
+添付されたファイル（PDF、画像、テキスト）を詳細に分析し、プロの不動産コンサルタントとして、以下の体系的なレポートを作成してください。
 
-レポートは専門的でありながら、クライアントが理解しやすい内容にしてください。`,
+## ファイル分析の指針
+- **PDFファイル**: 文書内の数値データ、表、グラフを正確に読み取り、分析に活用してください
+- **画像ファイル**: 図表、グラフ、写真に含まれる情報を詳細に分析し、数値や傾向を読み取ってください
+- **テキストデータ**: 提供された情報を基に、不足している部分は一般的な市場データで補完してください
 
-  jp_tax_strategy: `あなたは税務の専門家です。以下の情報を基に、減価償却を活用した税務戦略レポートを作成してください。
+各項目は、単なる情報の抜き出しだけでなく、データに基づいた客観的な考察も加えてください。
 
-含めるべき内容:
-- 現在の税務状況分析
-- 減価償却による節税効果の試算
-- 推奨する投資商品と戦略
-- 実行スケジュールと注意点
-- 長期的な税務メリット
+---
 
-具体的な数値を用いて、わかりやすく説明してください。`,
+## 1. Executive Summary（投資概要）
+この投資案件の全体像を要約してください。まず**初期分析（FCRとK%等）**から分かる購入時点での収益性に触れ、次にそれが**全体分析（税引前・税引後IRRの比較等）**によって投資期間全体で証明されていることを示し、説得力のある形で結論を記述してください。
 
-  jp_inheritance_strategy: `あなたは相続対策の専門家です。以下の情報を基に、相続対策戦略レポートを作成してください。
+## 2. Benefits（投資の優位性）
+この物件がもたらす財務的メリットを、以下の3つの観点からデータを根拠に挙げてください。
 
-含めるべき内容:
-- 現在の資産状況と相続税試算
-- 相続税軽減策の提案
-- 不動産投資による相続対策効果
-- 生前贈与や信託の活用方法
-- 実行優先順位と具体的手順
+1. **購入時点での明確な収益性と安全性：** 初期分析の指標（FCR, K%, DCR, BER）を基に、この投資がスタート時点でいかに優れているかを具体的に説明してください。
 
-法的な観点も含めて、実践的なアドバイスを提供してください。`,
+2. **投資期間全体で証明される強力なレバレッジ効果：** 全体分析における**「税引前IRR」と「税引後IRR」**のそれぞれを、融資利用時と全額自己資金時で比較します。これにより、収益性の増幅効果と、節税効果の両面からレバレッジの有効性を証明してください。
+
+3. **確かな投資価値の創出：** 正味現在価値（NPV）がプラスであることの意味を解説し、この投資が将来的にどれだけの価値を生み出す可能性があるかを説明してください。
+
+## 3. Risks（潜在リスクの分析とヘッジ）
+PDFの数値データから直接読み取れないリスクも含め、多角的に分析してください。
+
+* **市場リスク：** （例：周辺エリアの賃貸需要の変化、賃料相場の下落など）
+* **物件リスク：** （例：建物の物理的劣化による大規模修繕、管理状態など）
+* **財務リスク：** （例：金利上昇がキャッシュフローやレバレッジに与える影響など）
+* **税務リスク：** （例：減価償却ルールの変更、各種税率の改正などが税引後リターンに与える影響など）
+
+## 4. Evidence（定量的証拠）
+投資判断の裏付けとなる最も重要な定量的データを、「初期分析」と「全体分析」に明確に分けてリストアップしてください。
+
+* **基本情報**
+  * 物件名、所在地、構造・築年数
+
+* **初期分析（購入時点・初年度の評価）**
+  * 総収益率（FCR）
+  * ローン定数（K%）
+  * イールドギャップ (FCR - K%)
+  * 借入金償還余裕率（DCR）
+  * 損益分岐入居率（BER）
+
+* **全体分析（保有期間全体・売却までの評価）**
+  * 内部収益率（IRR・税引前・融資利用時）
+  * 内部収益率（IRR・税引後・融資利用時）
+  * 内部収益率（IRR・税引前・全額自己資金時）
+  * 内部収益率（IRR・税引後・全額自己資金時）
+  * 正味現在価値（NPV）`,
+
+  jp_tax_strategy: `# 不動産投資による所得税減税効果分析レポート作成プロンプト
+
+## 役割 (Role)
+あなたは、日本の税制に精通した、トップレベルのタックスアドバイザー兼ファイナンシャルプランナーです。
+
+## 目的 (Objective)
+個人富裕層のお客様に対し、中古不動産投資を活用した所得税・住民税の減税戦略を、論理的かつ説得力のあるプロフェッショナルなレポート形式で提案してください。
+
+## ファイル分析の指針
+- **PDFファイル**: 投資物件の詳細情報、収支計算書、税務関連データを正確に読み取ってください
+- **画像ファイル**: 物件写真、図表、グラフから投資価値や税務効果を分析してください
+- **入力データ**: 提供された年収、家族構成、投資目標などの個人情報を活用してください
+
+## レポート構成要件
+
+### 1. 戦略サマリー
+- 減税メカニズムの核心を3行以内で要約
+- 年間・総額での節税効果を数値で明示
+- 最終的な推奨アクションを1行で提示
+
+### 2. 減税メカニズムの詳細解説
+- 減価償却による所得控除の仕組みを図解付きで説明
+- 損益通算による他所得との相殺効果を具体例で示す
+- 住民税への影響も含めた総合的な節税効果を計算
+
+### 3. シミュレーション分析
+- 物件価格・築年数・構造による減価償却額の違いを表形式で比較
+- 年収別・税率別での節税効果をシミュレーション
+- 投資期間中の累積節税効果をグラフ化
+
+### 4. リスク分析と対策
+- 減価償却期間終了後の税務リスク
+- 売却時の譲渡所得税への影響
+- 税制改正リスクとその対策
+- 事業的規模の判定リスク
+
+### 5. 実行に向けた具体的ステップ
+- 物件選定のポイント（築年数・構造・立地）
+- 必要書類と手続きフロー
+- 税務申告での注意点
+- 継続的なモニタリング方法`,
+
+  jp_inheritance_strategy: `# 収益不動産活用による相続対策分析レポート作成指示書
+
+## 指示
+添付されたファイルと提供された資産・家族情報を基に、プロの相続コンサルタントとして、収益不動産購入が相続に与える影響を分析し、以下の体系的なレポートを作成してください。
+
+## ファイル分析の指針
+- **PDFファイル**: 不動産投資分析レポート、相続税計算書、資産評価書などを詳細に分析してください
+- **画像ファイル**: 物件写真、相続関係図、資産構成グラフなどから相続対策の効果を読み取ってください
+- **入力データ**: 総資産額、法定相続人情報、相続対策目標などの個人情報を活用してください
+
+## レポート構成
+
+### 1. 相続対策戦略サマリー
+- 収益不動産活用による相続税評価額圧縮の核心メカニズムを3行以内で要約
+- 購入前後の相続税負担額の差額を具体的な金額で明示
+- 最終的な推奨アクションを1行で提示
+
+### 2. 相続税評価額圧縮メカニズムの詳細解説
+- 収益不動産の相続税評価方法（路線価方式・倍率方式）の説明
+- 賃貸借権の設定による評価減の仕組みを図解付きで説明
+- 借地権割合・借家権割合の計算方法と実際の評価減効果
+- 相続税評価額と時価の乖離を具体例で示す
+
+### 3. シミュレーション分析
+- 購入前後の相続税評価額・税額を表形式で比較
+- 相続人の人数・関係性による節税効果の違いを分析
+- 物件価格・立地による評価減効果の違いをシミュレーション
+- 相続発生時期別の累積節税効果をグラフ化
+
+### 4. リスク分析と対策
+- 税務調査での否認リスクとその対策
+- 物件価値の変動リスクとヘッジ方法
+- 家族間での相続争いリスクと対策
+- 相続税法改正リスクとその影響
+
+### 5. 実行に向けた具体的ステップ
+- 物件選定のポイント（立地・賃貸需要・借地権割合）
+- 賃貸借契約の締結方法と注意点
+- 相続税申告での書類準備
+- 継続的なモニタリングと見直し方法`,
 
   custom: `以下の要求に基づいて、専門的で詳細なレポートを作成してください。`
 };
