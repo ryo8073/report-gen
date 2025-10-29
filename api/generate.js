@@ -132,8 +132,13 @@ async function handleComparisonAnalysis(req, res) {
     
     let fileContent = '';
     if (allFiles.length > 0) {
-      console.log(`[COMPARISON] Processing ${allFiles.length} files with legacy processing`);
-      fileContent = await processFiles(allFiles);
+      try {
+        console.log(`[COMPARISON] Processing ${allFiles.length} files with vision processing`);
+        fileContent = await processFilesWithVision(allFiles, 'comparison_analysis');
+      } catch (visionError) {
+        console.log(`[COMPARISON] Vision processing failed, falling back to legacy: ${visionError.message}`);
+        fileContent = await processFiles(allFiles);
+      }
     }
     
     // Build final prompt with file content
@@ -1102,18 +1107,26 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
     // Get the appropriate prompt using PromptManager
     let fullPrompt = promptManager.buildFullPrompt(reportType, inputText, files, additionalInfo);
   
-    // Process files with enhanced capabilities (temporarily disabled for debugging)
+    // Process files with enhanced multimodal capabilities
     let fileContent = '';
     if (files && files.length > 0) {
       try {
-        console.log(`[OPENAI] Processing ${files.length} files with legacy processing`);
-        fileContent = await processFiles(files);
+        console.log(`[OPENAI] Processing ${files.length} files with vision processing`);
+        fileContent = await processFilesWithVision(files, reportType);
         // Add file content to the prompt
         fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
         console.log(`[OPENAI] File processing completed, content length: ${fileContent.length} chars`);
       } catch (fileError) {
         console.error('[OPENAI] File processing error:', fileError);
-        throw new Error(`file processing failed: ${fileError.message}`);
+        // Fallback to legacy processing
+        console.log('[OPENAI] Falling back to legacy file processing');
+        try {
+          fileContent = await processFiles(files);
+          fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
+        } catch (legacyError) {
+          console.error('[OPENAI] Legacy file processing also failed:', legacyError);
+          throw new Error(`file processing failed: ${fileError.message}`);
+        }
       }
     }
 
@@ -1363,33 +1376,55 @@ async function processFilesWithVision(files, reportType) {
   
   for (const file of files) {
     try {
+      console.log(`[VISION] Processing file: ${file.name} (${file.type})`);
+      
       // Validate file structure
       if (!file.name || !file.type || !file.data) {
         throw new Error(`Invalid file structure for file: ${file.name || 'unknown'}`);
       }
 
-      // Validate base64 data
-      if (typeof file.data !== 'string' || !file.data.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
-        throw new Error(`Invalid base64 data for file: ${file.name}`);
+      // Validate base64 data with improved error handling
+      if (typeof file.data !== 'string') {
+        throw new Error(`Invalid data type for file: ${file.name} (expected string, got ${typeof file.data})`);
+      }
+
+      if (!file.data || file.data.length < 10) {
+        throw new Error(`Invalid or empty base64 data for file: ${file.name}`);
       }
 
       const fileSizeKB = Math.round(file.data.length * 0.75 / 1024);
-      console.log(`[VISION] Processing ${file.name} (${file.type}, ${fileSizeKB}KB)`);
+      console.log(`[VISION] File details: ${file.name} (${file.type}, ${fileSizeKB}KB)`);
 
       if (fileSizeKB > 10240) { // 10MB limit
+        console.log(`[VISION] File too large for vision processing: ${file.name} (${fileSizeKB}KB)`);
         throw new Error(`File too large: ${file.name} (${fileSizeKB}KB)`);
       }
 
-      // Process with appropriate vision model based on file type
+      // Check if file type is supported for vision processing
+      const visionSupportedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      const textSupportedTypes = ['text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      const isVisionSupported = visionSupportedTypes.includes(file.type);
+      const isTextSupported = textSupportedTypes.includes(file.type);
+
+      // Process with appropriate method based on file type
       let visionResult;
-      if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+      if (isVisionSupported) {
+        console.log(`[VISION] Using vision analysis for ${file.name}`);
         visionResult = await analyzeFileWithVision(file, reportType);
         visionResults.push(visionResult);
         processedFiles.push(file.name);
-      } else {
-        // Fallback to text processing for other file types
+      } else if (isTextSupported) {
+        console.log(`[VISION] Using text processing for ${file.name} (${file.type})`);
         visionResult = await processTextFile(file);
         visionResults.push(visionResult);
+        processedFiles.push(file.name);
+      } else {
+        console.log(`[VISION] Unsupported file type for ${file.name} (${file.type}), using fallback`);
+        visionResult = await processTextFallback(file);
+        visionResults.push({
+          fileName: file.name,
+          content: visionResult
+        });
         processedFiles.push(file.name);
       }
       
@@ -1451,6 +1486,8 @@ async function analyzeWithGeminiVision(file, reportType) {
     throw new Error('Gemini model not available');
   }
 
+  console.log(`[GEMINI VISION] Analyzing ${file.name} (${file.type})`);
+  
   const analysisPrompt = getVisionAnalysisPrompt(reportType, file.type);
   
   const parts = [
@@ -1459,6 +1496,7 @@ async function analyzeWithGeminiVision(file, reportType) {
 
   // Add file data based on type
   if (file.type === 'application/pdf') {
+    console.log(`[GEMINI VISION] Adding PDF file to analysis`);
     parts.push({
       inlineData: {
         mimeType: file.type,
@@ -1466,17 +1504,28 @@ async function analyzeWithGeminiVision(file, reportType) {
       }
     });
   } else if (file.type.startsWith('image/')) {
+    console.log(`[GEMINI VISION] Adding image file to analysis`);
     parts.push({
       inlineData: {
         mimeType: file.type,
         data: file.data
       }
     });
+  } else {
+    throw new Error(`Unsupported file type for vision analysis: ${file.type}`);
   }
 
-  const result = await geminiModel.generateContent(parts);
-  const response = await result.response;
-  return response.text();
+  try {
+    console.log(`[GEMINI VISION] Sending request to Gemini API`);
+    const result = await geminiModel.generateContent(parts);
+    const response = await result.response;
+    const text = response.text();
+    console.log(`[GEMINI VISION] Successfully analyzed ${file.name}, response length: ${text.length}`);
+    return text;
+  } catch (error) {
+    console.error(`[GEMINI VISION] API error for ${file.name}:`, error);
+    throw new Error(`Gemini vision analysis failed: ${error.message}`);
+  }
 }
 
 // Analyze with GPT-4V (supports images)
@@ -1484,6 +1533,8 @@ async function analyzeWithGPT4Vision(file, reportType) {
   if (!openai) {
     throw new Error('OpenAI client not available');
   }
+
+  console.log(`[GPT-4V] Analyzing ${file.name} (${file.type})`);
 
   // GPT-4V only supports images directly, not PDFs
   if (file.type === 'application/pdf') {
@@ -1496,8 +1547,10 @@ async function analyzeWithGPT4Vision(file, reportType) {
 
   const analysisPrompt = getVisionAnalysisPrompt(reportType, file.type);
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4-vision-preview",
+  try {
+    console.log(`[GPT-4V] Sending request to OpenAI API`);
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4-vision-preview",
     messages: [
       {
         role: "user",
@@ -1516,11 +1569,17 @@ async function analyzeWithGPT4Vision(file, reportType) {
         ]
       }
     ],
-    max_tokens: 2000,
-    temperature: 0.3
-  });
+      max_tokens: 2000,
+      temperature: 0.3
+    });
 
-  return completion.choices[0].message.content;
+    const content = completion.choices[0].message.content;
+    console.log(`[GPT-4V] Successfully analyzed ${file.name}, response length: ${content.length}`);
+    return content;
+  } catch (error) {
+    console.error(`[GPT-4V] API error for ${file.name}:`, error);
+    throw new Error(`GPT-4V analysis failed: ${error.message}`);
+  }
 }
 
 // Get vision analysis prompt based on report type

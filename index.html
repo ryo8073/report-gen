@@ -6,7 +6,7 @@
     <title>クライアント向けレポート生成</title>
     <link rel="stylesheet" href="/styles.css">
     <script src="/lib/frontend-error-handler.js"></script>
-    <script src="/enhanced-report-display.js"></script>
+
     <script>
         // Ensure errorHandler is available
         if (typeof window.errorHandler === 'undefined') {
@@ -238,8 +238,9 @@
                             <h4 style="font-size: var(--font-size-md); font-weight: 600; margin-bottom: var(--space-3); color: var(--color-gray-700);">物件A</h4>
                             
                             <div style="margin-bottom: var(--space-3);">
-                                <label for="propertyAFiles" class="form-label" style="font-size: var(--font-size-sm);">ファイル添付</label>
-                                <input type="file" id="propertyAFiles" multiple accept=".pdf,.png,.jpg,.jpeg" class="input-field" style="padding: var(--space-2);">
+                                <label for="propertyAFiles" class="form-label" style="font-size: var(--font-size-sm);">📎 ファイル添付</label>
+                                <input type="file" id="propertyAFiles" multiple accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.xlsx,.xls,.csv,.txt,.docx,.doc" class="input-field" style="padding: var(--space-2);">
+                                <p style="font-size: 11px; color: #6b7280; margin-top: 4px;">PDF・画像・Excel・CSV・Word・テキスト (最大4.5MB)</p>
                             </div>
                             
                             <div>
@@ -252,8 +253,9 @@
                             <h4 style="font-size: var(--font-size-md); font-weight: 600; margin-bottom: var(--space-3); color: var(--color-gray-700);">物件B</h4>
                             
                             <div style="margin-bottom: var(--space-3);">
-                                <label for="propertyBFiles" class="form-label" style="font-size: var(--font-size-sm);">ファイル添付</label>
-                                <input type="file" id="propertyBFiles" multiple accept=".pdf,.png,.jpg,.jpeg" class="input-field" style="padding: var(--space-2);">
+                                <label for="propertyBFiles" class="form-label" style="font-size: var(--font-size-sm);">📎 ファイル添付</label>
+                                <input type="file" id="propertyBFiles" multiple accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.xlsx,.xls,.csv,.txt,.docx,.doc" class="input-field" style="padding: var(--space-2);">
+                                <p style="font-size: 11px; color: #6b7280; margin-top: 4px;">PDF・画像・Excel・CSV・Word・テキスト (最大4.5MB)</p>
                             </div>
                             
                             <div>
@@ -293,19 +295,29 @@
                 <!-- File Upload -->
                 <div class="form-group">
                     <label for="fileInput" class="form-label">
-                        ファイル添付（PDF・画像）
+                        📎 ファイル添付
                     </label>
                     <div class="file-upload" id="fileDropZone">
-                        <input type="file" id="fileInput" multiple accept=".pdf,.png,.jpg,.jpeg" class="hidden">
+                        <input type="file" id="fileInput" multiple accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.xlsx,.xls,.csv,.txt,.docx,.doc" class="hidden">
                         <div class="file-upload-content">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                            <p class="mt-2 text-sm text-gray-600">
+                            <div style="display: flex; justify-content: center; margin-bottom: 12px;">
+                                <div style="display: flex; gap: 8px; font-size: 24px;">
+                                    📄 🖼️ 📊 📝
+                                </div>
+                            </div>
+                            <p style="margin: 8px 0; font-size: 14px; color: #374151; font-weight: 500;">
                                 ファイルをドラッグ&ドロップまたは
-                                <span class="text-blue-600 hover:text-blue-500 cursor-pointer" onclick="document.getElementById('fileInput').click()">クリックして選択</span>
+                                <span style="color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="document.getElementById('fileInput').click()">クリックして選択</span>
                             </p>
-                            <p class="text-xs text-gray-500 mt-1">PDF, PNG, JPG (最大4.5MB)</p>
+                            <div style="margin-top: 12px; padding: 8px; background: #f3f4f6; border-radius: 6px;">
+                                <p style="font-size: 12px; color: #6b7280; margin: 0; line-height: 1.4;">
+                                    <strong>対応ファイル:</strong><br>
+                                    📄 PDF・Word・テキスト<br>
+                                    🖼️ PNG・JPG・GIF・WebP<br>
+                                    📊 Excel・CSV<br>
+                                    <span style="color: #ef4444;">最大4.5MB</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
                     <div id="fileList" class="file-list"></div>
@@ -437,116 +449,30 @@
                 <h2 class="results-title">生成されたレポート</h2>
                 <div class="results-actions">
                     <button id="copyBtn" class="btn btn-secondary">
-                        コピー
+                        📋 コピー
                     </button>
                     <button id="downloadBtn" class="btn btn-secondary">
-                        .md ダウンロード
-                    </button>
-                    <button id="downloadPdfBtn" class="btn btn-secondary">
-                        PDF ダウンロード
-                    </button>
-                    <button id="printBtn" class="btn btn-secondary">
-                        印刷
-                    </button>
-                    <button id="formatBtn" class="btn btn-secondary" onclick="formatMarkdown()">
-                        整形
-                    </button>
-                    <button id="wordCountBtn" class="btn btn-secondary" onclick="showWordCount()">
-                        文字数
-                    </button>
-                    <button id="formatToolsBtn" class="btn btn-secondary" onclick="toggleFormatTools()">
-                        書式設定
-                    </button>
-                    <button id="exportGoogleDocsBtn" class="btn btn-secondary" onclick="exportToGoogleDocs()">
-                        Google Docs
+                        📄 ダウンロード
                     </button>
                 </div>
             </div>
             
-            <!-- Enhanced Report Display with Tabs -->
+            <!-- Simple Report Display -->
             <div class="report-display-container">
-                <!-- Tab Navigation -->
-                <div class="report-tabs">
-                    <button id="editTab" class="tab-button active" onclick="switchTab('edit')">
-                        編集
-                    </button>
-                    <button id="previewTab" class="tab-button" onclick="switchTab('preview')">
-                        プレビュー
-                    </button>
-                    <button id="splitTab" class="tab-button" onclick="switchTab('split')">
-                        分割表示
-                    </button>
-                </div>
-                
-                <!-- Word Count Display -->
-                <div id="wordCountDisplay" class="word-count-display hidden">
-                    <div class="word-count-stats">
-                        <span id="charCount">0文字</span>
-                        <span id="wordCount">0語</span>
-                        <span id="lineCount">0行</span>
-                    </div>
-                </div>
-
-                <!-- Format Tools Toolbar -->
-                <div id="formatToolsBar" class="format-tools-bar hidden">
-                    <div class="format-tools-section">
-                        <label>フォントサイズ:</label>
-                        <select id="fontSizeSelect" onchange="applyFontSize()">
-                            <option value="12px">小 (12px)</option>
-                            <option value="14px" selected>標準 (14px)</option>
-                            <option value="16px">大 (16px)</option>
-                            <option value="18px">特大 (18px)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="format-tools-section">
-                        <label>行間:</label>
-                        <select id="lineHeightSelect" onchange="applyLineHeight()">
-                            <option value="1.2">狭い (1.2)</option>
-                            <option value="1.5">標準 (1.5)</option>
-                            <option value="1.8" selected>広い (1.8)</option>
-                            <option value="2.0">特広 (2.0)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="format-tools-section">
-                        <label>テーマ:</label>
-                        <select id="themeSelect" onchange="applyTheme()">
-                            <option value="default" selected>デフォルト</option>
-                            <option value="dark">ダーク</option>
-                            <option value="sepia">セピア</option>
-                            <option value="high-contrast">ハイコントラスト</option>
-                        </select>
-                    </div>
-                    
-                    <div class="format-tools-section">
-                        <button class="format-btn" onclick="applyBold()" title="太字">
-                            <strong>B</strong>
-                        </button>
-                        <button class="format-btn" onclick="applyItalic()" title="斜体">
-                            <em>I</em>
-                        </button>
-                        <button class="format-btn" onclick="applyHighlight()" title="ハイライト">
-                            <span style="background: yellow;">H</span>
-                        </button>
-                        <button class="format-btn" onclick="resetFormat()" title="書式リセット">
-                            リセット
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Edit View -->
-                <div id="editView" class="report-view active">
-                    <div 
-                        id="reportContent" 
-                        class="report-editor"
-                        contenteditable="true"
-                        placeholder="レポート内容がここに表示されます..."
-                        onkeyup="updateWordCount()"
-                        onpaste="handlePaste(event)"
-                    ></div>
+                <div class="report-content">
                     <textarea 
-                        id="reportContentMarkdown" 
+                        id="reportContent" 
+                        class="report-textarea"
+                        placeholder="レポート内容がここに表示されます..."
+                        readonly
+                        style="width: 100%; min-height: 400px; padding: 16px; border: 1px solid #d1d5db; border-radius: 8px; font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif; font-size: 14px; line-height: 1.6; resize: vertical;"
+                    ></textarea>
+                </div>
+            </div>
+            
+            <!-- Legacy preview for backward compatibility -->
+            <div id="preview" class="results-preview prose hidden">
+                <!-- Preview content will be inserted here --> 
                         class="report-textarea hidden"
                         placeholder="レポート内容がここに表示されます..."
                     ></textarea>
