@@ -88,10 +88,11 @@
                     </label>
                     <select id="reportType" name="reportType" class="input-field" required>
                         <option value="">レポート種別を選択してください</option>
-                        <option value="jp_investment_4part">投資分析（4部構成）</option>
-                        <option value="jp_tax_strategy">税務戦略（減価償却）</option>
-                        <option value="jp_inheritance_strategy">相続対策戦略</option>
-                        <option value="custom">カスタムプロンプト</option>
+                        <option value="jp_investment_4part">投資分析レポート（4部構成）</option>
+                        <option value="jp_tax_strategy">税務戦略レポート（減価償却活用）</option>
+                        <option value="jp_inheritance_strategy">相続対策戦略レポート</option>
+                        <option value="comparison_analysis">比較分析レポート</option>
+                        <option value="custom">カスタムレポート</option>
                     </select>
                 </div>
 
@@ -223,6 +224,55 @@
                     <div>
                         <label for="inheritanceGoal" class="form-label">相続対策の目標</label>
                         <textarea id="inheritanceGoal" name="inheritanceGoal" rows="2" class="input-field" placeholder="例：相続税を50%削減し、円滑な資産承継を実現したい"></textarea>
+                    </div>
+                </div>
+
+                <!-- Comparison Analysis Section (shown when comparison_analysis is selected) -->
+                <div id="comparisonSection" class="form-group" style="display: none;">
+                    <h3 style="font-size: var(--font-size-lg); font-weight: 600; margin-bottom: var(--space-4); color: var(--color-gray-800);">
+                        比較分析設定
+                    </h3>
+                    
+                    <div class="comparison-uploads" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); margin-bottom: var(--space-6);">
+                        <div class="property-upload">
+                            <h4 style="font-size: var(--font-size-md); font-weight: 600; margin-bottom: var(--space-3); color: var(--color-gray-700);">物件A</h4>
+                            
+                            <div style="margin-bottom: var(--space-3);">
+                                <label for="propertyAFiles" class="form-label" style="font-size: var(--font-size-sm);">ファイル添付</label>
+                                <input type="file" id="propertyAFiles" multiple accept=".pdf,.png,.jpg,.jpeg" class="input-field" style="padding: var(--space-2);">
+                            </div>
+                            
+                            <div>
+                                <label for="propertyAText" class="form-label" style="font-size: var(--font-size-sm);">物件情報</label>
+                                <textarea id="propertyAText" rows="4" class="input-field" placeholder="物件Aの詳細情報を入力してください..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="property-upload">
+                            <h4 style="font-size: var(--font-size-md); font-weight: 600; margin-bottom: var(--space-3); color: var(--color-gray-700);">物件B</h4>
+                            
+                            <div style="margin-bottom: var(--space-3);">
+                                <label for="propertyBFiles" class="form-label" style="font-size: var(--font-size-sm);">ファイル添付</label>
+                                <input type="file" id="propertyBFiles" multiple accept=".pdf,.png,.jpg,.jpeg" class="input-field" style="padding: var(--space-2);">
+                            </div>
+                            
+                            <div>
+                                <label for="propertyBText" class="form-label" style="font-size: var(--font-size-sm);">物件情報</label>
+                                <textarea id="propertyBText" rows="4" class="input-field" placeholder="物件Bの詳細情報を入力してください..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison-criteria" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                        <div>
+                            <label for="comparisonCriteria" class="form-label">比較項目</label>
+                            <textarea id="comparisonCriteria" rows="3" class="input-field" placeholder="比較したい項目を指定してください（例：収益性、立地、リスク等）..."></textarea>
+                        </div>
+                        
+                        <div>
+                            <label for="resultFormat" class="form-label">結果表示形式</label>
+                            <textarea id="resultFormat" rows="3" class="input-field" placeholder="結果をどのように表示したいかを指定してください（例：表形式、グラフ、推奨順位等）..."></textarea>
+                        </div>
                     </div>
                 </div>
 
@@ -1063,25 +1113,102 @@
             const customPromptGroup = document.getElementById('customPromptGroup');
             const taxStrategyGroup = document.getElementById('taxStrategyGroup');
             const inheritanceStrategyGroup = document.getElementById('inheritanceStrategyGroup');
+            const comparisonSection = document.getElementById('comparisonSection');
+            const standardUpload = document.getElementById('inputText').closest('.form-group');
+            const fileUploadSection = document.getElementById('fileInput').closest('.form-group');
             
             // Hide all additional info groups
             customPromptGroup.style.display = 'none';
             taxStrategyGroup.style.display = 'none';
             inheritanceStrategyGroup.style.display = 'none';
+            comparisonSection.style.display = 'none';
             
             // Reset required fields
             document.getElementById('customPrompt').required = false;
             
-            // Show relevant group based on selection
-            if (this.value === 'custom') {
-                customPromptGroup.style.display = 'block';
-                document.getElementById('customPrompt').required = true;
-            } else if (this.value === 'jp_tax_strategy') {
-                taxStrategyGroup.style.display = 'block';
-            } else if (this.value === 'jp_inheritance_strategy') {
-                inheritanceStrategyGroup.style.display = 'block';
+            // Show/hide standard upload sections based on report type
+            if (this.value === 'comparison_analysis') {
+                // Hide standard upload sections for comparison analysis
+                standardUpload.style.display = 'none';
+                fileUploadSection.style.display = 'none';
+                comparisonSection.style.display = 'block';
+            } else {
+                // Show standard upload sections for other report types
+                standardUpload.style.display = 'block';
+                fileUploadSection.style.display = 'block';
+                
+                // Show relevant group based on selection
+                if (this.value === 'custom') {
+                    customPromptGroup.style.display = 'block';
+                    document.getElementById('customPrompt').required = true;
+                } else if (this.value === 'jp_tax_strategy') {
+                    taxStrategyGroup.style.display = 'block';
+                } else if (this.value === 'jp_inheritance_strategy') {
+                    inheritanceStrategyGroup.style.display = 'block';
+                }
             }
+            
+            // Update form validation based on report type
+            updateFormValidation(this.value);
         });
+
+        // Form validation function
+        function updateFormValidation(reportType) {
+            // Reset all validation states
+            const inputText = document.getElementById('inputText');
+            const propertyAText = document.getElementById('propertyAText');
+            const propertyBText = document.getElementById('propertyBText');
+            
+            // Remove any existing validation attributes
+            inputText.removeAttribute('required');
+            if (propertyAText) propertyAText.removeAttribute('required');
+            if (propertyBText) propertyBText.removeAttribute('required');
+            
+            if (reportType === 'comparison_analysis') {
+                // For comparison analysis, at least one property must have data
+                // We'll handle this in the form submission validation
+            } else if (reportType === 'custom') {
+                // Custom reports require custom prompt
+                document.getElementById('customPrompt').required = true;
+            } else {
+                // Standard reports require input text or files
+                // We'll handle this in the form submission validation
+            }
+        }
+
+        function validateComparisonForm() {
+            const propertyAText = document.getElementById('propertyAText').value.trim();
+            const propertyBText = document.getElementById('propertyBText').value.trim();
+            const propertyAFiles = document.getElementById('propertyAFiles').files.length;
+            const propertyBFiles = document.getElementById('propertyBFiles').files.length;
+            
+            const hasPropertyAData = propertyAText || propertyAFiles > 0;
+            const hasPropertyBData = propertyBText || propertyBFiles > 0;
+            
+            if (!hasPropertyAData) {
+                showError('物件Aの情報（テキストまたはファイル）を入力してください');
+                return false;
+            }
+            
+            if (!hasPropertyBData) {
+                showError('物件Bの情報（テキストまたはファイル）を入力してください');
+                return false;
+            }
+            
+            return true;
+        }
+
+        function validateStandardForm() {
+            const inputText = document.getElementById('inputText').value.trim();
+            const hasFiles = selectedFiles.length > 0;
+            
+            if (!inputText && !hasFiles) {
+                showError('テキストまたはファイルを入力してください');
+                return false;
+            }
+            
+            return true;
+        }
 
         // File handling
         const fileInput = document.getElementById('fileInput');
@@ -1172,6 +1299,110 @@
             });
         }
 
+        // Comparison analysis file handling
+        const propertyAFiles = [];
+        const propertyBFiles = [];
+
+        // Property A file handling
+        document.getElementById('propertyAFiles').addEventListener('change', (e) => {
+            handleComparisonFiles(e.target.files, 'A');
+        });
+
+        // Property B file handling
+        document.getElementById('propertyBFiles').addEventListener('change', (e) => {
+            handleComparisonFiles(e.target.files, 'B');
+        });
+
+        function handleComparisonFiles(files, property) {
+            const fileArray = property === 'A' ? propertyAFiles : propertyBFiles;
+            
+            Array.from(files).forEach(file => {
+                if (validateFile(file)) {
+                    fileArray.push(file);
+                    displayComparisonFile(file, property);
+                }
+            });
+        }
+
+        function displayComparisonFile(file, property) {
+            const fileInput = document.getElementById(`property${property}Files`);
+            const container = fileInput.parentElement;
+            
+            // Create or get file list container
+            let fileListContainer = container.querySelector('.comparison-file-list');
+            if (!fileListContainer) {
+                fileListContainer = document.createElement('div');
+                fileListContainer.className = 'comparison-file-list';
+                fileListContainer.style.cssText = 'margin-top: var(--space-2);';
+                container.appendChild(fileListContainer);
+            }
+            
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.style.cssText = `
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: var(--space-2);
+                background: var(--color-gray-50);
+                border: 1px solid var(--color-gray-200);
+                border-radius: 4px;
+                margin-bottom: var(--space-1);
+                font-size: var(--font-size-sm);
+            `;
+            
+            fileItem.innerHTML = `
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20" style="color: var(--color-gray-500);">
+                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>${file.name}</span>
+                    <span style="color: var(--color-gray-500);">(${(file.size / 1024 / 1024).toFixed(1)}MB)</span>
+                </div>
+                <button onclick="removeComparisonFile('${file.name}', '${property}')" style="
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    color: var(--color-gray-500);
+                    padding: 2px;
+                    border-radius: 2px;
+                " onmouseover="this.style.color='var(--color-red-600)'" onmouseout="this.style.color='var(--color-gray-500)'">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            `;
+            
+            fileListContainer.appendChild(fileItem);
+        }
+
+        function removeComparisonFile(fileName, property) {
+            const fileArray = property === 'A' ? propertyAFiles : propertyBFiles;
+            const index = fileArray.findIndex(f => f.name === fileName);
+            
+            if (index > -1) {
+                fileArray.splice(index, 1);
+            }
+            
+            // Remove from display
+            const container = document.getElementById(`property${property}Files`).parentElement;
+            const fileListContainer = container.querySelector('.comparison-file-list');
+            
+            if (fileListContainer) {
+                const fileItems = fileListContainer.querySelectorAll('.file-item');
+                fileItems.forEach(item => {
+                    if (item.textContent.includes(fileName)) {
+                        item.remove();
+                    }
+                });
+                
+                // Remove container if empty
+                if (fileListContainer.children.length === 0) {
+                    fileListContainer.remove();
+                }
+            }
+        }
+
         // Form submission
         document.getElementById('reportForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1248,31 +1479,82 @@ ${inputText || ''}`;
                 return;
             }
 
-            if (!finalInputText.trim() && selectedFiles.length === 0) {
-                showError('テキストまたはファイルを入力してください');
-                return;
-            }
-
-            // Prepare files for upload
-            const files = [];
-            for (const file of selectedFiles) {
-                const base64 = await fileToBase64(file);
-                files.push({
-                    name: file.name,
-                    type: file.type,
-                    data: base64  // APIが期待するフィールド名に変更
-                });
-            }
-
-            const requestData = {
-                reportType,
-                inputText: finalInputText,
-                files,
-                additionalInfo,
-                options: {
-                    language
+            // Validate based on report type
+            if (reportType === 'comparison_analysis') {
+                if (!validateComparisonForm()) {
+                    return;
                 }
-            };
+            } else {
+                if (!validateStandardForm()) {
+                    return;
+                }
+            }
+
+            // Prepare request data based on report type
+            let requestData;
+            
+            if (reportType === 'comparison_analysis') {
+                // Prepare files for Property A
+                const propertyAFilesData = [];
+                for (const file of propertyAFiles) {
+                    const base64 = await fileToBase64(file);
+                    propertyAFilesData.push({
+                        name: file.name,
+                        type: file.type,
+                        data: base64
+                    });
+                }
+                
+                // Prepare files for Property B
+                const propertyBFilesData = [];
+                for (const file of propertyBFiles) {
+                    const base64 = await fileToBase64(file);
+                    propertyBFilesData.push({
+                        name: file.name,
+                        type: file.type,
+                        data: base64
+                    });
+                }
+                
+                requestData = {
+                    reportType,
+                    propertyA: {
+                        inputText: document.getElementById('propertyAText').value,
+                        files: propertyAFilesData
+                    },
+                    propertyB: {
+                        inputText: document.getElementById('propertyBText').value,
+                        files: propertyBFilesData
+                    },
+                    comparisonCriteria: document.getElementById('comparisonCriteria').value || '収益性、リスク、立地を中心とした総合比較',
+                    resultFormat: document.getElementById('resultFormat').value || '表形式での比較と推奨順位',
+                    additionalInfo,
+                    options: {
+                        language
+                    }
+                };
+            } else {
+                // Prepare files for standard reports
+                const files = [];
+                for (const file of selectedFiles) {
+                    const base64 = await fileToBase64(file);
+                    files.push({
+                        name: file.name,
+                        type: file.type,
+                        data: base64
+                    });
+                }
+                
+                requestData = {
+                    reportType,
+                    inputText: finalInputText,
+                    files,
+                    additionalInfo,
+                    options: {
+                        language
+                    }
+                };
+            }
 
             const submitBtn = document.querySelector('button[type="submit"]');
             

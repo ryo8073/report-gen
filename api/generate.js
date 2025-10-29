@@ -2,6 +2,8 @@
 import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import trialAnalytics from '../lib/trial-analytics.js';
+import fs from 'fs/promises';
+import path from 'path';
 
 // Initialize OpenAI client
 let openai;
@@ -55,6 +57,288 @@ try {
   }
 } catch (error) {
   console.error('Failed to initialize Gemini client:', error);
+}
+
+// Initialize PromptManager
+const promptManager = new PromptManager();
+
+// Comparison Analysis Handler
+async function handleComparisonAnalysis(req, res) {
+  const startTime = Date.now();
+  let sessionId = `comparison_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+  
+  try {
+    const { propertyA, propertyB, comparisonCriteria, resultFormat, additionalInfo } = req.body;
+    
+    console.log('[COMPARISON] Starting comparison analysis validation');
+    
+    // Enhanced validation for comparison analysis
+    const validationError = validateComparisonRequest(req.body);
+    if (validationError) {
+      console.log('[COMPARISON] Validation failed:', validationError.message);
+      
+      // Track validation error
+      await trialAnalytics.trackReportGeneration({
+        reportType: 'comparison_analysis',
+        success: false,
+        processingTime: Date.now() - startTime,
+        hasFiles: false,
+        fileCount: 0,
+        inputLength: 0,
+        errorType: validationError.type,
+        errorMessage: validationError.message,
+        sessionId,
+        userAgent: req.headers['user-agent']
+      });
+      
+      return res.status(400).json({
+        success: false,
+        error: validationError
+      });
+    }
+    
+    console.log('[COMPARISON] Validation passed, processing comparison data');
+    
+    // Process property data
+    const propertyAContent = await processPropertyData(propertyA);
+    const propertyBContent = await processPropertyData(propertyB);
+    
+    // Build comparison data structure
+    const comparisonData = {
+      propertyA: {
+        inputText: propertyAContent.text,
+        files: propertyA.files
+      },
+      propertyB: {
+        inputText: propertyBContent.text,
+        files: propertyB.files
+      },
+      comparisonCriteria: comparisonCriteria || '収益性、リスク、立地を中心とした総合比較',
+      resultFormat: resultFormat || '表形式での比較と推奨順位'
+    };
+    
+    // Build comparison prompt
+    const comparisonPrompt = promptManager.buildFullPrompt(
+      'comparison_analysis',
+      null, // No single input text for comparison
+      null, // Files handled separately
+      additionalInfo,
+      comparisonData
+    );
+    
+    // Combine all file content for processing
+    const allFiles = [];
+    if (propertyA.files) allFiles.push(...propertyA.files);
+    if (propertyB.files) allFiles.push(...propertyB.files);
+    
+    let fileContent = '';
+    if (allFiles.length > 0) {
+      fileContent = await processFiles(allFiles);
+    }
+    
+    // Build final prompt with file content
+    let finalPrompt = comparisonPrompt;
+    if (fileContent) {
+      finalPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
+    }
+    
+    // Generate report using existing AI services
+    const report = await generateComparisonReport({
+      prompt: finalPrompt,
+      additionalInfo,
+      sessionId
+    });
+    
+    // Track successful comparison analysis
+    const analyticsData = {
+      reportType: 'comparison_analysis',
+      success: true,
+      processingTime: Date.now() - startTime,
+      hasFiles: allFiles.length > 0,
+      fileCount: allFiles.length,
+      inputLength: (propertyAContent.text?.length || 0) + (propertyBContent.text?.length || 0),
+      sessionId,
+      userAgent: req.headers['user-agent'],
+      promptTokens: report.usage?.promptTokens || 0,
+      completionTokens: report.usage?.completionTokens || 0,
+      totalTokens: report.usage?.totalTokens || 0,
+      estimatedCost: parseFloat(report.usage?.estimatedCost || 0),
+      aiService: report.aiService || 'openai',
+      serviceHealth: getServiceHealthMetrics()
+    };
+    
+    await trialAnalytics.trackReportGeneration(analyticsData);
+    
+    return res.status(200).json({
+      success: true,
+      report: {
+        ...report,
+        metadata: {
+          isComparison: true,
+          propertiesCompared: 2,
+          comparisonCriteria: comparisonData.comparisonCriteria,
+          resultFormat: comparisonData.resultFormat
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Comparison analysis error:', error);
+    
+    // Track error in analytics
+    const errorAnalyticsData = {
+      reportType: 'comparison_analysis',
+      success: false,
+      processingTime: Date.now() - startTime,
+      errorType: 'comparison_error',
+      errorMessage: error.message,
+      sessionId,
+      userAgent: req.headers['user-agent'],
+      serviceHealth: getServiceHealthMetrics()
+    };
+    
+    await trialAnalytics.trackReportGeneration(errorAnalyticsData);
+    
+    const errorResponse = handleApiError(error);
+    return res.status(errorResponse.statusCode).json({
+      success: false,
+      error: errorResponse.error
+    });
+  }
+}
+
+// Helper function to process individual property data
+async function processPropertyData(propertyData) {
+  let text = propertyData.inputText || '';
+  
+  // If there are files, we'll let the main file processing handle them
+  // This function just prepares the text content
+  return {
+    text: text.trim(),
+    hasFiles: propertyData.files && propertyData.files.length > 0
+  };
+}
+
+// Generate comparison report using existing AI infrastructure
+async function generateComparisonReport({ prompt, additionalInfo, sessionId }) {
+  let aiService = 'openai';
+  let report;
+  
+  try {
+    // Try OpenAI first
+    report = await generateComparisonWithOpenAI({ prompt, additionalInfo });
+  } catch (openaiError) {
+    console.log('OpenAI failed for comparison, trying Gemini:', openaiError.message);
+    
+    if (shouldTryFallback(openaiError)) {
+      try {
+        // Fallback to Gemini
+        aiService = 'gemini';
+        report = await generateComparisonWithGemini({ prompt, additionalInfo });
+        console.log('Successfully generated comparison report using Gemini fallback');
+        
+        report.serviceNotification = {
+          message: 'Your comparison report was generated using our backup AI service to ensure uninterrupted service.',
+          type: 'info',
+          details: 'The primary service was temporarily unavailable, but report quality remains consistent.',
+          timestamp: new Date().toISOString()
+        };
+      } catch (geminiError) {
+        console.error('Both AI services failed for comparison:', { openaiError: openaiError.message, geminiError: geminiError.message });
+        throw createDualServiceFailureError(openaiError, geminiError);
+      }
+    } else {
+      throw openaiError;
+    }
+  }
+  
+  report.aiService = aiService;
+  return report;
+}
+
+// Generate comparison report with OpenAI
+async function generateComparisonWithOpenAI({ prompt, additionalInfo }) {
+  const startTime = Date.now();
+  
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: "あなたは経験豊富な不動産投資の専門家です。複数の物件を比較分析し、投資判断に必要な詳細で実践的な比較レポートを作成してください。"
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      max_tokens: 4000,
+      temperature: 0.7,
+    });
+
+    const content = completion.choices[0].message.content;
+    const responseTime = Date.now() - startTime;
+    
+    recordServiceSuccess('openai', responseTime);
+
+    return {
+      id: Date.now().toString(),
+      title: '比較分析レポート',
+      content: content,
+      createdAt: new Date().toISOString(),
+      usage: {
+        promptTokens: completion.usage.prompt_tokens,
+        completionTokens: completion.usage.completion_tokens,
+        totalTokens: completion.usage.total_tokens,
+        estimatedCost: `${(completion.usage.total_tokens * 0.00003).toFixed(4)}`
+      }
+    };
+    
+  } catch (error) {
+    recordServiceFailure('openai', error);
+    throw error;
+  }
+}
+
+// Generate comparison report with Gemini
+async function generateComparisonWithGemini({ prompt, additionalInfo }) {
+  const startTime = Date.now();
+  
+  try {
+    if (!geminiModel) {
+      throw new Error('Gemini API is not available');
+    }
+
+    const result = await geminiModel.generateContent(prompt);
+    const response = await result.response;
+    const content = response.text();
+
+    const estimatedPromptTokens = Math.ceil(prompt.length / 4);
+    const estimatedCompletionTokens = Math.ceil(content.length / 4);
+    const estimatedTotalTokens = estimatedPromptTokens + estimatedCompletionTokens;
+
+    const responseTime = Date.now() - startTime;
+    recordServiceSuccess('gemini', responseTime);
+
+    return {
+      id: Date.now().toString(),
+      title: '比較分析レポート',
+      content: content,
+      createdAt: new Date().toISOString(),
+      usage: {
+        promptTokens: estimatedPromptTokens,
+        completionTokens: estimatedCompletionTokens,
+        totalTokens: estimatedTotalTokens,
+        estimatedCost: `${(estimatedTotalTokens * 0.000015).toFixed(4)}`
+      },
+      aiService: 'gemini'
+    };
+    
+  } catch (error) {
+    recordServiceFailure('gemini', error);
+    throw error;
+  }
 }
 
 // Service health tracking
@@ -148,6 +432,219 @@ function getServiceHealthMetrics() {
 function logServiceHealthSummary() {
   const metrics = getServiceHealthMetrics();
   console.log('[HEALTH SUMMARY]', JSON.stringify(metrics, null, 2));
+}
+
+// PromptManager class for handling prompt templates
+class PromptManager {
+  constructor() {
+    this.prompts = new Map();
+    this.reportTypes = {
+      'jp_investment_4part': {
+        label: '投資分析レポート（4部構成）',
+        promptFile: 'jp_investment_4part.md',
+        description: 'Executive Summary, Benefits, Risks, Financial Analysis'
+      },
+      'jp_tax_strategy': {
+        label: '税務戦略レポート（減価償却活用）',
+        promptFile: 'jp_tax_strategy.md', 
+        description: '所得税・住民税の減税戦略分析'
+      },
+      'jp_inheritance_strategy': {
+        label: '相続対策戦略レポート',
+        promptFile: 'jp_inheritance_strategy.md',
+        description: '収益不動産活用による相続対策分析'
+      },
+      'comparison_analysis': {
+        label: '比較分析レポート',
+        promptFile: 'comparison_analysis.md',
+        description: '複数物件の比較分析'
+      },
+      'custom': {
+        label: 'カスタムレポート',
+        promptFile: 'jp_investment_4part.md', // Default to investment analysis
+        description: 'カスタム要件に基づく投資分析'
+      }
+    };
+    this.loadPrompts();
+  }
+  
+  async loadPrompts() {
+    const promptsDir = './PROMPTS';
+    
+    try {
+      // Get all .md files from PROMPTS folder
+      const files = await fs.readdir(promptsDir);
+      const promptFiles = files.filter(file => file.endsWith('.md'));
+      
+      console.log(`[PROMPT MANAGER] Loading ${promptFiles.length} prompt files from ${promptsDir}`);
+      
+      for (const file of promptFiles) {
+        try {
+          const filePath = path.join(promptsDir, file);
+          const content = await fs.readFile(filePath, 'utf8');
+          this.prompts.set(file, content);
+          console.log(`[PROMPT MANAGER] Loaded prompt: ${file}`);
+        } catch (error) {
+          console.error(`[PROMPT MANAGER] Failed to load prompt ${file}:`, error.message);
+        }
+      }
+      
+      console.log(`[PROMPT MANAGER] Successfully loaded ${this.prompts.size} prompts`);
+    } catch (error) {
+      console.error('[PROMPT MANAGER] Failed to read PROMPTS directory:', error.message);
+      // Load fallback prompts if directory read fails
+      this.loadFallbackPrompts();
+    }
+  }
+  
+  loadFallbackPrompts() {
+    console.log('[PROMPT MANAGER] Loading fallback prompts');
+    // Use the existing REPORT_PROMPTS as fallback
+    this.prompts.set('jp_investment_4part.md', REPORT_PROMPTS.jp_investment_4part);
+    this.prompts.set('jp_tax_strategy.md', REPORT_PROMPTS.jp_tax_strategy);
+    this.prompts.set('jp_inheritance_strategy.md', REPORT_PROMPTS.jp_inheritance_strategy);
+    this.prompts.set('custom.md', REPORT_PROMPTS.custom);
+  }
+  
+  getPrompt(reportType) {
+    const promptFile = this.reportTypes[reportType]?.promptFile || 'jp_investment_4part.md';
+    const prompt = this.prompts.get(promptFile);
+    
+    if (!prompt) {
+      console.error(`[PROMPT MANAGER] Prompt not found: ${promptFile}, falling back to default`);
+      const fallbackPrompt = this.prompts.get('jp_investment_4part.md') || REPORT_PROMPTS.jp_investment_4part;
+      return fallbackPrompt;
+    }
+    
+    console.log(`[PROMPT MANAGER] Using prompt: ${promptFile} for report type: ${reportType}`);
+    return prompt;
+  }
+  
+  buildFullPrompt(reportType, inputText, files, additionalInfo, comparisonData = null) {
+    console.log(`[PROMPT MANAGER] Building full prompt for report type: ${reportType}`);
+    
+    const basePrompt = this.getPrompt(reportType);
+    
+    if (reportType === 'comparison_analysis') {
+      return this.buildComparisonPrompt(basePrompt, comparisonData);
+    } else if (reportType === 'custom') {
+      return this.buildCustomPrompt(basePrompt, inputText, files, additionalInfo);
+    } else {
+      return this.buildStandardPrompt(basePrompt, inputText, files, additionalInfo);
+    }
+  }
+  
+  buildStandardPrompt(basePrompt, inputText, files, additionalInfo) {
+    let fullPrompt = basePrompt;
+    
+    // Add input data section
+    if (inputText && inputText.trim()) {
+      fullPrompt += `\n\n【入力データ】\n${inputText}`;
+    }
+    
+    // Add file content section (files will be processed separately)
+    if (files && files.length > 0) {
+      fullPrompt += `\n\n【添付ファイル】\n添付されたファイルの内容を分析に含めてください。`;
+    }
+    
+    // Add additional info section
+    if (additionalInfo && Object.keys(additionalInfo).length > 0) {
+      fullPrompt += `\n\n【追加情報】\n${JSON.stringify(additionalInfo, null, 2)}`;
+    }
+    
+    return fullPrompt;
+  }
+  
+  buildCustomPrompt(basePrompt, inputText, files, additionalInfo) {
+    console.log('[PROMPT MANAGER] Building custom prompt with jp_investment_4part base template');
+    
+    // Start with investment analysis framework as base (jp_investment_4part.md)
+    let customPrompt = basePrompt;
+    
+    // Add custom requirements integration instruction
+    customPrompt += `\n\n【カスタム分析指示】\n以下のカスタム要件を投資分析の4部構成フレームワークに統合して分析してください：\n`;
+    customPrompt += `1. 投資概要と現状分析 - カスタム要件を考慮した現状評価\n`;
+    customPrompt += `2. リスク評価と市場分析 - カスタム要件に関連するリスク要因\n`;
+    customPrompt += `3. 推奨投資戦略 - カスタム要件を満たす戦略提案\n`;
+    customPrompt += `4. 実行計画と注意事項 - カスタム要件実現のための具体的ステップ\n`;
+    
+    // Add custom requirements if provided in additionalInfo
+    if (additionalInfo && additionalInfo.customRequirements && additionalInfo.customRequirements.trim()) {
+      customPrompt += `\n\n【カスタム要件】\n${additionalInfo.customRequirements}`;
+      console.log('[PROMPT MANAGER] Custom requirements integrated into investment framework');
+    } else {
+      // If no custom requirements, use standard investment analysis
+      customPrompt += `\n\n【カスタム要件】\n標準的な投資分析を実施してください。特別な要件は指定されていません。`;
+      console.log('[PROMPT MANAGER] No custom requirements provided, using standard investment analysis');
+    }
+    
+    // Add input data
+    if (inputText && inputText.trim()) {
+      customPrompt += `\n\n【分析対象データ】\n${inputText}`;
+    }
+    
+    // Add file content section
+    if (files && files.length > 0) {
+      customPrompt += `\n\n【添付ファイル】\n添付されたファイルの内容を分析に含めてください。`;
+    }
+    
+    // Add other additional info (excluding customRequirements which is already handled)
+    if (additionalInfo) {
+      const otherInfo = { ...additionalInfo };
+      delete otherInfo.customRequirements; // Already handled above
+      
+      if (Object.keys(otherInfo).length > 0) {
+        customPrompt += `\n\n【その他の情報】\n${JSON.stringify(otherInfo, null, 2)}`;
+      }
+    }
+    
+    // Add final instruction to maintain 4-part structure
+    customPrompt += `\n\n【重要】上記のカスタム要件を考慮しながら、必ず投資分析の4部構成（投資概要、リスク評価、推奨戦略、実行計画）の形式でレポートを作成してください。`;
+    
+    return customPrompt;
+  }
+  
+  buildComparisonPrompt(basePrompt, comparisonData) {
+    if (!comparisonData || !comparisonData.propertyA || !comparisonData.propertyB) {
+      throw new Error('Comparison analysis requires both Property A and Property B data');
+    }
+    
+    let comparisonPrompt = basePrompt;
+    
+    // Add Property A data
+    comparisonPrompt += `\n\n【物件A】\n`;
+    if (comparisonData.propertyA.inputText) {
+      comparisonPrompt += comparisonData.propertyA.inputText;
+    }
+    if (comparisonData.propertyA.files && comparisonData.propertyA.files.length > 0) {
+      comparisonPrompt += `\n物件Aの添付ファイルを分析に含めてください。`;
+    }
+    
+    // Add Property B data
+    comparisonPrompt += `\n\n【物件B】\n`;
+    if (comparisonData.propertyB.inputText) {
+      comparisonPrompt += comparisonData.propertyB.inputText;
+    }
+    if (comparisonData.propertyB.files && comparisonData.propertyB.files.length > 0) {
+      comparisonPrompt += `\n物件Bの添付ファイルを分析に含めてください。`;
+    }
+    
+    // Add comparison criteria
+    if (comparisonData.comparisonCriteria) {
+      comparisonPrompt += `\n\n【比較項目】\n${comparisonData.comparisonCriteria}`;
+    } else {
+      comparisonPrompt += `\n\n【比較項目】\n収益性、リスク、立地を中心とした総合比較`;
+    }
+    
+    // Add result format
+    if (comparisonData.resultFormat) {
+      comparisonPrompt += `\n\n【求める結果表示形式】\n${comparisonData.resultFormat}`;
+    } else {
+      comparisonPrompt += `\n\n【求める結果表示形式】\n表形式での比較と推奨順位`;
+    }
+    
+    return comparisonPrompt;
+  }
 }
 
 // Validate API keys function
@@ -302,6 +799,14 @@ export default async (req, res) => {
 
     const { reportType, inputText, files, additionalInfo, options } = req.body;
 
+    // Handle comparison analysis requests
+    if (reportType === 'comparison_analysis') {
+      console.log('[ROUTER] Routing to comparison analysis handler');
+      return await handleComparisonAnalysis(req, res);
+    }
+
+    console.log(`[ROUTER] Processing standard report: ${reportType}`);
+
     // Generate session ID for analytics
     sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
 
@@ -450,34 +955,21 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
   const startTime = Date.now();
   
   try {
-    // Get the appropriate prompt
-    const basePrompt = REPORT_PROMPTS[reportType] || REPORT_PROMPTS.custom;
+    // Get the appropriate prompt using PromptManager
+    let fullPrompt = promptManager.buildFullPrompt(reportType, inputText, files, additionalInfo);
   
-  // Process files if any with error handling
-  let fileContent = '';
-  if (files && files.length > 0) {
-    try {
-      fileContent = await processFiles(files);
-    } catch (fileError) {
-      console.error('File processing error:', fileError);
-      throw new Error(`file processing failed: ${fileError.message}`);
+    // Process files if any with error handling
+    let fileContent = '';
+    if (files && files.length > 0) {
+      try {
+        fileContent = await processFiles(files);
+        // Add file content to the prompt
+        fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
+      } catch (fileError) {
+        console.error('File processing error:', fileError);
+        throw new Error(`file processing failed: ${fileError.message}`);
+      }
     }
-  }
-
-  // Build the full prompt
-  let fullPrompt = basePrompt;
-  
-  if (inputText) {
-    fullPrompt += `\n\n【入力データ】\n${inputText}`;
-  }
-  
-  if (fileContent) {
-    fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
-  }
-
-  if (additionalInfo && Object.keys(additionalInfo).length > 0) {
-    fullPrompt += `\n\n【追加情報】\n${JSON.stringify(additionalInfo, null, 2)}`;
-  }
 
   // Call OpenAI API
   const completion = await openai.chat.completions.create({
@@ -532,34 +1024,22 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
       throw new Error('Gemini API is not available');
     }
 
-  // Get the appropriate prompt adapted for Gemini
-  const basePrompt = formatPromptForGemini(reportType, inputText, files, additionalInfo);
-  
-  // Process files if any with error handling
-  let fileContent = '';
-  if (files && files.length > 0) {
-    try {
-      fileContent = await processFiles(files);
-    } catch (fileError) {
-      console.error('File processing error:', fileError);
-      throw new Error(`file processing failed: ${fileError.message}`);
+    // Get the appropriate prompt using PromptManager and adapt for Gemini
+    const basePrompt = promptManager.buildFullPrompt(reportType, inputText, files, additionalInfo);
+    let fullPrompt = formatPromptForGemini(reportType, basePrompt);
+    
+    // Process files if any with error handling
+    let fileContent = '';
+    if (files && files.length > 0) {
+      try {
+        fileContent = await processFiles(files);
+        // Add file content to the prompt
+        fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
+      } catch (fileError) {
+        console.error('File processing error:', fileError);
+        throw new Error(`file processing failed: ${fileError.message}`);
+      }
     }
-  }
-
-  // Build the full prompt for Gemini
-  let fullPrompt = basePrompt;
-  
-  if (inputText) {
-    fullPrompt += `\n\n【入力データ】\n${inputText}`;
-  }
-  
-  if (fileContent) {
-    fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
-  }
-
-  if (additionalInfo && Object.keys(additionalInfo).length > 0) {
-    fullPrompt += `\n\n【追加情報】\n${JSON.stringify(additionalInfo, null, 2)}`;
-  }
 
   // Call Gemini API
   const result = await geminiModel.generateContent(fullPrompt);
@@ -600,10 +1080,7 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
   }
 }
 
-function formatPromptForGemini(reportType, inputText, files, additionalInfo) {
-  // Get base prompt and adapt it for Gemini's format
-  const basePrompt = REPORT_PROMPTS[reportType] || REPORT_PROMPTS.custom;
-  
+function formatPromptForGemini(reportType, basePrompt) {
   // Gemini works better with role-based prompting
   const geminiPrompt = `あなたは経験豊富な投資・税務・相続の専門家です。クライアント向けに専門的で実践的なレポートを作成してください。
 
@@ -809,7 +1286,7 @@ function validateInput({ reportType, inputText, files, additionalInfo, options }
     };
   }
 
-  const validReportTypes = ['jp_investment_4part', 'jp_tax_strategy', 'jp_inheritance_strategy', 'custom'];
+  const validReportTypes = ['jp_investment_4part', 'jp_tax_strategy', 'jp_inheritance_strategy', 'custom', 'comparison_analysis'];
   if (!validReportTypes.includes(reportType)) {
     return {
       message: 'Invalid report type selected. Please choose a valid option.',
@@ -821,20 +1298,46 @@ function validateInput({ reportType, inputText, files, additionalInfo, options }
     };
   }
 
-  // Check input content
-  if (!inputText && (!files || files.length === 0)) {
-    return {
-      message: 'Please provide either text input or upload files to generate a report.',
-      type: 'validation_error',
-      severity: 'error',
-      shouldRetry: false,
-      userActions: [
-        'Enter text in the input field',
-        'Upload PDF or image files',
-        'Provide both text and files for comprehensive analysis'
-      ],
-      errorId: `validation_no_input_${Date.now()}`
-    };
+  // Special validation for custom reports
+  if (reportType === 'custom') {
+    console.log('[VALIDATION] Validating custom report request');
+    // Custom reports can work with just custom requirements, even without input text or files
+    const hasCustomRequirements = additionalInfo && additionalInfo.customRequirements && additionalInfo.customRequirements.trim();
+    const hasInputText = inputText && inputText.trim();
+    const hasFiles = files && files.length > 0;
+    
+    if (!hasCustomRequirements && !hasInputText && !hasFiles) {
+      return {
+        message: 'Custom reports require either custom requirements, input text, or uploaded files.',
+        type: 'validation_error',
+        severity: 'error',
+        shouldRetry: false,
+        userActions: [
+          'Specify your custom analysis requirements',
+          'Enter property or investment data in the text field',
+          'Upload relevant documents for analysis'
+        ],
+        errorId: `validation_custom_no_input_${Date.now()}`
+      };
+    }
+    
+    console.log(`[VALIDATION] Custom report validation passed - hasCustomRequirements: ${hasCustomRequirements}, hasInputText: ${hasInputText}, hasFiles: ${hasFiles}`);
+  } else {
+    // Check input content for non-custom reports
+    if (!inputText && (!files || files.length === 0)) {
+      return {
+        message: 'Please provide either text input or upload files to generate a report.',
+        type: 'validation_error',
+        severity: 'error',
+        shouldRetry: false,
+        userActions: [
+          'Enter text in the input field',
+          'Upload PDF or image files',
+          'Provide both text and files for comprehensive analysis'
+        ],
+        errorId: `validation_no_input_${Date.now()}`
+      };
+    }
   }
 
   // Validate text input length
@@ -861,6 +1364,163 @@ function validateInput({ reportType, inputText, files, additionalInfo, options }
     }
   }
 
+  return null; // No validation errors
+}
+
+function validateComparisonRequest(requestBody) {
+  const { propertyA, propertyB, comparisonCriteria, resultFormat } = requestBody;
+  
+  console.log('[VALIDATION] Validating comparison analysis request');
+  
+  // Validate Property A
+  if (!propertyA) {
+    return {
+      message: 'Property A data is required for comparison analysis.',
+      type: 'comparison_validation_error',
+      severity: 'error',
+      shouldRetry: false,
+      userActions: [
+        'Provide Property A information in the text field',
+        'Upload files for Property A',
+        'Ensure Property A section is properly filled'
+      ],
+      errorId: `validation_property_a_missing_${Date.now()}`
+    };
+  }
+  
+  const hasPropertyAText = propertyA.inputText && propertyA.inputText.trim();
+  const hasPropertyAFiles = propertyA.files && propertyA.files.length > 0;
+  
+  if (!hasPropertyAText && !hasPropertyAFiles) {
+    return {
+      message: 'Property A requires either text input or uploaded files.',
+      type: 'comparison_validation_error',
+      severity: 'error',
+      shouldRetry: false,
+      userActions: [
+        'Enter Property A details in the text area',
+        'Upload documents for Property A',
+        'Provide at least one form of Property A data'
+      ],
+      errorId: `validation_property_a_empty_${Date.now()}`
+    };
+  }
+  
+  // Validate Property B
+  if (!propertyB) {
+    return {
+      message: 'Property B data is required for comparison analysis.',
+      type: 'comparison_validation_error',
+      severity: 'error',
+      shouldRetry: false,
+      userActions: [
+        'Provide Property B information in the text field',
+        'Upload files for Property B',
+        'Ensure Property B section is properly filled'
+      ],
+      errorId: `validation_property_b_missing_${Date.now()}`
+    };
+  }
+  
+  const hasPropertyBText = propertyB.inputText && propertyB.inputText.trim();
+  const hasPropertyBFiles = propertyB.files && propertyB.files.length > 0;
+  
+  if (!hasPropertyBText && !hasPropertyBFiles) {
+    return {
+      message: 'Property B requires either text input or uploaded files.',
+      type: 'comparison_validation_error',
+      severity: 'error',
+      shouldRetry: false,
+      userActions: [
+        'Enter Property B details in the text area',
+        'Upload documents for Property B',
+        'Provide at least one form of Property B data'
+      ],
+      errorId: `validation_property_b_empty_${Date.now()}`
+    };
+  }
+  
+  // Validate files for both properties if present
+  if (hasPropertyAFiles) {
+    const fileValidation = validateFiles(propertyA.files);
+    if (fileValidation) {
+      fileValidation.message = `Property A files: ${fileValidation.message}`;
+      return fileValidation;
+    }
+  }
+  
+  if (hasPropertyBFiles) {
+    const fileValidation = validateFiles(propertyB.files);
+    if (fileValidation) {
+      fileValidation.message = `Property B files: ${fileValidation.message}`;
+      return fileValidation;
+    }
+  }
+  
+  // Validate text length for both properties
+  if (hasPropertyAText && propertyA.inputText.length > 5000) {
+    return {
+      message: 'Property A text is too long. Please limit to 5,000 characters for comparison analysis.',
+      type: 'comparison_validation_error',
+      severity: 'warning',
+      shouldRetry: false,
+      userActions: [
+        'Reduce Property A text to under 5,000 characters',
+        'Focus on the most important Property A information',
+        'Use file uploads for detailed Property A documents'
+      ],
+      errorId: `validation_property_a_length_${Date.now()}`
+    };
+  }
+  
+  if (hasPropertyBText && propertyB.inputText.length > 5000) {
+    return {
+      message: 'Property B text is too long. Please limit to 5,000 characters for comparison analysis.',
+      type: 'comparison_validation_error',
+      severity: 'warning',
+      shouldRetry: false,
+      userActions: [
+        'Reduce Property B text to under 5,000 characters',
+        'Focus on the most important Property B information',
+        'Use file uploads for detailed Property B documents'
+      ],
+      errorId: `validation_property_b_length_${Date.now()}`
+    };
+  }
+  
+  // Validate comparison criteria length if provided
+  if (comparisonCriteria && comparisonCriteria.length > 1000) {
+    return {
+      message: 'Comparison criteria text is too long. Please limit to 1,000 characters.',
+      type: 'comparison_validation_error',
+      severity: 'warning',
+      shouldRetry: false,
+      userActions: [
+        'Reduce comparison criteria to under 1,000 characters',
+        'Focus on the most important comparison aspects',
+        'Use concise language for comparison criteria'
+      ],
+      errorId: `validation_criteria_length_${Date.now()}`
+    };
+  }
+  
+  // Validate result format length if provided
+  if (resultFormat && resultFormat.length > 500) {
+    return {
+      message: 'Result format specification is too long. Please limit to 500 characters.',
+      type: 'comparison_validation_error',
+      severity: 'warning',
+      shouldRetry: false,
+      userActions: [
+        'Reduce result format specification to under 500 characters',
+        'Use simple format descriptions',
+        'Focus on essential formatting requirements'
+      ],
+      errorId: `validation_format_length_${Date.now()}`
+    };
+  }
+  
+  console.log('[VALIDATION] Comparison analysis validation passed');
   return null; // No validation errors
 }
 
@@ -1271,6 +1931,7 @@ function getReportTitle(reportType) {
     jp_investment_4part: '投資分析レポート（4部構成）',
     jp_tax_strategy: '税務戦略レポート（減価償却活用）',
     jp_inheritance_strategy: '相続対策戦略レポート',
+    comparison_analysis: '比較分析レポート',
     custom: 'カスタムレポート'
   };
   
