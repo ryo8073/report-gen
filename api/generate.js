@@ -267,7 +267,7 @@ async function generateComparisonWithOpenAI({ prompt, additionalInfo }) {
   
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4-turbo", // Use turbo model for larger context
       messages: [
         {
           role: "system",
@@ -278,7 +278,7 @@ async function generateComparisonWithOpenAI({ prompt, additionalInfo }) {
           content: prompt
         }
       ],
-      max_tokens: 4000,
+      max_tokens: 2500, // Reduced to fit within context limits
       temperature: 0.7,
     });
 
@@ -1135,9 +1135,9 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
   // Get appropriate system message for report type
   const systemMessage = getSystemMessage(reportType);
 
-  // Call OpenAI API
+  // Call OpenAI API with optimized settings
   const completion = await openai.chat.completions.create({
-    model: "gpt-4",
+    model: "gpt-4-turbo", // Use turbo model for larger context (128k tokens)
     messages: [
       {
         role: "system",
@@ -1148,7 +1148,7 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
         content: fullPrompt
       }
     ],
-    max_tokens: 4000,
+    max_tokens: 2500, // Reduced to fit within context limits
     temperature: 0.7,
   });
 
@@ -2340,7 +2340,7 @@ function handleOpenAIError(error, errorId) {
       return {
         statusCode: 400,
         error: {
-          message: 'Invalid request format. Please check your input and try again.',
+          message: `OpenAI API Error: ${error.message || 'Invalid request format. Please check your input and try again.'}`,
           type: 'openai_bad_request',
           severity: 'error',
           shouldRetry: false,
@@ -2349,7 +2349,7 @@ function handleOpenAIError(error, errorId) {
             'Ensure uploaded files are not corrupted',
             'Try with simpler input text'
           ],
-          technicalDetails: error.message || 'Bad request to OpenAI API',
+          technicalDetails: `OpenAI Error: ${JSON.stringify(error)}`,
           errorId
         }
       };

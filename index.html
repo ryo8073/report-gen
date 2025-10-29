@@ -1983,6 +1983,16 @@ ${inputText || ''}`;
                     hasAdditionalInfo: !!requestData.additionalInfo
                 });
                 console.log('Full request data:', requestData);
+                
+                // Debug file data structure
+                if (requestData.files && requestData.files.length > 0) {
+                    console.log('File details:', requestData.files.map(f => ({
+                        name: f.name,
+                        type: f.type,
+                        dataLength: f.data ? f.data.length : 0,
+                        dataPreview: f.data ? f.data.substring(0, 50) + '...' : 'no data'
+                    })));
+                }
 
                 // Enhanced fetch with timeout and abort controller
                 const timeoutId = setTimeout(() => {

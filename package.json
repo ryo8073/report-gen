@@ -45,6 +45,7 @@
     "firebase-admin": "^13.5.0",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
     "openai": "^4.20.1",
     "pdf-parse": "^1.1.1",
     "sqlite3": "^5.1.6"

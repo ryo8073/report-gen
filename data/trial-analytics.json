@@ -796,5 +796,24 @@
     "completionTokens": 754,
     "totalTokens": 1427,
     "estimatedCost": 0
+  },
+  {
+    "id": "report_1761727003054_5ykmupn2xe5",
+    "type": "report_generation",
+    "timestamp": "2025-10-29T08:36:43.054Z",
+    "reportType": "jp_investment_4part",
+    "success": true,
+    "processingTime": 9984,
+    "hasFiles": true,
+    "fileCount": 1,
+    "inputLength": 9,
+    "errorType": null,
+    "errorMessage": null,
+    "sessionId": "session_1761726993070_73h0xglwh8g",
+    "userAgent": "node",
+    "promptTokens": 2006,
+    "completionTokens": 254,
+    "totalTokens": 2260,
+    "estimatedCost": 0
   }
 ]

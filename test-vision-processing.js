@@ -1,5 +1,5 @@
 // Vision Processing Diagnostic Test
-const fs = require('fs').promises;
+import fs from 'fs/promises';
 
 async function testVisionProcessing() {
   console.log('🔍 Vision Processing Diagnostic Test');
