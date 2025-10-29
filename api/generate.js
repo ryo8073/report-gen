@@ -132,13 +132,19 @@ async function handleComparisonAnalysis(req, res) {
     
     let fileContent = '';
     if (allFiles.length > 0) {
-      fileContent = await processFiles(allFiles);
+      console.log(`[COMPARISON] Processing ${allFiles.length} files with vision capabilities`);
+      try {
+        fileContent = await processFilesWithVision(allFiles, 'comparison_analysis');
+      } catch (visionError) {
+        console.log('[COMPARISON] Vision processing failed, using legacy processing');
+        fileContent = await processFiles(allFiles);
+      }
     }
     
     // Build final prompt with file content
     let finalPrompt = comparisonPrompt;
     if (fileContent) {
-      finalPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
+      finalPrompt += `\n\n【添付ファイル分析結果】\n${fileContent}`;
     }
     
     // Generate report using existing AI services
@@ -1084,16 +1090,25 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
     // Get the appropriate prompt using PromptManager
     let fullPrompt = promptManager.buildFullPrompt(reportType, inputText, files, additionalInfo);
   
-    // Process files if any with error handling
+    // Process files with enhanced vision capabilities
     let fileContent = '';
     if (files && files.length > 0) {
       try {
-        fileContent = await processFiles(files);
+        console.log(`[OPENAI] Processing ${files.length} files with vision capabilities`);
+        fileContent = await processFilesWithVision(files, reportType);
         // Add file content to the prompt
-        fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
+        fullPrompt += `\n\n【添付ファイル分析結果】\n${fileContent}`;
+        console.log(`[OPENAI] File processing completed, content length: ${fileContent.length} chars`);
       } catch (fileError) {
-        console.error('File processing error:', fileError);
-        throw new Error(`file processing failed: ${fileError.message}`);
+        console.error('[OPENAI] File processing error:', fileError);
+        // Fallback to legacy processing
+        console.log('[OPENAI] Falling back to legacy file processing');
+        try {
+          fileContent = await processFiles(files);
+          fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
+        } catch (legacyError) {
+          throw new Error(`file processing failed: ${fileError.message}`);
+        }
       }
     }
 
@@ -1157,21 +1172,45 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
     const basePrompt = promptManager.buildFullPrompt(reportType, inputText, files, additionalInfo);
     let fullPrompt = formatPromptForGemini(reportType, basePrompt);
     
-    // Process files if any with error handling
-    let fileContent = '';
+    // Gemini 2.0 Flash supports direct multimodal input
+    let parts = [{ text: fullPrompt }];
+    
     if (files && files.length > 0) {
-      try {
-        fileContent = await processFiles(files);
-        // Add file content to the prompt
-        fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
-      } catch (fileError) {
-        console.error('File processing error:', fileError);
-        throw new Error(`file processing failed: ${fileError.message}`);
+      console.log(`[GEMINI] Processing ${files.length} files with native multimodal support`);
+      
+      // Add files directly to Gemini (native multimodal support)
+      for (const file of files) {
+        try {
+          if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+            console.log(`[GEMINI] Adding ${file.name} (${file.type}) directly to multimodal input`);
+            parts.push({
+              inlineData: {
+                mimeType: file.type,
+                data: file.data
+              }
+            });
+          } else {
+            // For text files, process and add as text
+            const buffer = Buffer.from(file.data, 'base64');
+            const textContent = buffer.toString('utf8');
+            parts.push({
+              text: `\n\n【ファイル: ${file.name}】\n${textContent.substring(0, 2000)}`
+            });
+          }
+        } catch (fileError) {
+          console.error(`[GEMINI] Error processing file ${file.name}:`, fileError);
+          parts.push({
+            text: `\n\n【ファイル処理エラー: ${file.name}】\n${fileError.message}`
+          });
+        }
       }
+      
+      console.log(`[GEMINI] Prepared ${parts.length} parts for multimodal generation`);
     }
 
-  // Call Gemini API
-  const result = await geminiModel.generateContent(fullPrompt);
+  // Call Gemini API with multimodal parts
+  console.log(`[GEMINI] Calling Gemini 2.0 Flash with ${parts.length} parts`);
+  const result = await geminiModel.generateContent(parts);
   const response = await result.response;
   const content = response.text();
 
@@ -1301,7 +1340,234 @@ function ensureReportStructure(content, reportType) {
   return content;
 }
 
+// New multimodal file processing function
+async function processFilesWithVision(files, reportType) {
+  console.log(`[VISION] Processing ${files.length} files with multimodal AI`);
+  
+  const processedFiles = [];
+  const visionResults = [];
+  
+  for (const file of files) {
+    try {
+      // Validate file structure
+      if (!file.name || !file.type || !file.data) {
+        throw new Error(`Invalid file structure for file: ${file.name || 'unknown'}`);
+      }
+
+      // Validate base64 data
+      if (typeof file.data !== 'string' || !file.data.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
+        throw new Error(`Invalid base64 data for file: ${file.name}`);
+      }
+
+      const fileSizeKB = Math.round(file.data.length * 0.75 / 1024);
+      console.log(`[VISION] Processing ${file.name} (${file.type}, ${fileSizeKB}KB)`);
+
+      if (fileSizeKB > 10240) { // 10MB limit
+        throw new Error(`File too large: ${file.name} (${fileSizeKB}KB)`);
+      }
+
+      // Process with appropriate vision model based on file type
+      let visionResult;
+      if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+        visionResult = await analyzeFileWithVision(file, reportType);
+        visionResults.push(visionResult);
+        processedFiles.push(file.name);
+      } else {
+        // Fallback to text processing for other file types
+        visionResult = await processTextFile(file);
+        visionResults.push(visionResult);
+        processedFiles.push(file.name);
+      }
+      
+    } catch (error) {
+      console.error(`[VISION] Error processing file ${file.name}:`, error.message);
+      visionResults.push({
+        fileName: file.name,
+        error: error.message,
+        content: `ファイル ${file.name} の処理中にエラーが発生しました: ${error.message}`
+      });
+    }
+  }
+
+  // Combine all vision results
+  const combinedContent = visionResults.map(result => {
+    if (result.error) {
+      return result.content;
+    }
+    return `\n=== ${result.fileName} の分析結果 ===\n${result.content}\n`;
+  }).join('\n');
+
+  console.log(`[VISION] Successfully processed ${processedFiles.length}/${files.length} files`);
+  return combinedContent;
+}
+
+// Analyze file content using vision models
+async function analyzeFileWithVision(file, reportType) {
+  console.log(`[VISION] Analyzing ${file.name} with vision AI`);
+  
+  try {
+    // Try Gemini 2.0 Flash first (better for documents)
+    const geminiResult = await analyzeWithGeminiVision(file, reportType);
+    return {
+      fileName: file.name,
+      content: geminiResult,
+      model: 'gemini-2.0-flash'
+    };
+  } catch (geminiError) {
+    console.log(`[VISION] Gemini failed for ${file.name}, trying GPT-4V:`, geminiError.message);
+    
+    try {
+      // Fallback to GPT-4V
+      const gptResult = await analyzeWithGPT4Vision(file, reportType);
+      return {
+        fileName: file.name,
+        content: gptResult,
+        model: 'gpt-4-vision'
+      };
+    } catch (gptError) {
+      console.error(`[VISION] Both vision models failed for ${file.name}`);
+      throw new Error(`Vision analysis failed: ${geminiError.message}`);
+    }
+  }
+}
+
+// Analyze with Gemini 2.0 Flash (supports PDF and images)
+async function analyzeWithGeminiVision(file, reportType) {
+  if (!geminiModel) {
+    throw new Error('Gemini model not available');
+  }
+
+  const analysisPrompt = getVisionAnalysisPrompt(reportType, file.type);
+  
+  const parts = [
+    { text: analysisPrompt }
+  ];
+
+  // Add file data based on type
+  if (file.type === 'application/pdf') {
+    parts.push({
+      inlineData: {
+        mimeType: file.type,
+        data: file.data
+      }
+    });
+  } else if (file.type.startsWith('image/')) {
+    parts.push({
+      inlineData: {
+        mimeType: file.type,
+        data: file.data
+      }
+    });
+  }
+
+  const result = await geminiModel.generateContent(parts);
+  const response = await result.response;
+  return response.text();
+}
+
+// Analyze with GPT-4V (supports images)
+async function analyzeWithGPT4Vision(file, reportType) {
+  if (!openai) {
+    throw new Error('OpenAI client not available');
+  }
+
+  // GPT-4V only supports images directly, not PDFs
+  if (file.type === 'application/pdf') {
+    throw new Error('GPT-4V does not support PDF files directly');
+  }
+
+  if (!file.type.startsWith('image/')) {
+    throw new Error('GPT-4V only supports image files');
+  }
+
+  const analysisPrompt = getVisionAnalysisPrompt(reportType, file.type);
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4-vision-preview",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: analysisPrompt
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:${file.type};base64,${file.data}`,
+              detail: "high"
+            }
+          }
+        ]
+      }
+    ],
+    max_tokens: 2000,
+    temperature: 0.3
+  });
+
+  return completion.choices[0].message.content;
+}
+
+// Get vision analysis prompt based on report type
+function getVisionAnalysisPrompt(reportType, fileType) {
+  const basePrompt = `この${fileType === 'application/pdf' ? 'PDF文書' : '画像'}を詳細に分析し、以下の情報を抽出してください：
+
+1. **数値データ**: FCR、DCR、BER、IRR、NPV、K%、利回り、価格、賃料などの投資指標
+2. **物件情報**: 物件名、所在地、構造、築年数、面積、最寄り駅などの基本情報
+3. **財務データ**: 収入、支出、キャッシュフロー、融資条件などの財務情報
+4. **表やグラフ**: 数値表、グラフ、チャートに含まれるデータ
+5. **その他重要情報**: 投資分析に関連するあらゆる情報
+
+**重要**: 
+- 数値は正確に読み取り、単位も含めて記載してください
+- 表の構造も保持して出力してください
+- 不明瞭な部分は「推定」として記載してください
+- 日本語で詳細に分析結果を出力してください`;
+
+  if (reportType === 'jp_investment_4part') {
+    return basePrompt + `
+
+**特に注目する投資指標**:
+- FCR (総収益率)
+- K% (ローン定数) 
+- DCR (借入金償還余裕率)
+- BER (損益分岐入居率)
+- IRR (内部収益率) - 税引前・税引後、融資利用・全額自己資金
+- NPV (正味現在価値)
+- イールドギャップ (FCR - K%)`;
+  }
+
+  return basePrompt;
+}
+
+// Process text files (fallback)
+async function processTextFile(file) {
+  try {
+    const buffer = Buffer.from(file.data, 'base64');
+    const textContent = buffer.toString('utf8');
+    return {
+      fileName: file.name,
+      content: `テキストファイル内容:\n${textContent.substring(0, 2000)}${textContent.length > 2000 ? '\n... (内容が長いため省略)' : ''}`
+    };
+  } catch (error) {
+    throw new Error(`Failed to process text file: ${error.message}`);
+  }
+}
+
+// Legacy file processing function (kept for compatibility)
 async function processFiles(files) {
+  // Use new vision processing if files contain PDF or images
+  const hasVisionFiles = files.some(file => 
+    file.type === 'application/pdf' || file.type.startsWith('image/')
+  );
+  
+  if (hasVisionFiles) {
+    console.log('[FILE PROCESSING] Using vision-based processing for multimodal files');
+    return await processFilesWithVision(files, 'jp_investment_4part');
+  }
+
+  // Fallback to legacy processing for text files
   let content = '';
   const processedFiles = [];
   const failedFiles = [];
@@ -2121,11 +2387,11 @@ function handleFileProcessingError(error, errorId) {
 
 function getSystemMessage(reportType) {
   const systemMessages = {
-    jp_investment_4part: 'あなたは経験豊富な不動産投資の専門家です。添付されたファイルの内容を詳細に分析し、プロフェッショナルな投資分析レポートを作成してください。数値データを正確に読み取り、具体的な投資判断の根拠を示してください。',
-    jp_tax_strategy: 'あなたは日本の税制に精通したタックスアドバイザーです。不動産投資による税務戦略を専門的に分析し、具体的な節税効果を数値で示してください。',
-    jp_inheritance_strategy: 'あなたは相続対策の専門家です。不動産投資による相続税対策の効果を詳細に分析し、具体的な節税効果を示してください。',
-    comparison_analysis: 'あなたは不動産投資の専門家です。複数の物件を比較分析し、投資判断に必要な詳細で実践的な比較レポートを作成してください。',
-    custom: 'あなたは経験豊富な投資アドバイザーです。提供された要件に基づいて、専門的で実践的なレポートを作成してください。'
+    jp_investment_4part: 'あなたは経験豊富な不動産投資の専門家です。添付されたPDFファイルや画像を詳細に分析し、プロフェッショナルな投資分析レポートを作成してください。ファイルから抽出された数値データ（FCR、DCR、BER、IRR、NPV等）を正確に読み取り、具体的な投資判断の根拠を示してください。画像やPDFに含まれる表、グラフ、数値を詳細に分析し、実用的な投資レポートを作成してください。',
+    jp_tax_strategy: 'あなたは日本の税制に精通したタックスアドバイザーです。添付されたPDFや画像から不動産投資による税務戦略を専門的に分析し、具体的な節税効果を数値で示してください。ファイルに含まれる財務データを詳細に読み取り、税務上のメリットを定量的に分析してください。',
+    jp_inheritance_strategy: 'あなたは相続対策の専門家です。添付されたファイルから不動産投資による相続税対策の効果を詳細に分析し、具体的な節税効果を示してください。PDFや画像に含まれる資産情報、評価額、税務データを正確に読み取り、相続対策の効果を定量的に示してください。',
+    comparison_analysis: 'あなたは不動産投資の専門家です。添付されたPDFファイルや画像から複数の物件情報を詳細に読み取り、比較分析を行ってください。各物件の投資指標、財務データ、物件情報を正確に抽出し、投資判断に必要な詳細で実践的な比較レポートを作成してください。',
+    custom: 'あなたは経験豊富な投資アドバイザーです。添付されたPDFや画像の内容を詳細に分析し、提供された要件に基づいて専門的で実践的なレポートを作成してください。ファイルに含まれる数値データ、表、グラフを正確に読み取り、具体的な分析結果を示してください。'
   };
   
   return systemMessages[reportType] || systemMessages.jp_investment_4part;
