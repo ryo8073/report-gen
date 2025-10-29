@@ -1982,6 +1982,7 @@ ${inputText || ''}`;
                     filesCount: requestData.files?.length || 0,
                     hasAdditionalInfo: !!requestData.additionalInfo
                 });
+                console.log('Full request data:', requestData);
 
                 // Enhanced fetch with timeout and abort controller
                 const timeoutId = setTimeout(() => {
@@ -2985,7 +2986,26 @@ ${inputText || ''}`;
             
             // Handle other API errors
             if (!response.ok) {
-                const errorMessage = result?.error || `HTTP ${response.status}: ${response.statusText}`;
+                console.error('API Error Details:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    result: result,
+                    error: result?.error
+                });
+                
+                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                
+                if (result?.error) {
+                    if (typeof result.error === 'string') {
+                        errorMessage = result.error;
+                    } else if (result.error.message) {
+                        errorMessage = result.error.message;
+                    } else {
+                        errorMessage = JSON.stringify(result.error);
+                    }
+                }
+                
+                showError(`エラーが発生しました: ${errorMessage}`);
                 throw new Error(errorMessage);
             }
             
