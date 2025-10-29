@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import pdf from 'pdf-parse';
-import { requireAuth, setSecurityHeaders } from '../lib/auth.js';
+import { requireAuth, setSecurityHeaders } from '../../lib/auth.js';
 import { getDatabase } from '../lib/database.js';
 
 const openai = new OpenAI({

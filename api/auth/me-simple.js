@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import SimpleDatabase from '../../lib/simple-db.js';
+import SimpleDatabase from '../lib/simple-db.js';
 
 export default async function handler(req, res) {
   // Set CORS headers

@@ -1,0 +1,167 @@
+{
+  "timestamp": "2025-10-28T13:09:14.202Z",
+  "summary": {
+    "passed": 28,
+    "failed": 0,
+    "total": 28,
+    "successRate": 100,
+    "duration": 3.56
+  },
+  "tests": [
+    {
+      "name": "Database connectivity validation",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Database initialization",
+      "passed": true,
+      "message": "Database initialized successfully"
+    },
+    {
+      "name": "Database health check",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "All required collections exist",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Admin user status check",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Admin user initialization",
+      "passed": true,
+      "message": "Admin user already exists"
+    },
+    {
+      "name": "Admin user has correct role",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Admin user is active",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Admin user has valid email",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "User creation",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "User retrieval by ID",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "User data integrity",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "User retrieval by email",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "User update",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Usage logging",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Usage stats retrieval",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Usage stats contain data",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Report generation logging",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Session test user creation",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Session creation logging",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Session validation logging",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Session termination logging",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Total users count",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Total users is a number",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Total users count is positive",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Invalid user ID handling",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Invalid email handling",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Malformed usage data handling",
+      "passed": true,
+      "message": ""
+    }
+  ],
+  "requirements": [
+    "4.3",
+    "4.4",
+    "5.4"
+  ],
+  "testCategories": [
+    "Database Initialization",
+    "Admin User Creation",
+    "Basic User Operations",
+    "Usage Logging",
+    "Report Generation Logging",
+    "Session Management",
+    "Basic User Statistics",
+    "Basic Error Handling"
+  ]
+}

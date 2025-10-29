@@ -5,6 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>クライアント向けレポート生成</title>
     <link rel="stylesheet" href="/styles.css">
+    <script src="/lib/frontend-error-handler.js"></script>
+    <script>
+        // Ensure errorHandler is available
+        if (typeof window.errorHandler === 'undefined') {
+            console.warn('ErrorHandler not loaded, creating fallback');
+            window.errorHandler = {
+                handleError: (error, context, showNotification = true) => {
+                    console.error(`Error in ${context}:`, error);
+                    if (showNotification) {
+                        alert(`エラーが発生しました: ${error.message || error}`);
+                    }
+                },
+                handleApiResponse: async (response, context) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response;
+                },
+                showLoading: (button, text) => {
+                    if (button) {
+                        button.disabled = true;
+                        button.dataset.originalText = button.textContent;
+                        button.textContent = text || 'Loading...';
+                    }
+                },
+                hideLoading: (button) => {
+                    if (button) {
+                        button.disabled = false;
+                        button.textContent = button.dataset.originalText || button.textContent;
+                    }
+                },
+                showNotification: (message, type, duration) => {
+                    console.log(`${type.toUpperCase()}: ${message}`);
+                    // Simple fallback notification
+                    const notification = document.createElement('div');
+                    notification.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        padding: 12px 20px;
+                        background: ${type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : '#ef4444'};
+                        color: white;
+                        border-radius: 6px;
+                        z-index: 10000;
+                        font-size: 14px;
+                    `;
+                    notification.textContent = message;
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), duration || 3000);
+                },
+                getUserFriendlyMessage: (error, context) => {
+                    return error.message || 'エラーが発生しました';
+                }
+            };
+        }
+    </script>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="container">
@@ -12,6 +68,16 @@
         <header class="header">
             <h1>クライアント向けレポート生成</h1>
             <p>テキスト・画像・PDFからプロフェッショナルなレポートを自動生成</p>
+            
+            <!-- Navigation Links -->
+            <div style="margin-top: var(--space-6); display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap;">
+                <a href="/investment-analysis.html" class="btn btn-primary" style="text-decoration: none;">
+                    📊 投資分析レポート
+                </a>
+                <a href="/report-history.html" class="btn btn-secondary" style="text-decoration: none;">
+                    📋 レポート履歴
+                </a>
+            </div>
         </header>
 
         <!-- Main Form -->
@@ -27,20 +93,26 @@
                         <option value="jp_investment_4part">投資分析（4部構成）</option>
                         <option value="jp_tax_strategy">税務戦略（減価償却）</option>
                         <option value="jp_inheritance_strategy">相続対策戦略</option>
-                        <option value="comparison_analysis">比較分析</option>
-                        <option value="exec_summary">エグゼクティブサマリー</option>
-                        <option value="detailed_analysis">詳細分析</option>
-                        <option value="action_plan">アクションプラン</option>
-                        <option value="risk_brief">リスクブリーフ</option>
                         <option value="custom">カスタムプロンプト</option>
                     </select>
                 </div>
 
                 <!-- Custom Prompt (shown when custom is selected) -->
                 <div id="customPromptGroup" class="form-group" style="display: none;">
-                    <label for="customPrompt" class="form-label">
-                        カスタムプロンプト
-                    </label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                        <label for="customPrompt" class="form-label">
+                            カスタムプロンプト
+                        </label>
+                        <div style="display: flex; gap: var(--space-2);">
+                            <button type="button" id="loadPromptBtn" class="btn btn-secondary" style="font-size: var(--font-size-sm); padding: var(--space-1) var(--space-3);">
+                                保存済み読込
+                            </button>
+                            <button type="button" id="savePromptBtn" class="btn btn-secondary" style="font-size: var(--font-size-sm); padding: var(--space-1) var(--space-3);">
+                                プロンプト保存
+                            </button>
+                        </div>
+                    </div>
+                    
                     <textarea 
                         id="customPrompt" 
                         name="customPrompt" 
@@ -48,10 +120,111 @@
                         class="input-field"
                         placeholder="独自のプロンプトや分析要求を入力してください..."
                     ></textarea>
+                    
                     <div style="margin-top: var(--space-2);">
                         <p style="font-size: var(--font-size-xs); color: var(--color-gray-500);">
                             例: "このデータを基に、競合他社との比較分析を行い、優位性を明確にしてください"
                         </p>
+                    </div>
+                </div>
+
+                <!-- Tax Strategy Additional Info (shown when jp_tax_strategy is selected) -->
+                <div id="taxStrategyGroup" class="form-group" style="display: none;">
+                    <h3 style="font-size: var(--font-size-lg); font-weight: 600; margin-bottom: var(--space-4); color: var(--color-gray-800);">
+                        税務戦略に必要な情報
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-4);">
+                        <div>
+                            <label for="annualIncome" class="form-label">年収（万円）</label>
+                            <input type="number" id="annualIncome" name="annualIncome" class="input-field" placeholder="1000" min="0">
+                        </div>
+                        <div>
+                            <label for="currentTaxRate" class="form-label">現在の所得税率（%）</label>
+                            <select id="currentTaxRate" name="currentTaxRate" class="input-field">
+                                <option value="">選択してください</option>
+                                <option value="20">20%（年収330万円〜695万円）</option>
+                                <option value="23">23%（年収695万円〜900万円）</option>
+                                <option value="33">33%（年収900万円〜1800万円）</option>
+                                <option value="40">40%（年収1800万円〜4000万円）</option>
+                                <option value="45">45%（年収4000万円超）</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-4);">
+                        <div>
+                            <label for="familyMembers" class="form-label">扶養家族数</label>
+                            <input type="number" id="familyMembers" name="familyMembers" class="input-field" placeholder="2" min="0">
+                        </div>
+                        <div>
+                            <label for="otherDeductions" class="form-label">その他所得控除（万円）</label>
+                            <input type="number" id="otherDeductions" name="otherDeductions" class="input-field" placeholder="200" min="0">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="investmentGoal" class="form-label">投資目標・期間</label>
+                        <textarea id="investmentGoal" name="investmentGoal" rows="2" class="input-field" placeholder="例：5年間で年間100万円の節税効果を目指す"></textarea>
+                    </div>
+                </div>
+
+                <!-- Inheritance Strategy Additional Info (shown when jp_inheritance_strategy is selected) -->
+                <div id="inheritanceStrategyGroup" class="form-group" style="display: none;">
+                    <h3 style="font-size: var(--font-size-lg); font-weight: 600; margin-bottom: var(--space-4); color: var(--color-gray-800);">
+                        相続対策に必要な情報
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-4);">
+                        <div>
+                            <label for="totalAssets" class="form-label">総資産額（万円）</label>
+                            <input type="number" id="totalAssets" name="totalAssets" class="input-field" placeholder="10000" min="0">
+                        </div>
+                        <div>
+                            <label for="liquidAssets" class="form-label">現金・預金（万円）</label>
+                            <input type="number" id="liquidAssets" name="liquidAssets" class="input-field" placeholder="3000" min="0">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-4);">
+                        <div>
+                            <label for="realEstateAssets" class="form-label">既存不動産（万円）</label>
+                            <input type="number" id="realEstateAssets" name="realEstateAssets" class="input-field" placeholder="5000" min="0">
+                        </div>
+                        <div>
+                            <label for="otherAssets" class="form-label">その他資産（万円）</label>
+                            <input type="number" id="otherAssets" name="otherAssets" class="input-field" placeholder="2000" min="0">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: var(--space-4);">
+                        <label class="form-label">法定相続人の構成</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4);">
+                            <div>
+                                <label for="spouse" class="form-label" style="font-size: var(--font-size-sm);">配偶者</label>
+                                <select id="spouse" name="spouse" class="input-field">
+                                    <option value="0">なし</option>
+                                    <option value="1">あり</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="children" class="form-label" style="font-size: var(--font-size-sm);">子供の人数</label>
+                                <input type="number" id="children" name="children" class="input-field" placeholder="2" min="0" max="10">
+                            </div>
+                            <div>
+                                <label for="parents" class="form-label" style="font-size: var(--font-size-sm);">両親</label>
+                                <select id="parents" name="parents" class="input-field">
+                                    <option value="0">なし</option>
+                                    <option value="1">片親</option>
+                                    <option value="2">両親</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="inheritanceGoal" class="form-label">相続対策の目標</label>
+                        <textarea id="inheritanceGoal" name="inheritanceGoal" rows="2" class="input-field" placeholder="例：相続税を50%削減し、円滑な資産承継を実現したい"></textarea>
                     </div>
                 </div>
 
@@ -102,12 +275,6 @@
                                 <option value="en">English</option>
                             </select>
                         </div>
-                        <div style="flex: 1; min-width: 200px; display: flex; align-items: end;">
-                            <label style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-4) 0;">
-                                <input type="checkbox" id="structured" name="structured" style="width: 18px; height: 18px; accent-color: var(--color-primary);">
-                                <span style="font-size: var(--font-size-sm); color: var(--color-gray-700);">構造化出力</span>
-                            </label>
-                        </div>
                     </div>
                 </div>
 
@@ -157,6 +324,397 @@
         </div>
     </div>
 
+    <!-- Custom Prompt Save Modal -->
+    <div id="savePromptModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>カスタムプロンプトを保存</h3>
+                <button type="button" class="modal-close" onclick="closeSavePromptModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="savePromptForm">
+                    <div class="form-group">
+                        <label for="promptTitle" class="form-label">タイトル</label>
+                        <input type="text" id="promptTitle" name="promptTitle" class="input-field" placeholder="プロンプトのタイトル" required maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="promptDescription" class="form-label">説明（任意）</label>
+                        <textarea id="promptDescription" name="promptDescription" rows="2" class="input-field" placeholder="このプロンプトの用途や特徴"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="promptTags" class="form-label">タグ（任意）</label>
+                        <input type="text" id="promptTags" name="promptTags" class="input-field" placeholder="タグをカンマ区切りで入力（例：分析,比較,投資）">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">プロンプト内容</label>
+                        <textarea id="promptPreview" rows="4" class="input-field" readonly style="background-color: var(--color-gray-100);"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeSavePromptModal()">キャンセル</button>
+                <button type="button" class="btn btn-primary" onclick="saveCustomPrompt()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Prompt Load Modal -->
+    <div id="loadPromptModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>保存済みプロンプトを読込</h3>
+                <button type="button" class="modal-close" onclick="closeLoadPromptModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="promptsList">
+                    <div class="loading-message">読み込み中...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeLoadPromptModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-6);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--color-gray-500);
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: var(--color-gray-700);
+        }
+
+        .modal-body {
+            padding: var(--space-6);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-3);
+            padding: var(--space-6);
+            border-top: 1px solid var(--color-gray-200);
+        }
+
+        .prompt-item {
+            border: 1px solid var(--color-gray-200);
+            border-radius: 6px;
+            padding: var(--space-4);
+            margin-bottom: var(--space-3);
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .prompt-item:hover {
+            border-color: var(--color-primary);
+        }
+
+        .prompt-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-2);
+        }
+
+        .prompt-item-title {
+            font-weight: 600;
+            color: var(--color-gray-800);
+        }
+
+        .prompt-item-date {
+            font-size: var(--font-size-xs);
+            color: var(--color-gray-500);
+        }
+
+        .prompt-item-description {
+            color: var(--color-gray-600);
+            font-size: var(--font-size-sm);
+            margin-bottom: var(--space-2);
+        }
+
+        .prompt-item-tags {
+            display: flex;
+            gap: var(--space-1);
+            flex-wrap: wrap;
+        }
+
+        .prompt-tag {
+            background-color: var(--color-gray-100);
+            color: var(--color-gray-700);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: var(--font-size-xs);
+        }
+
+        .prompt-item-actions {
+            display: flex;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+
+        .prompt-action-btn {
+            background: none;
+            border: 1px solid var(--color-gray-300);
+            padding: var(--space-1) var(--space-2);
+            border-radius: 4px;
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .prompt-action-btn:hover {
+            background-color: var(--color-gray-50);
+        }
+
+        .prompt-action-btn.delete {
+            color: var(--color-red-600);
+            border-color: var(--color-red-300);
+        }
+
+        .prompt-action-btn.delete:hover {
+            background-color: var(--color-red-50);
+        }
+
+        .loading-message {
+            text-align: center;
+            padding: var(--space-8);
+            color: var(--color-gray-500);
+        }
+    </style>
+
+    <!-- Trial Expired Modal -->
+    <div id="trialExpiredModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: #dc2626;">試用期間が終了しました</h3>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; padding: var(--space-4);">
+                    <svg width="64" height="64" fill="#dc2626" viewBox="0 0 20 20" style="margin-bottom: var(--space-4);">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <p style="font-size: var(--font-size-lg); margin-bottom: var(--space-4);">
+                        2週間の試用期間または15回の利用制限に達しました。
+                    </p>
+                    <p style="color: var(--color-gray-600); margin-bottom: var(--space-6);">
+                        引き続きサービスをご利用いただくには、有料プランにアップグレードしてください。
+                    </p>
+                    <div style="display: flex; gap: var(--space-3); justify-content: center;">
+                        <button onclick="showUpgradeModal()" class="btn btn-primary">
+                            有料プランを見る
+                        </button>
+                        <button onclick="logout()" class="btn btn-secondary">
+                            ログアウト
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upgrade Modal -->
+    <div id="upgradeModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>有料プランにアップグレード</h3>
+                <button type="button" class="modal-close" onclick="closeUpgradeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: var(--space-6);">
+                    <p style="font-size: var(--font-size-lg); color: var(--color-gray-700);">
+                        プロフェッショナルなレポート生成を無制限でご利用いただけます
+                    </p>
+                </div>
+
+                <!-- Pricing Plans -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-6);">
+                    <!-- Basic Plan -->
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h4>ベーシック</h4>
+                            <div class="pricing-price">¥2,980<span>/月</span></div>
+                        </div>
+                        <div class="pricing-features">
+                            <div class="pricing-feature">✓ 月50回まで生成</div>
+                            <div class="pricing-feature">✓ 全レポート種別対応</div>
+                            <div class="pricing-feature">✓ ファイルアップロード</div>
+                            <div class="pricing-feature">✓ カスタムプロンプト保存</div>
+                            <div class="pricing-feature">✓ メールサポート</div>
+                        </div>
+                        <button class="btn btn-primary pricing-btn" onclick="selectPlan('basic')">
+                            ベーシックを選択
+                        </button>
+                    </div>
+
+                    <!-- Pro Plan -->
+                    <div class="pricing-card featured">
+                        <div class="pricing-badge">おすすめ</div>
+                        <div class="pricing-header">
+                            <h4>プロ</h4>
+                            <div class="pricing-price">¥4,980<span>/月</span></div>
+                        </div>
+                        <div class="pricing-features">
+                            <div class="pricing-feature">✓ 無制限生成</div>
+                            <div class="pricing-feature">✓ 全レポート種別対応</div>
+                            <div class="pricing-feature">✓ ファイルアップロード</div>
+                            <div class="pricing-feature">✓ カスタムプロンプト保存</div>
+                            <div class="pricing-feature">✓ 優先サポート</div>
+                            <div class="pricing-feature">✓ API アクセス</div>
+                        </div>
+                        <button class="btn btn-primary pricing-btn" onclick="selectPlan('pro')">
+                            プロを選択
+                        </button>
+                    </div>
+
+                    <!-- Enterprise Plan -->
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h4>エンタープライズ</h4>
+                            <div class="pricing-price">お問い合わせ</div>
+                        </div>
+                        <div class="pricing-features">
+                            <div class="pricing-feature">✓ 無制限生成</div>
+                            <div class="pricing-feature">✓ カスタムテンプレート</div>
+                            <div class="pricing-feature">✓ 専用サポート</div>
+                            <div class="pricing-feature">✓ オンプレミス対応</div>
+                            <div class="pricing-feature">✓ SLA保証</div>
+                        </div>
+                        <button class="btn btn-secondary pricing-btn" onclick="contactSales()">
+                            お問い合わせ
+                        </button>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-gray-200);">
+                    <p style="color: var(--color-gray-600); font-size: var(--font-size-sm);">
+                        すべてのプランで14日間の返金保証付き
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .pricing-card {
+            border: 2px solid var(--color-gray-200);
+            border-radius: 12px;
+            padding: var(--space-6);
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--color-primary);
+            background: linear-gradient(135deg, #fef7ff, #f3e8ff);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-primary);
+            color: white;
+            padding: var(--space-1) var(--space-3);
+            border-radius: 20px;
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+        }
+
+        .pricing-header h4 {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            margin-bottom: var(--space-2);
+            color: var(--color-gray-900);
+        }
+
+        .pricing-price {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: var(--space-4);
+        }
+
+        .pricing-price span {
+            font-size: var(--font-size-sm);
+            font-weight: 400;
+            color: var(--color-gray-600);
+        }
+
+        .pricing-features {
+            text-align: left;
+            margin-bottom: var(--space-6);
+        }
+
+        .pricing-feature {
+            padding: var(--space-2) 0;
+            color: var(--color-gray-700);
+            font-size: var(--font-size-sm);
+        }
+
+        .pricing-btn {
+            width: 100%;
+        }
+    </style>
+
     <script type="module">
         // Authentication check
         let currentUser = null;
@@ -167,27 +725,63 @@
                     credentials: 'include'
                 });
                 
-                if (response.ok) {
-                    const result = await response.json();
+                // Use error handler for API response
+                await window.errorHandler.handleApiResponse(response, 'authentication');
+                
+                const result = await response.json();
+                if (result.success && result.user) {
                     currentUser = result.user;
                     updateUIForLoggedInUser();
                 } else {
-                    // Not authenticated, redirect to login
+                    console.error('Invalid response format:', result);
                     window.location.href = '/login.html';
                 }
             } catch (error) {
-                console.error('Auth check failed:', error);
-                window.location.href = '/login.html';
+                // Enhanced error handling
+                window.errorHandler.handleError(error, 'authentication', false);
+                
+                // Only redirect on auth errors, not network errors
+                if (error.status === 401 || error.status === 403) {
+                    window.location.href = '/login.html';
+                } else {
+                    // Show error but don't redirect for network issues
+                    window.errorHandler.showNotification(
+                        'Unable to verify authentication. Please refresh the page.',
+                        'warning'
+                    );
+                }
             }
         }
 
-        function updateUIForLoggedInUser() {
+        async function updateUIForLoggedInUser() {
             // Add user info to header
             const header = document.querySelector('.header p');
             header.innerHTML = `こんにちは、${currentUser.name}さん！テキスト・画像・PDFからプロフェッショナルなレポートを自動生成`;
             
-            // Add logout button
+            // Check and display user status based on role
+            await checkAndDisplayUserStatus();
+            
+            // Add user stats and logout button
             const headerElement = document.querySelector('.header');
+            
+            // Add token usage stats
+            const statsDiv = document.createElement('div');
+            statsDiv.id = 'userTokenStats';
+            statsDiv.style.cssText = `
+                background: var(--color-blue-50);
+                border: 1px solid var(--color-blue-200);
+                border-radius: 6px;
+                padding: var(--space-3);
+                margin-top: var(--space-4);
+                font-size: var(--font-size-sm);
+                color: var(--color-blue-800);
+            `;
+            statsDiv.innerHTML = '<div style="text-align: center;">Token使用量を読み込み中...</div>';
+            headerElement.appendChild(statsDiv);
+            
+            // Load user token stats
+            loadUserTokenStats();
+            
             const logoutBtn = document.createElement('button');
             logoutBtn.className = 'btn btn-secondary';
             logoutBtn.style.marginTop = 'var(--space-4)';
@@ -196,16 +790,175 @@
             headerElement.appendChild(logoutBtn);
         }
 
-        async function logout() {
+        async function checkAndDisplayUserStatus() {
+            if (currentUser.role === 'team_member') {
+                await displayTeamMemberInfo();
+            } else if (currentUser.role === 'user') {
+                await checkAndDisplayTrialStatus();
+            }
+            // Admin users don't need status display
+        }
+
+        async function checkAndDisplayTrialStatus() {
             try {
-                await fetch('/api/auth/logout', {
+                const response = await fetch('/api/trial/status', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        displayTrialInfo(result.trial);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to check trial status:', error);
+            }
+        }
+
+        async function displayTeamMemberInfo() {
+            const headerElement = document.querySelector('.header');
+            
+            // Remove existing info if any
+            const existingInfo = document.getElementById('userStatusInfo');
+            if (existingInfo) {
+                existingInfo.remove();
+            }
+
+            const statusDiv = document.createElement('div');
+            statusDiv.id = 'userStatusInfo';
+            statusDiv.style.cssText = `
+                background: linear-gradient(135deg, #e0f2fe, #81d4fa);
+                border: 1px solid #29b6f6;
+                border-radius: 8px;
+                padding: var(--space-4);
+                margin-top: var(--space-4);
+                color: #01579b;
+            `;
+            
+            statusDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <strong>チームメンバー</strong>
+                </div>
+                <div id="teamMemberUsage" style="font-size: var(--font-size-sm);">
+                    使用状況を読み込み中...
+                </div>
+            `;
+            
+            headerElement.appendChild(statusDiv);
+            
+            // Load team member usage
+            await loadTeamMemberUsage();
+        }
+
+        async function loadTeamMemberUsage() {
+            try {
+                // This would be a new API endpoint for team member usage
+                const response = await fetch('/api/user/team-usage', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        const usage = result.usage;
+                        document.getElementById('teamMemberUsage').innerHTML = `
+                            今月の使用状況: ${usage.usageCount}/${usage.monthlyLimit}回
+                            <div style="margin-top: var(--space-1); font-size: var(--font-size-xs);">
+                                残り: ${usage.remainingReports}回
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load team member usage:', error);
+                document.getElementById('teamMemberUsage').innerHTML = '使用状況を取得できませんでした';
+            }
+        }
+
+        function displayTrialInfo(trialInfo) {
+            const headerElement = document.querySelector('.header');
+            
+            // Remove existing trial info if any
+            const existingTrialInfo = document.getElementById('trialInfo');
+            if (existingTrialInfo) {
+                existingTrialInfo.remove();
+            }
+
+            if (trialInfo.subscriptionStatus === 'trial' && trialInfo.isTrialActive) {
+                // Show trial status
+                const trialInfoDiv = document.createElement('div');
+                trialInfoDiv.id = 'trialInfo';
+                trialInfoDiv.style.cssText = `
+                    background: linear-gradient(135deg, #fef3c7, #fbbf24);
+                    border: 1px solid #f59e0b;
+                    border-radius: 8px;
+                    padding: var(--space-4);
+                    margin-top: var(--space-4);
+                    color: #92400e;
+                `;
+                
+                trialInfoDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <strong>試用期間中</strong>
+                    </div>
+                    <div style="font-size: var(--font-size-sm);">
+                        残り: ${trialInfo.remainingDays}日 / ${trialInfo.remainingUsage}回
+                        <div style="margin-top: var(--space-2);">
+                            <button onclick="showUpgradeModal()" class="btn btn-primary" style="font-size: var(--font-size-sm); padding: var(--space-1) var(--space-3);">
+                                有料プランにアップグレード
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                headerElement.appendChild(trialInfoDiv);
+            } else if (trialInfo.subscriptionStatus === 'trial_expired' || !trialInfo.canUseService) {
+                // Show trial expired message
+                showTrialExpiredModal(trialInfo);
+            }
+        }
+
+        async function logout() {
+            const logoutBtn = document.querySelector('button[onclick="logout()"]');
+            
+            try {
+                // Show loading state
+                window.errorHandler.showLoading(logoutBtn, 'ログアウト中...');
+                
+                const response = await fetch('/api/auth/logout', {
                     method: 'POST',
                     credentials: 'include'
                 });
-                window.location.href = '/login.html';
+                
+                // Use error handler for API response
+                await window.errorHandler.handleApiResponse(response, 'logout');
+                
+                window.errorHandler.showNotification('ログアウトしました', 'success', 1000);
+                
+                // Redirect after short delay
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 1000);
+                
             } catch (error) {
-                console.error('Logout failed:', error);
-                window.location.href = '/login.html';
+                // Enhanced error handling
+                window.errorHandler.handleError(error, 'logout', false);
+                
+                // Still redirect to login even if logout request failed
+                window.errorHandler.showNotification('ログアウト処理中にエラーが発生しましたが、セッションをクリアします', 'warning', 2000);
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 2000);
+            } finally {
+                // Hide loading state
+                window.errorHandler.hideLoading(logoutBtn);
             }
         }
 
@@ -215,12 +968,25 @@
         // Report type change handler
         document.getElementById('reportType').addEventListener('change', function() {
             const customPromptGroup = document.getElementById('customPromptGroup');
+            const taxStrategyGroup = document.getElementById('taxStrategyGroup');
+            const inheritanceStrategyGroup = document.getElementById('inheritanceStrategyGroup');
+            
+            // Hide all additional info groups
+            customPromptGroup.style.display = 'none';
+            taxStrategyGroup.style.display = 'none';
+            inheritanceStrategyGroup.style.display = 'none';
+            
+            // Reset required fields
+            document.getElementById('customPrompt').required = false;
+            
+            // Show relevant group based on selection
             if (this.value === 'custom') {
                 customPromptGroup.style.display = 'block';
                 document.getElementById('customPrompt').required = true;
-            } else {
-                customPromptGroup.style.display = 'none';
-                document.getElementById('customPrompt').required = false;
+            } else if (this.value === 'jp_tax_strategy') {
+                taxStrategyGroup.style.display = 'block';
+            } else if (this.value === 'jp_inheritance_strategy') {
+                inheritanceStrategyGroup.style.display = 'block';
             }
         });
 
@@ -322,12 +1088,66 @@
             const inputText = formData.get('inputText');
             const customPrompt = formData.get('customPrompt');
             const language = formData.get('language') || 'ja';
-            const structured = formData.get('structured') === 'on';
 
-            // Handle custom prompt
+            // Collect additional information based on report type
+            let additionalInfo = {};
             let finalInputText = inputText;
+
             if (reportType === 'custom' && customPrompt) {
                 finalInputText = customPrompt + '\n\n' + (inputText || '');
+            } else if (reportType === 'jp_tax_strategy') {
+                additionalInfo = {
+                    annualIncome: formData.get('annualIncome'),
+                    currentTaxRate: formData.get('currentTaxRate'),
+                    familyMembers: formData.get('familyMembers'),
+                    otherDeductions: formData.get('otherDeductions'),
+                    investmentGoal: formData.get('investmentGoal')
+                };
+                
+                // Add tax strategy context to input text
+                const taxContext = `
+【投資家情報】
+年収: ${additionalInfo.annualIncome || '未入力'}万円
+所得税率: ${additionalInfo.currentTaxRate || '未入力'}%
+扶養家族数: ${additionalInfo.familyMembers || '未入力'}人
+その他所得控除: ${additionalInfo.otherDeductions || '未入力'}万円
+投資目標: ${additionalInfo.investmentGoal || '未入力'}
+
+【分析対象データ】
+${inputText || ''}`;
+                finalInputText = taxContext;
+                
+            } else if (reportType === 'jp_inheritance_strategy') {
+                additionalInfo = {
+                    totalAssets: formData.get('totalAssets'),
+                    liquidAssets: formData.get('liquidAssets'),
+                    realEstateAssets: formData.get('realEstateAssets'),
+                    otherAssets: formData.get('otherAssets'),
+                    spouse: formData.get('spouse'),
+                    children: formData.get('children'),
+                    parents: formData.get('parents'),
+                    inheritanceGoal: formData.get('inheritanceGoal')
+                };
+                
+                // Add inheritance strategy context to input text
+                const inheritanceContext = `
+【資産情報】
+総資産額: ${additionalInfo.totalAssets || '未入力'}万円
+現金・預金: ${additionalInfo.liquidAssets || '未入力'}万円
+既存不動産: ${additionalInfo.realEstateAssets || '未入力'}万円
+その他資産: ${additionalInfo.otherAssets || '未入力'}万円
+
+【法定相続人情報】
+配偶者: ${additionalInfo.spouse === '1' ? 'あり' : 'なし'}
+子供: ${additionalInfo.children || '0'}人
+両親: ${additionalInfo.parents === '2' ? '両親' : additionalInfo.parents === '1' ? '片親' : 'なし'}
+
+【相続対策目標】
+${additionalInfo.inheritanceGoal || '未入力'}
+
+【分析対象データ】
+${inputText || ''}`;
+                finalInputText = inheritanceContext;
             }
 
             if (!reportType) {
@@ -347,7 +1167,7 @@
                 files.push({
                     name: file.name,
                     type: file.type,
-                    base64: base64
+                    data: base64  // APIが期待するフィールド名に変更
                 });
             }
 
@@ -355,38 +1175,65 @@
                 reportType,
                 inputText: finalInputText,
                 files,
+                additionalInfo,
                 options: {
-                    language,
-                    structured
+                    language
                 }
             };
 
+            const submitBtn = document.querySelector('button[type="submit"]');
+            
             try {
+                // Show loading state
+                window.errorHandler.showLoading(submitBtn, 'レポート生成中...');
                 showStatus('レポートを生成中...');
                 hideError();
                 hideResults();
+                
+                // Show detailed progress
+                showDetailedProgress();
+
+                console.log('Sending request:', {
+                    reportType: requestData.reportType,
+                    inputTextLength: requestData.inputText?.length || 0,
+                    filesCount: requestData.files?.length || 0,
+                    hasAdditionalInfo: !!requestData.additionalInfo
+                });
 
                 const response = await fetch('/api/generate-firebase', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json; charset=utf-8'
                     },
+                    credentials: 'include',
                     body: JSON.stringify(requestData)
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `HTTP ${response.status}`);
-                }
+                console.log('Response status:', response.status);
 
                 const result = await response.json();
+                
+                // Handle API-specific errors
+                await handleApiError(response, result);
+                hideDetailedProgress();
                 displayResults(result);
                 hideStatus();
+                
+                // Show success notification
+                window.errorHandler.showNotification('レポートが正常に生成されました', 'success', 3000);
 
             } catch (error) {
-                console.error('Error:', error);
-                showError(`エラーが発生しました: ${error.message}`);
+                // Enhanced error handling
+                hideDetailedProgress();
+                window.errorHandler.handleError(error, 'report-generation');
                 hideStatus();
+                
+                // Show legacy error display as fallback
+                showError(window.errorHandler.getUserFriendlyMessage(error, 'report-generation'));
+            } finally {
+                // Hide loading state
+                hideDetailedProgress();
+                window.errorHandler.hideLoading(submitBtn);
             }
         });
 
@@ -421,27 +1268,148 @@
             document.getElementById('resultsSection').classList.add('hidden');
         }
 
+        function showDetailedProgress() {
+            const statusText = document.getElementById('statusText');
+            let step = 0;
+            const steps = [
+                'リクエストを準備中...',
+                'ファイルを処理中...',
+                'AIモデルに送信中...',
+                'レポートを生成中...',
+                '最終調整中...'
+            ];
+            
+            const progressInterval = setInterval(() => {
+                if (step < steps.length) {
+                    statusText.textContent = steps[step];
+                    step++;
+                } else {
+                    clearInterval(progressInterval);
+                }
+            }, 1000);
+            
+            // Store interval ID to clear it later
+            window.currentProgressInterval = progressInterval;
+        }
+
+        function hideDetailedProgress() {
+            if (window.currentProgressInterval) {
+                clearInterval(window.currentProgressInterval);
+                window.currentProgressInterval = null;
+            }
+        }
+
         function displayResults(result) {
             const preview = document.getElementById('preview');
-            preview.innerHTML = result.markdown ? 
-                result.markdown.replace(/\n/g, '<br>') : 
-                '<p>レポートが生成されましたが、内容を表示できません。</p>';
+            const content = result.content || result.markdown || '';
+            
+            if (!content) {
+                preview.innerHTML = '<p style="color: var(--color-red-600);">レポートが生成されましたが、内容を表示できません。</p>';
+                document.getElementById('resultsSection').classList.remove('hidden');
+                return;
+            }
+
+            // Create editable textarea for the report
+            preview.innerHTML = `
+                <div style="margin-bottom: var(--space-4);">
+                    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: var(--space-2);">
+                        <span style="font-size: var(--font-size-sm); color: var(--color-gray-600);">
+                            生成されたレポート（編集可能）
+                        </span>
+                        <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">
+                            ${result.usage ? `
+                                Token使用量: ${result.usage.totalTokens.toLocaleString()} 
+                                (入力: ${result.usage.promptTokens.toLocaleString()}, 
+                                出力: ${result.usage.completionTokens.toLocaleString()})
+                                <br>推定コスト: $${result.usage.estimatedCost}
+                            ` : ''}
+                        </div>
+                    </div>
+                    <textarea 
+                        id="reportContent" 
+                        style="
+                            width: 100%; 
+                            min-height: 400px; 
+                            padding: var(--space-4); 
+                            border: 1px solid var(--color-gray-300); 
+                            border-radius: 6px; 
+                            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif; 
+                            font-size: var(--font-size-sm); 
+                            line-height: 1.6;
+                            resize: vertical;
+                            background: white;
+                        "
+                        placeholder="レポート内容がここに表示されます..."
+                    >${content}</textarea>
+                </div>
+                
+                <div style="margin-bottom: var(--space-4);">
+                    <h4 style="margin-bottom: var(--space-2); color: var(--color-gray-800);">プレビュー</h4>
+                    <div 
+                        id="reportPreview" 
+                        style="
+                            border: 1px solid var(--color-gray-300); 
+                            border-radius: 6px; 
+                            padding: var(--space-4); 
+                            background: var(--color-gray-50);
+                            min-height: 200px;
+                            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+                            line-height: 1.6;
+                        "
+                    ></div>
+                </div>
+            `;
+            
+            // Update preview when content changes
+            const reportContent = document.getElementById('reportContent');
+            const reportPreview = document.getElementById('reportPreview');
+            
+            function updatePreview() {
+                const text = reportContent.value;
+                // Simple markdown-like formatting
+                let html = text
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/^# (.*$)/gm, '<h1 style="font-size: var(--font-size-xl); font-weight: 700; margin: var(--space-4) 0 var(--space-2) 0; color: var(--color-gray-900);">$1</h1>')
+                    .replace(/^## (.*$)/gm, '<h2 style="font-size: var(--font-size-lg); font-weight: 600; margin: var(--space-3) 0 var(--space-2) 0; color: var(--color-gray-800);">$1</h2>')
+                    .replace(/^### (.*$)/gm, '<h3 style="font-size: var(--font-size-md); font-weight: 600; margin: var(--space-2) 0 var(--space-1) 0; color: var(--color-gray-700);">$1</h3>');
+                
+                reportPreview.innerHTML = html || '<p style="color: var(--color-gray-500);">プレビューがここに表示されます</p>';
+            }
+            
+            // Initial preview update
+            updatePreview();
+            
+            // Update preview on input
+            reportContent.addEventListener('input', updatePreview);
             
             document.getElementById('resultsSection').classList.remove('hidden');
 
-            // Copy functionality
-            document.getElementById('copyBtn').addEventListener('click', () => {
-                navigator.clipboard.writeText(result.markdown || '');
+            // Update copy functionality
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn.onclick = () => {
+                const currentContent = document.getElementById('reportContent').value;
+                navigator.clipboard.writeText(currentContent);
+                
                 // Show temporary feedback
-                const btn = document.getElementById('copyBtn');
-                const originalText = btn.textContent;
-                btn.textContent = 'コピー済み';
-                setTimeout(() => btn.textContent = originalText, 2000);
-            });
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'コピー済み';
+                copyBtn.style.background = 'var(--color-green-100)';
+                copyBtn.style.color = 'var(--color-green-800)';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.background = '';
+                    copyBtn.style.color = '';
+                }, 2000);
+            };
 
-            // Download functionality
-            document.getElementById('downloadBtn').addEventListener('click', () => {
-                const blob = new Blob([result.markdown || ''], { type: 'text/markdown; charset=utf-8' });
+            // Update download functionality
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.onclick = () => {
+                const currentContent = document.getElementById('reportContent').value;
+                const blob = new Blob([currentContent], { type: 'text/markdown; charset=utf-8' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -450,7 +1418,346 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+                
+                // Show feedback
+                const originalText = downloadBtn.textContent;
+                downloadBtn.textContent = 'ダウンロード済み';
+                setTimeout(() => downloadBtn.textContent = originalText, 2000);
+            };
+        }
+
+        // Custom Prompt Management
+        document.getElementById('savePromptBtn').addEventListener('click', openSavePromptModal);
+        document.getElementById('loadPromptBtn').addEventListener('click', openLoadPromptModal);
+
+        function openSavePromptModal() {
+            const customPrompt = document.getElementById('customPrompt').value.trim();
+            if (!customPrompt) {
+                showError('保存するプロンプトを入力してください');
+                return;
+            }
+            
+            document.getElementById('promptPreview').value = customPrompt;
+            document.getElementById('savePromptModal').classList.remove('hidden');
+        }
+
+        function closeSavePromptModal() {
+            document.getElementById('savePromptModal').classList.add('hidden');
+            document.getElementById('savePromptForm').reset();
+        }
+
+        async function saveCustomPrompt() {
+            const title = document.getElementById('promptTitle').value.trim();
+            const description = document.getElementById('promptDescription').value.trim();
+            const tagsInput = document.getElementById('promptTags').value.trim();
+            const content = document.getElementById('customPrompt').value.trim();
+
+            if (!title || !content) {
+                showError('タイトルとプロンプト内容は必須です');
+                return;
+            }
+
+            const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+
+            try {
+                const response = await fetch('/api/custom-prompts/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        title,
+                        description,
+                        content,
+                        tags
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    window.errorHandler.showNotification('プロンプトを保存しました', 'success', 2000);
+                    closeSavePromptModal();
+                } else {
+                    showError(result.error || 'プロンプトの保存に失敗しました');
+                }
+
+            } catch (error) {
+                console.error('Save prompt error:', error);
+                showError('プロンプトの保存中にエラーが発生しました');
+            }
+        }
+
+        async function openLoadPromptModal() {
+            document.getElementById('loadPromptModal').classList.remove('hidden');
+            await loadUserPrompts();
+        }
+
+        function closeLoadPromptModal() {
+            document.getElementById('loadPromptModal').classList.add('hidden');
+        }
+
+        async function loadUserPrompts() {
+            const promptsList = document.getElementById('promptsList');
+            promptsList.innerHTML = '<div class="loading-message">読み込み中...</div>';
+
+            try {
+                const response = await fetch('/api/custom-prompts/list', {
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayPrompts(result.prompts);
+                } else {
+                    promptsList.innerHTML = '<div class="loading-message">プロンプトの読み込みに失敗しました</div>';
+                }
+
+            } catch (error) {
+                console.error('Load prompts error:', error);
+                promptsList.innerHTML = '<div class="loading-message">エラーが発生しました</div>';
+            }
+        }
+
+        function displayPrompts(prompts) {
+            const promptsList = document.getElementById('promptsList');
+
+            if (prompts.length === 0) {
+                promptsList.innerHTML = '<div class="loading-message">保存されたプロンプトがありません</div>';
+                return;
+            }
+
+            promptsList.innerHTML = prompts.map(prompt => `
+                <div class="prompt-item" onclick="loadPrompt('${prompt.id}')">
+                    <div class="prompt-item-header">
+                        <div class="prompt-item-title">${escapeHtml(prompt.title)}</div>
+                        <div class="prompt-item-date">${formatDate(prompt.createdAt)}</div>
+                    </div>
+                    ${prompt.description ? `<div class="prompt-item-description">${escapeHtml(prompt.description)}</div>` : ''}
+                    ${prompt.tags && prompt.tags.length > 0 ? `
+                        <div class="prompt-item-tags">
+                            ${prompt.tags.map(tag => `<span class="prompt-tag">${escapeHtml(tag)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="prompt-item-actions">
+                        <button class="prompt-action-btn" onclick="event.stopPropagation(); loadPrompt('${prompt.id}')">読込</button>
+                        <button class="prompt-action-btn delete" onclick="event.stopPropagation(); deletePrompt('${prompt.id}', '${escapeHtml(prompt.title)}')">削除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadPrompt(promptId) {
+            try {
+                const response = await fetch(`/api/custom-prompts/list`, {
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const prompt = result.prompts.find(p => p.id === promptId);
+                    if (prompt) {
+                        document.getElementById('customPrompt').value = prompt.content;
+                        closeLoadPromptModal();
+                        window.errorHandler.showNotification('プロンプトを読み込みました', 'success', 1500);
+                    }
+                }
+
+            } catch (error) {
+                console.error('Load prompt error:', error);
+                showError('プロンプトの読み込みに失敗しました');
+            }
+        }
+
+        async function deletePrompt(promptId, promptTitle) {
+            if (!confirm(`「${promptTitle}」を削除しますか？`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/custom-prompts/delete?promptId=${promptId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    window.errorHandler.showNotification('プロンプトを削除しました', 'success', 1500);
+                    await loadUserPrompts(); // Reload the list
+                } else {
+                    showError(result.error || 'プロンプトの削除に失敗しました');
+                }
+
+            } catch (error) {
+                console.error('Delete prompt error:', error);
+                showError('プロンプトの削除中にエラーが発生しました');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return '';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
             });
+        }
+
+        // Trial and Upgrade Management
+        function showTrialExpiredModal(trialInfo) {
+            document.getElementById('trialExpiredModal').classList.remove('hidden');
+            
+            // Disable the main form
+            const reportForm = document.getElementById('reportForm');
+            const formElements = reportForm.querySelectorAll('input, textarea, select, button');
+            formElements.forEach(element => {
+                element.disabled = true;
+            });
+        }
+
+        function showUpgradeModal() {
+            document.getElementById('upgradeModal').classList.remove('hidden');
+            // Close trial expired modal if open
+            document.getElementById('trialExpiredModal').classList.add('hidden');
+        }
+
+        function closeUpgradeModal() {
+            document.getElementById('upgradeModal').classList.add('hidden');
+        }
+
+        function selectPlan(planType) {
+            // In a real implementation, this would integrate with a payment processor
+            alert(`${planType}プランが選択されました。\n\n実装時には決済システム（Stripe等）に連携します。`);
+            
+            // For demo purposes, simulate upgrade
+            if (confirm('デモ用：アップグレードをシミュレートしますか？')) {
+                simulateUpgrade(planType);
+            }
+        }
+
+        function contactSales() {
+            // In a real implementation, this would open a contact form or redirect to sales
+            alert('営業チームへのお問い合わせフォームを開きます。\n\n実装時には適切な連絡先に誘導します。');
+        }
+
+        async function simulateUpgrade(planType) {
+            try {
+                // This would be replaced with actual payment processing
+                const response = await fetch('/api/trial/upgrade', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ planType })
+                });
+
+                if (response.ok) {
+                    window.errorHandler.showNotification('アップグレードが完了しました！', 'success', 3000);
+                    closeUpgradeModal();
+                    
+                    // Re-enable the form
+                    const reportForm = document.getElementById('reportForm');
+                    const formElements = reportForm.querySelectorAll('input, textarea, select, button');
+                    formElements.forEach(element => {
+                        element.disabled = false;
+                    });
+                    
+                    // Refresh trial status
+                    await checkAndDisplayTrialStatus();
+                } else {
+                    throw new Error('Upgrade failed');
+                }
+            } catch (error) {
+                console.error('Upgrade error:', error);
+                showError('アップグレード処理中にエラーが発生しました');
+            }
+        }
+
+        // Enhanced error handling for trial limits and API responses
+        async function handleApiError(response, result) {
+            // Check for trial expiration
+            if (result && result.code === 'TRIAL_EXPIRED') {
+                showTrialExpiredModal(result.trialInfo);
+                throw new Error(result.error);
+            }
+            
+            // Check for no input provided
+            if (result && result.code === 'NO_INPUT_PROVIDED') {
+                showError('テキストまたはファイルを入力してください');
+                throw new Error(result.error);
+            }
+            
+            // Handle other API errors
+            if (!response.ok) {
+                const errorMessage = result?.error || `HTTP ${response.status}: ${response.statusText}`;
+                throw new Error(errorMessage);
+            }
+            
+            return result;
+        }
+
+        // User Token Stats
+        async function loadUserTokenStats() {
+            try {
+                const response = await fetch('/api/user/token-usage?timeRange=30', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        displayUserTokenStats(result.usage);
+                    }
+                } else {
+                    document.getElementById('userTokenStats').innerHTML = 
+                        '<div style="text-align: center; color: var(--color-gray-500);">Token使用量を取得できませんでした</div>';
+                }
+            } catch (error) {
+                console.error('Failed to load user token stats:', error);
+                document.getElementById('userTokenStats').innerHTML = 
+                    '<div style="text-align: center; color: var(--color-red-600);">エラーが発生しました</div>';
+            }
+        }
+
+        function displayUserTokenStats(usage) {
+            const statsDiv = document.getElementById('userTokenStats');
+            const avgCost = usage.totalRecords > 0 ? (usage.totalCost / usage.totalRecords).toFixed(4) : '0.0000';
+            
+            statsDiv.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--space-3); text-align: center;">
+                    <div>
+                        <div style="font-weight: 600;">${usage.totalRecords.toLocaleString()}</div>
+                        <div style="font-size: var(--font-size-xs); opacity: 0.8;">レポート生成数</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600;">${usage.totalTokens.toLocaleString()}</div>
+                        <div style="font-size: var(--font-size-xs); opacity: 0.8;">総Token数</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600;">$${parseFloat(usage.totalCost).toFixed(4)}</div>
+                        <div style="font-size: var(--font-size-xs); opacity: 0.8;">推定コスト</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600;">$${avgCost}</div>
+                        <div style="font-size: var(--font-size-xs); opacity: 0.8;">平均コスト</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: var(--space-2); font-size: var(--font-size-xs); opacity: 0.7;">
+                    過去30日間の使用量
+                </div>
+            `;
         }
 
         // Make removeFile globally accessible

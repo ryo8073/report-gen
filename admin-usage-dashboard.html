@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usage Analytics Dashboard - Investment Analysis Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <style>
+        .metric-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+        .alert-critical {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f4;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-semibold text-gray-900">Usage Analytics Dashboard</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <select id="timeRangeSelect" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                        <option value="1">Last 24 hours</option>
+                        <option value="7">Last 7 days</option>
+                        <option value="30" selected>Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                    </select>
+                    <button id="refreshBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 flex items-center">
+                        <span id="refreshIcon">🔄</span>
+                        <span class="ml-2">Refresh</span>
+                    </button>
+                    <button onclick="window.location.href='admin.html'" class="text-gray-600 hover:text-gray-900 text-sm">
+                        ← Back to Admin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Alerts Section -->
+        <div id="alertsContainer" class="mb-8 hidden">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">System Alerts</h2>
+            <div id="alertsList" class="space-y-3"></div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="metric-card bg-white p-6 rounded-lg shadow">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
+                            <span class="text-blue-600 text-sm font-medium">📊</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Total Reports</p>
+                        <p id="totalReports" class="text-2xl font-semibold text-gray-900">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card bg-white p-6 rounded-lg shadow">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
+                            <span class="text-green-600 text-sm font-medium">💰</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">API Costs</p>
+                        <p id="totalCosts" class="text-2xl font-semibold text-gray-900">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card bg-white p-6 rounded-lg shadow">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-md flex items-center justify-center">
+                            <span class="text-yellow-600 text-sm font-medium">⚡</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Avg Response Time</p>
+                        <p id="avgResponseTime" class="text-2xl font-semibold text-gray-900">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card bg-white p-6 rounded-lg shadow">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-red-100 rounded-md flex items-center justify-center">
+                            <span class="text-red-600 text-sm font-medium">⚠️</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Error Rate</p>
+                        <p id="errorRate" class="text-2xl font-semibold text-gray-900">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Usage Over Time Chart -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Usage Over Time</h3>
+                <div class="h-64">
+                    <canvas id="usageChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Cost Analysis Chart -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Cost Analysis</h3>
+                <div class="h-64">
+                    <canvas id="costChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Type Distribution -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Report Type Distribution</h3>
+                <div class="h-64">
+                    <canvas id="reportTypeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Performance Metrics</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Total Tokens Used</span>
+                        <span id="totalTokens" class="font-medium">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Average Tokens per Request</span>
+                        <span id="avgTokensPerRequest" class="font-medium">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Average Cost per Request</span>
+                        <span id="avgCostPerRequest" class="font-medium">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Total Users</span>
+                        <span id="totalUsers" class="font-medium">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cost Projections -->
+        <div class="bg-white p-6 rounded-lg shadow mb-8">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Cost Projections</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <p class="text-sm text-gray-600">Daily Average</p>
+                    <p id="dailyAvgCost" class="text-xl font-semibold text-gray-900">-</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-gray-600">Monthly Projection</p>
+                    <p id="monthlyProjection" class="text-xl font-semibold text-gray-900">-</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-gray-600">Yearly Projection</p>
+                    <p id="yearlyProjection" class="text-xl font-semibold text-gray-900">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Users Table -->
+        <div class="bg-white p-6 rounded-lg shadow mb-8">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Top Users by Usage</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reports</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tokens</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topUsersTable" class="bg-white divide-y divide-gray-200">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
+            <div id="recentActivity" class="space-y-3">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg flex items-center">
+            <div class="loading-spinner mr-3"></div>
+            <span class="text-gray-700">Loading usage statistics...</span>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let usageChart, costChart, reportTypeChart;
+        let currentTimeRange = 30;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+            loadUsageStatistics();
+        });
+
+        function initializeEventListeners() {
+            document.getElementById('refreshBtn').addEventListener('click', loadUsageStatistics);
+            document.getElementById('timeRangeSelect').addEventListener('change', function(e) {
+                currentTimeRange = parseInt(e.target.value);
+                loadUsageStatistics();
+            });
+        }
+
+        async function loadUsageStatistics() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`/api/admin/usage-stats?timeRange=${currentTimeRange}&includeUserBreakdown=true&format=detailed`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Session-Token': localStorage.getItem('sessionToken') || ''
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateDashboard(result.data);
+                } else {
+                    throw new Error(result.message || 'Failed to load usage statistics');
+                }
+            } catch (error) {
+                console.error('Error loading usage statistics:', error);
+                showError('Failed to load usage statistics: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function updateDashboard(data) {
+            // Update key metrics
+            updateKeyMetrics(data.summary);
+            
+            // Update charts
+            updateUsageChart(data.detailed?.tokenUsage?.dailyStats || {});
+            updateCostChart(data.detailed?.tokenUsage?.reportTypeStats || {});
+            updateReportTypeChart(data.detailed?.tokenUsage?.reportTypeStats || {});
+            
+            // Update performance metrics
+            updatePerformanceMetrics(data.detailed?.tokenUsage?.summary || {});
+            
+            // Update cost projections
+            updateCostProjections(data.costAnalysis?.projections || {});
+            
+            // Update top users table
+            updateTopUsersTable(data.detailed?.userBreakdown?.topUsers || []);
+            
+            // Update recent activity
+            updateRecentActivity(data.detailed?.recentActivity || []);
+            
+            // Update alerts
+            updateAlerts(data.alerts || []);
+            
+            console.log('Dashboard updated successfully');
+        }
+
+        function updateKeyMetrics(summary) {
+            document.getElementById('totalReports').textContent = summary.totalReports?.toLocaleString() || '0';
+            document.getElementById('totalCosts').textContent = '$' + (summary.totalApiCost?.toFixed(4) || '0.0000');
+            document.getElementById('avgResponseTime').textContent = (summary.averageProcessingTime / 1000)?.toFixed(1) + 's' || '0s';
+            document.getElementById('errorRate').textContent = summary.errorRate?.toFixed(1) + '%' || '0%';
+        }
+
+        function updatePerformanceMetrics(summary) {
+            document.getElementById('totalTokens').textContent = summary.totalTokens?.toLocaleString() || '0';
+            document.getElementById('avgTokensPerRequest').textContent = summary.averageTokensPerRequest?.toLocaleString() || '0';
+            document.getElementById('avgCostPerRequest').textContent = '$' + (summary.averageCostPerRequest || '0.0000');
+        }
+
+        function updateCostProjections(projections) {
+            const daily = projections.dailyAverage || {};
+            const monthly = projections.monthly || {};
+            const yearly = projections.yearly || {};
+            
+            document.getElementById('dailyAvgCost').textContent = '$' + (daily.cost?.toFixed(2) || '0.00');
+            document.getElementById('monthlyProjection').textContent = '$' + (monthly.projectedCost?.toFixed(2) || '0.00');
+            document.getElementById('yearlyProjection').textContent = '$' + (yearly.projectedCost?.toFixed(0) || '0');
+        }
+
+        function updateUsageChart(dailyStats) {
+            const ctx = document.getElementById('usageChart').getContext('2d');
+            
+            if (usageChart) {
+                usageChart.destroy();
+            }
+
+            const dates = Object.keys(dailyStats).sort();
+            const counts = dates.map(date => dailyStats[date].count || 0);
+            const tokens = dates.map(date => dailyStats[date].totalTokens || 0);
+
+            usageChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates.map(date => new Date(date).toLocaleDateString()),
+                    datasets: [{
+                        label: 'Reports Generated',
+                        data: counts,
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Tokens Used',
+                        data: tokens,
+                        borderColor: 'rgb(16, 185, 129)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCostChart(reportTypeStats) {
+            const ctx = document.getElementById('costChart').getContext('2d');
+            
+            if (costChart) {
+                costChart.destroy();
+            }
+
+            const types = Object.keys(reportTypeStats);
+            const costs = types.map(type => reportTypeStats[type].totalCost || 0);
+
+            costChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: types.map(type => type.charAt(0).toUpperCase() + type.slice(1)),
+                    datasets: [{
+                        label: 'Total Cost ($)',
+                        data: costs,
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(59, 130, 246)',
+                            'rgb(16, 185, 129)',
+                            'rgb(245, 158, 11)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateReportTypeChart(reportTypeStats) {
+            const ctx = document.getElementById('reportTypeChart').getContext('2d');
+            
+            if (reportTypeChart) {
+                reportTypeChart.destroy();
+            }
+
+            const types = Object.keys(reportTypeStats);
+            const counts = types.map(type => reportTypeStats[type].count || 0);
+
+            reportTypeChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: types.map(type => type.charAt(0).toUpperCase() + type.slice(1)),
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(59, 130, 246)',
+                            'rgb(16, 185, 129)',
+                            'rgb(245, 158, 11)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTopUsersTable(topUsers) {
+            const tbody = document.getElementById('topUsersTable');
+            tbody.innerHTML = '';
+
+            if (topUsers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No user data available</td></tr>';
+                return;
+            }
+
+            topUsers.slice(0, 10).forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${user.email}</div>
+                        <div class="text-sm text-gray-500">${user.role} • ${user.subscriptionStatus}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.usage.totalReports}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.usage.totalTokens.toLocaleString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${user.usage.totalCost.toFixed(4)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${(user.usage.averageProcessingTime / 1000).toFixed(1)}s</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateRecentActivity(recentActivity) {
+            const container = document.getElementById('recentActivity');
+            container.innerHTML = '';
+
+            if (recentActivity.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center">No recent activity</p>';
+                return;
+            }
+
+            recentActivity.slice(0, 10).forEach(activity => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-md';
+                
+                const statusIcon = activity.success ? '✅' : '❌';
+                const statusColor = activity.success ? 'text-green-600' : 'text-red-600';
+                
+                div.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="mr-3">${statusIcon}</span>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">${activity.action}</p>
+                            <p class="text-xs text-gray-500">${activity.userId} • ${activity.reportType || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm ${statusColor}">${activity.processingTime}ms</p>
+                        <p class="text-xs text-gray-500">${new Date(activity.timestamp).toLocaleTimeString()}</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function updateAlerts(alerts) {
+            const container = document.getElementById('alertsContainer');
+            const list = document.getElementById('alertsList');
+            
+            if (alerts.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            list.innerHTML = '';
+
+            alerts.forEach(alert => {
+                const div = document.createElement('div');
+                let alertClass = 'border-l-4 p-4 rounded-md';
+                
+                switch (alert.level) {
+                    case 'critical':
+                        alertClass += ' bg-red-50 border-red-400 alert-critical';
+                        break;
+                    case 'warning':
+                        alertClass += ' bg-yellow-50 border-yellow-400';
+                        break;
+                    case 'info':
+                        alertClass += ' bg-blue-50 border-blue-400';
+                        break;
+                    default:
+                        alertClass += ' bg-gray-50 border-gray-400';
+                }
+                
+                div.className = alertClass;
+                div.innerHTML = `
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <span class="text-lg">${alert.level === 'critical' ? '🚨' : alert.level === 'warning' ? '⚠️' : 'ℹ️'}</span>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-800">${alert.message}</p>
+                            <p class="text-sm text-gray-600 mt-1">${alert.action}</p>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (show) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function showError(message) {
+            alert('Error: ' + message);
+        }
+
+        // Auto-refresh every 5 minutes
+        setInterval(loadUsageStatistics, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

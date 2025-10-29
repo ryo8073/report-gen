@@ -1,5 +1,7 @@
 // Firebase-based admin usage chart endpoint
-import { db } from '../../lib/firebase-db.js';
+import { FirebaseDatabase } from '../lib/firebase-db.js';
+
+const db = new FirebaseDatabase();
 import { verifyToken } from '../../lib/auth.js';
 
 export default async function handler(req, res) {

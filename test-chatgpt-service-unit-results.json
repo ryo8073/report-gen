@@ -1,0 +1,186 @@
+{
+  "summary": {
+    "passed": 29,
+    "failed": 0,
+    "total": 29,
+    "successRate": "100.0%",
+    "totalTime": 59
+  },
+  "tests": [
+    {
+      "testName": "Service Initial State",
+      "passed": true,
+      "message": "Service correctly starts uninitialized",
+      "timestamp": "2025-10-29T01:13:08.876Z"
+    },
+    {
+      "testName": "Service Status Method",
+      "passed": true,
+      "message": "Status method returns correct structure",
+      "timestamp": "2025-10-29T01:13:08.877Z"
+    },
+    {
+      "testName": "Basic Prompt Structure",
+      "passed": true,
+      "message": "Contains system and user prompts",
+      "timestamp": "2025-10-29T01:13:08.877Z"
+    },
+    {
+      "testName": "Prompt Data Substitution",
+      "passed": true,
+      "message": "Investment data properly substituted",
+      "timestamp": "2025-10-29T01:13:08.878Z"
+    },
+    {
+      "testName": "Multiple Report Types",
+      "passed": true,
+      "message": "All report types generate valid prompts",
+      "timestamp": "2025-10-29T01:13:08.878Z"
+    },
+    {
+      "testName": "Invalid Report Type Handling",
+      "passed": true,
+      "message": "Correctly throws error for invalid type",
+      "timestamp": "2025-10-29T01:13:08.879Z"
+    },
+    {
+      "testName": "Complete Data Validation",
+      "passed": true,
+      "message": "Completeness: 86%",
+      "timestamp": "2025-10-29T01:13:08.879Z"
+    },
+    {
+      "testName": "Incomplete Data Validation",
+      "passed": true,
+      "message": "Found 2 warnings",
+      "timestamp": "2025-10-29T01:13:08.879Z"
+    },
+    {
+      "testName": "Empty Data Validation",
+      "passed": true,
+      "message": "Correctly identifies empty data",
+      "timestamp": "2025-10-29T01:13:08.879Z"
+    },
+    {
+      "testName": "Portfolio Formatting with Holdings",
+      "passed": true,
+      "message": "Correctly formats portfolio data",
+      "timestamp": "2025-10-29T01:13:08.879Z"
+    },
+    {
+      "testName": "Empty Portfolio Formatting",
+      "passed": true,
+      "message": "Handles empty portfolio gracefully",
+      "timestamp": "2025-10-29T01:13:08.879Z"
+    },
+    {
+      "testName": "Null Portfolio Formatting",
+      "passed": true,
+      "message": "Handles null portfolio gracefully",
+      "timestamp": "2025-10-29T01:13:08.879Z"
+    },
+    {
+      "testName": "Error Type Handling",
+      "passed": true,
+      "message": "All error types properly categorized",
+      "timestamp": "2025-10-29T01:13:08.893Z"
+    },
+    {
+      "testName": "Error Response Structure",
+      "passed": true,
+      "message": "Error response has all required fields",
+      "timestamp": "2025-10-29T01:13:08.897Z"
+    },
+    {
+      "testName": "Retry Error Detection",
+      "passed": true,
+      "message": "Correctly identifies retryable errors",
+      "timestamp": "2025-10-29T01:13:08.900Z"
+    },
+    {
+      "testName": "Retry Delay Calculation",
+      "passed": true,
+      "message": "Delays increase exponentially",
+      "timestamp": "2025-10-29T01:13:08.901Z"
+    },
+    {
+      "testName": "Maximum Delay Cap",
+      "passed": true,
+      "message": "Delay properly capped at maximum",
+      "timestamp": "2025-10-29T01:13:08.902Z"
+    },
+    {
+      "testName": "Report Structure Parsing",
+      "passed": true,
+      "message": "Report has required structure",
+      "timestamp": "2025-10-29T01:13:08.904Z"
+    },
+    {
+      "testName": "Section Extraction",
+      "passed": true,
+      "message": "Found sections: analysis, riskAssessment, recommendations",
+      "timestamp": "2025-10-29T01:13:08.904Z"
+    },
+    {
+      "testName": "Content Metrics",
+      "passed": true,
+      "message": "Length: 365, Words: 50",
+      "timestamp": "2025-10-29T01:13:08.905Z"
+    },
+    {
+      "testName": "Token Estimation",
+      "passed": true,
+      "message": "Short: 3, Long: 26",
+      "timestamp": "2025-10-29T01:13:08.905Z"
+    },
+    {
+      "testName": "Token Analysis",
+      "passed": true,
+      "message": "Input: 264, Total: 2264",
+      "timestamp": "2025-10-29T01:13:08.906Z"
+    },
+    {
+      "testName": "Initial Queue State",
+      "passed": true,
+      "message": "Queue starts empty",
+      "timestamp": "2025-10-29T01:13:08.906Z"
+    },
+    {
+      "testName": "Priority Calculation",
+      "passed": true,
+      "message": "Basic: 3, Advanced: 1, Premium: 5",
+      "timestamp": "2025-10-29T01:13:08.906Z"
+    },
+    {
+      "testName": "Queue Decision Logic",
+      "passed": true,
+      "message": "Correctly allows requests when under limit",
+      "timestamp": "2025-10-29T01:13:08.907Z"
+    },
+    {
+      "testName": "Queue Decision Logic - At Limit",
+      "passed": true,
+      "message": "Correctly queues when at limit",
+      "timestamp": "2025-10-29T01:13:08.907Z"
+    },
+    {
+      "testName": "Degradation Decision Logic",
+      "passed": true,
+      "message": "Correctly identifies when to degrade",
+      "timestamp": "2025-10-29T01:13:08.908Z"
+    },
+    {
+      "testName": "Basic Analysis Generation",
+      "passed": true,
+      "message": "Generated 846 characters",
+      "timestamp": "2025-10-29T01:13:08.908Z"
+    },
+    {
+      "testName": "Basic Recommendations",
+      "passed": true,
+      "message": "Generated structured recommendations",
+      "timestamp": "2025-10-29T01:13:08.908Z"
+    }
+  ],
+  "timestamp": "2025-10-29T01:13:08.911Z"
+}

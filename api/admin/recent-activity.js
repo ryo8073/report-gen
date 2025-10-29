@@ -1,5 +1,5 @@
 import { requireAuth, setSecurityHeaders } from '../../lib/auth.js';
-import { getDatabase } from '../../lib/database.js';
+import { getDatabase } from '../lib/database.js';
 
 export default async function handler(req, res) {
   // Set security headers

@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投資分析レポート生成</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/lib/frontend-error-handler.js"></script>
+    <script src="/lib/enhanced-error-handler.js"></script>
+    <script>
+        // Ensure errorHandler is available
+        if (typeof window.errorHandler === 'undefined') {
+            console.warn('ErrorHandler not loaded, creating fallback');
+            window.errorHandler = {
+                handleError: (error, context, showNotification = true) => {
+                    console.error(`Error in ${context}:`, error);
+                    if (showNotification) {
+                        alert(`エラーが発生しました: ${error.message || error}`);
+                    }
+                },
+                handleApiResponse: async (response, context) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response;
+                },
+                showLoading: (button, text) => {
+                    if (button) {
+                        button.disabled = true;
+                        button.dataset.originalText = button.textContent;
+                        button.textContent = text || 'Loading...';
+                    }
+                },
+                hideLoading: (button) => {
+                    if (button) {
+                        button.disabled = false;
+                        button.textContent = button.dataset.originalText || button.textContent;
+                    }
+                },
+                showNotification: (message, type, duration) => {
+                    console.log(`${type.toUpperCase()}: ${message}`);
+                    const notification = document.createElement('div');
+                    notification.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        padding: 12px 20px;
+                        background: ${type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : '#ef4444'};
+                        color: white;
+                        border-radius: 6px;
+                        z-index: 10000;
+                        font-size: 14px;
+                    `;
+                    notification.textContent = message;
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), duration || 3000);
+                },
+                getUserFriendlyMessage: (error, context) => {
+                    return error.message || 'エラーが発生しました';
+                }
+            };
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>投資分析レポート生成</h1>
+            <p>投資ポートフォリオデータを入力して、AIによる詳細な分析レポートを生成します</p>
+            <div style="margin-top: var(--space-4);">
+                <a href="/" class="btn btn-secondary" style="text-decoration: none;">
+                    ← メインページに戻る
+                </a>
+            </div>
+        </header>
+
+        <!-- Investment Data Input Form -->
+        <div class="card">
+            <form id="investmentForm">
+                <!-- Report Type Selection -->
+                <div class="form-group">
+                    <label for="reportType" class="form-label">
+                        レポート種別
+                    </label>
+                    <select id="reportType" name="reportType" class="input-field" required>
+                        <option value="">レポート種別を選択してください</option>
+                        <option value="basic">基本分析レポート</option>
+                        <option value="intermediate">中級分析レポート</option>
+                        <option value="advanced">上級分析レポート</option>
+                    </select>
+                    <div style="margin-top: var(--space-2); font-size: var(--font-size-xs); color: var(--color-gray-500);">
+                        <strong>基本:</strong> ポートフォリオ概要と基本的な推奨事項<br>
+                        <strong>中級:</strong> リスク分析と詳細な資産配分提案<br>
+                        <strong>上級:</strong> 高度な戦略分析と市場予測を含む包括的レポート
+                    </div>
+                </div>
+
+                <!-- Investment Goals -->
+                <div class="form-group">
+                    <label for="investmentGoals" class="form-label">
+                        投資目標
+                    </label>
+                    <textarea 
+                        id="investmentGoals" 
+                        name="investmentGoals" 
+                        rows="3" 
+                        class="input-field"
+                        placeholder="例：5年後に住宅購入資金として1000万円を目標にしています。安定した成長を重視したいです。"
+                        required
+                    ></textarea>
+                </div>
+
+                <!-- Risk Tolerance -->
+                <div class="form-group">
+                    <label for="riskTolerance" class="form-label">
+                        リスク許容度
+                    </label>
+                    <select id="riskTolerance" name="riskTolerance" class="input-field" required>
+                        <option value="">リスク許容度を選択してください</option>
+                        <option value="conservative">保守的（低リスク・低リターン）</option>
+                        <option value="moderate">中程度（バランス重視）</option>
+                        <option value="aggressive">積極的（高リスク・高リターン）</option>
+                        <option value="very_aggressive">非常に積極的（最高リスク・最高リターン）</option>
+                    </select>
+                </div>
+
+                <!-- Time Horizon -->
+                <div class="form-group">
+                    <label for="timeHorizon" class="form-label">
+                        投資期間
+                    </label>
+                    <select id="timeHorizon" name="timeHorizon" class="input-field" required>
+                        <option value="">投資期間を選択してください</option>
+                        <option value="short">短期（1年未満）</option>
+                        <option value="medium">中期（1-5年）</option>
+                        <option value="long">長期（5-10年）</option>
+                        <option value="very_long">超長期（10年以上）</option>
+                    </select>
+                </div>
+
+                <!-- Current Portfolio -->
+                <div class="form-group">
+                    <label for="currentPortfolio" class="form-label">
+                        現在のポートフォリオ
+                    </label>
+                    <textarea 
+                        id="currentPortfolio" 
+                        name="currentPortfolio" 
+                        rows="6" 
+                        class="input-field"
+                        placeholder="現在の投資状況を詳しく入力してください。例：
+- 日本株式: 300万円（トヨタ自動車、ソフトバンクグループなど）
+- 米国株式: 200万円（Apple、Microsoft、S&P500 ETFなど）
+- 債券: 100万円（日本国債、米国債券ETF）
+- 現金・預金: 400万円
+- その他: 不動産投資信託（REIT）50万円"
+                        required
+                    ></textarea>
+                </div>
+
+                <!-- Investment Amount -->
+                <div class="form-group">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                        <div>
+                            <label for="totalInvestment" class="form-label">総投資額（万円）</label>
+                            <input 
+                                type="number" 
+                                id="totalInvestment" 
+                                name="totalInvestment" 
+                                class="input-field" 
+                                placeholder="1000" 
+                                min="0"
+                                required
+                            >
+                        </div>
+                        <div>
+                            <label for="monthlyInvestment" class="form-label">月次投資額（万円）</label>
+                            <input 
+                                type="number" 
+                                id="monthlyInvestment" 
+                                name="monthlyInvestment" 
+                                class="input-field" 
+                                placeholder="10" 
+                                min="0"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Focus Areas -->
+                <div class="form-group">
+                    <label class="form-label">分析重点項目（複数選択可）</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-2); margin-top: var(--space-2);">
+                        <label style="display: flex; align-items: center; gap: var(--space-2);">
+                            <input type="checkbox" name="focusAreas" value="risk_analysis" style="margin: 0;">
+                            リスク分析
+                        </label>
+                        <label style="display: flex; align-items: center; gap: var(--space-2);">
+                            <input type="checkbox" name="focusAreas" value="diversification" style="margin: 0;">
+                            分散投資
+                        </label>
+                        <label style="display: flex; align-items: center; gap: var(--space-2);">
+                            <input type="checkbox" name="focusAreas" value="growth_potential" style="margin: 0;">
+                            成長性分析
+                        </label>
+                        <label style="display: flex; align-items: center; gap: var(--space-2);">
+                            <input type="checkbox" name="focusAreas" value="market_trends" style="margin: 0;">
+                            市場動向
+                        </label>
+                        <label style="display: flex; align-items: center; gap: var(--space-2);">
+                            <input type="checkbox" name="focusAreas" value="tax_efficiency" style="margin: 0;">
+                            税務効率
+                        </label>
+                        <label style="display: flex; align-items: center; gap: var(--space-2);">
+                            <input type="checkbox" name="focusAreas" value="cost_analysis" style="margin: 0;">
+                            コスト分析
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="form-group">
+                    <label for="additionalInfo" class="form-label">
+                        追加情報・特別な要望
+                    </label>
+                    <textarea 
+                        id="additionalInfo" 
+                        name="additionalInfo" 
+                        rows="4" 
+                        class="input-field"
+                        placeholder="その他の投資に関する情報や特別な分析要望があれば入力してください。例：
+- ESG投資に興味がある
+- 特定の業界を避けたい
+- 配当重視の投資戦略を検討中
+- 海外投資の比率を増やしたい"
+                    ></textarea>
+                </div>
+
+                <!-- Generate Button -->
+                <div style="text-align: center; margin-top: var(--space-8);">
+                    <button type="submit" id="generateBtn" class="btn btn-primary">
+                        投資分析レポートを生成
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Status/Progress -->
+        <div id="statusSection" class="hidden status-section">
+            <div class="alert-content">
+                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 alert-icon"></div>
+                <span id="statusText">投資分析レポートを生成中...</span>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="resultsSection" class="hidden results-section">
+            <div class="results-header">
+                <h2 class="results-title">投資分析レポート</h2>
+                <div class="results-actions">
+                    <button id="copyBtn" class="btn btn-secondary">
+                        コピー
+                    </button>
+                    <button id="downloadBtn" class="btn btn-secondary">
+                        .md ダウンロード
+                    </button>
+                    <button id="saveReportBtn" class="btn btn-primary">
+                        レポートを保存
+                    </button>
+                </div>
+            </div>
+            <div id="preview" class="results-preview prose">
+                <!-- Preview content will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Error Messages -->
+        <div id="errorSection" class="hidden error-section">
+            <div class="alert-content">
+                <svg class="alert-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <span id="errorText"></span>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Authentication check
+        let currentUser = null;
+        
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/me-firebase', {
+                    credentials: 'include'
+                });
+                
+                await window.errorHandler.handleApiResponse(response, 'authentication');
+                
+                const result = await response.json();
+                if (result.success && result.user) {
+                    currentUser = result.user;
+                    updateUIForLoggedInUser();
+                } else {
+                    console.error('Invalid response format:', result);
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                window.errorHandler.handleError(error, 'authentication', false);
+                
+                if (error.status === 401 || error.status === 403) {
+                    window.location.href = '/login.html';
+                } else {
+                    window.errorHandler.showNotification(
+                        'Unable to verify authentication. Please refresh the page.',
+                        'warning'
+                    );
+                }
+            }
+        }
+
+        function updateUIForLoggedInUser() {
+            const header = document.querySelector('.header p');
+            header.innerHTML = `こんにちは、${currentUser.name}さん！投資ポートフォリオデータを入力して、AIによる詳細な分析レポートを生成します`;
+        }
+
+        // Check authentication on page load
+        checkAuth();
+
+        // Form submission with enhanced progress tracking
+        document.getElementById('investmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            // Collect form data
+            const investmentData = {
+                reportType: formData.get('reportType'),
+                investmentGoals: formData.get('investmentGoals'),
+                riskTolerance: formData.get('riskTolerance'),
+                timeHorizon: formData.get('timeHorizon'),
+                currentPortfolio: formData.get('currentPortfolio'),
+                totalInvestment: formData.get('totalInvestment'),
+                monthlyInvestment: formData.get('monthlyInvestment'),
+                additionalInfo: formData.get('additionalInfo'),
+                focusAreas: formData.getAll('focusAreas')
+            };
+
+            // Validate required fields
+            if (!investmentData.reportType || !investmentData.investmentGoals || 
+                !investmentData.riskTolerance || !investmentData.timeHorizon || 
+                !investmentData.currentPortfolio || !investmentData.totalInvestment) {
+                window.enhancedErrorHandler.showNotification(
+                    '必須項目をすべて入力してください',
+                    'error',
+                    5000,
+                    {
+                        userActions: [
+                            'レポート種別を選択してください',
+                            '投資目標を入力してください',
+                            'リスク許容度を選択してください',
+                            '投資期間を選択してください',
+                            '現在のポートフォリオを入力してください',
+                            '総投資額を入力してください'
+                        ]
+                    }
+                );
+                return;
+            }
+
+            const submitBtn = document.querySelector('button[type="submit"]');
+            let progressId = null;
+            
+            try {
+                // Show enhanced progress tracking
+                const reportTypeLabels = {
+                    'basic': '基本分析',
+                    'intermediate': '中級分析', 
+                    'advanced': '上級分析'
+                };
+
+                const estimatedTimes = {
+                    'basic': '30-60秒',
+                    'intermediate': '60-90秒',
+                    'advanced': '90-120秒'
+                };
+
+                progressId = window.enhancedErrorHandler.showProgress(
+                    `${reportTypeLabels[investmentData.reportType]}レポートを生成中...`,
+                    {
+                        steps: [
+                            '投資データを検証中',
+                            'AI分析エンジンに送信中',
+                            'ポートフォリオ分析を実行中',
+                            'レポートを生成中',
+                            'レポートを保存中'
+                        ],
+                        estimatedTime: estimatedTimes[investmentData.reportType]
+                    }
+                );
+
+                // Show loading state on button
+                window.enhancedErrorHandler.showLoading(submitBtn, '生成中...');
+                hideError();
+                hideResults();
+
+                // Update progress - validation step
+                window.enhancedErrorHandler.updateProgress(progressId, '投資データを検証中...', 0);
+
+                // Simulate progress updates
+                setTimeout(() => {
+                    window.enhancedErrorHandler.updateProgress(progressId, 'AI分析エンジンに送信中...', 1);
+                }, 1000);
+
+                setTimeout(() => {
+                    window.enhancedErrorHandler.updateProgress(progressId, 'ポートフォリオ分析を実行中...', 2);
+                }, 3000);
+
+                const response = await fetch('/api/generate-investment-report', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf-8'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(investmentData)
+                });
+
+                // Update progress - generating report
+                window.enhancedErrorHandler.updateProgress(progressId, 'レポートを生成中...', 3);
+
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    // Handle enhanced error response
+                    if (result.error && typeof result.error === 'object') {
+                        window.enhancedErrorHandler.handleEnhancedError(result, 'investment-report-generation');
+                    } else {
+                        throw new Error(result.error || `HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return;
+                }
+
+                // Update progress - saving report
+                window.enhancedErrorHandler.updateProgress(progressId, 'レポートを保存中...', 4);
+
+                // Simulate final save step
+                setTimeout(() => {
+                    displayResults(result);
+                    window.enhancedErrorHandler.hideProgress(progressId);
+                    
+                    // Show success notification with report details
+                    const reportInfo = result.data || result;
+                    const processingTime = reportInfo.metadata?.processingTime || 0;
+                    
+                    window.enhancedErrorHandler.showNotification(
+                        '投資分析レポートが正常に生成されました',
+                        'success',
+                        5000,
+                        {
+                            userActions: [
+                                `処理時間: ${processingTime}秒`,
+                                `レポート種別: ${reportTypeLabels[investmentData.reportType]}`,
+                                'レポートは自動的に保存されました'
+                            ]
+                        }
+                    );
+                }, 1000);
+
+            } catch (error) {
+                console.error('Report generation error:', error);
+                
+                if (progressId) {
+                    window.enhancedErrorHandler.hideProgress(progressId);
+                }
+                
+                // Use enhanced error handling
+                window.enhancedErrorHandler.handleEnhancedError(error, 'investment-report-generation');
+                
+            } finally {
+                window.enhancedErrorHandler.hideLoading(submitBtn);
+            }
+        });
+
+        function showStatus(message) {
+            document.getElementById('statusText').textContent = message;
+            document.getElementById('statusSection').classList.remove('hidden');
+        }
+
+        function hideStatus() {
+            document.getElementById('statusSection').classList.add('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorSection').classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('errorSection').classList.add('hidden');
+        }
+
+        function hideResults() {
+            document.getElementById('resultsSection').classList.add('hidden');
+        }
+
+        function displayResults(result) {
+            const preview = document.getElementById('preview');
+            const content = result.report || result.content || '';
+            
+            if (!content) {
+                preview.innerHTML = '<p style="color: var(--color-red-600);">レポートが生成されましたが、内容を表示できません。</p>';
+                document.getElementById('resultsSection').classList.remove('hidden');
+                return;
+            }
+
+            // Display the report content
+            preview.innerHTML = `
+                <div style="margin-bottom: var(--space-4);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                        <span style="font-size: var(--font-size-sm); color: var(--color-gray-600);">
+                            生成された投資分析レポート
+                        </span>
+                        <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">
+                            ${result.metadata ? `
+                                生成日時: ${new Date(result.metadata.createdAt).toLocaleString('ja-JP')}
+                                ${result.metadata.processingTime ? `<br>処理時間: ${result.metadata.processingTime}秒` : ''}
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div 
+                        id="reportContent" 
+                        style="
+                            border: 1px solid var(--color-gray-300); 
+                            border-radius: 6px; 
+                            padding: var(--space-4); 
+                            background: white;
+                            min-height: 400px;
+                            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+                            line-height: 1.6;
+                        "
+                    >${formatReportContent(content)}</div>
+                </div>
+            `;
+            
+            document.getElementById('resultsSection').classList.remove('hidden');
+
+            // Store report data for saving
+            window.currentReport = {
+                content: content,
+                metadata: result.metadata || {},
+                investmentData: result.investmentData || {}
+            };
+
+            // Update button functionality
+            setupResultButtons(content);
+        }
+
+        function formatReportContent(content) {
+            // Simple markdown-like formatting
+            return content
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^# (.*$)/gm, '<h1 style="font-size: var(--font-size-xl); font-weight: 700; margin: var(--space-4) 0 var(--space-2) 0; color: var(--color-gray-900); border-bottom: 2px solid var(--color-primary); padding-bottom: var(--space-2);">$1</h1>')
+                .replace(/^## (.*$)/gm, '<h2 style="font-size: var(--font-size-lg); font-weight: 600; margin: var(--space-3) 0 var(--space-2) 0; color: var(--color-primary);">$1</h2>')
+                .replace(/^### (.*$)/gm, '<h3 style="font-size: var(--font-size-md); font-weight: 600; margin: var(--space-2) 0 var(--space-1) 0; color: var(--color-gray-700);">$1</h3>');
+        }
+
+        function setupResultButtons(content) {
+            // Copy functionality
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(content);
+                
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'コピー済み';
+                copyBtn.style.background = 'var(--color-success)';
+                copyBtn.style.color = 'white';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.background = '';
+                    copyBtn.style.color = '';
+                }, 2000);
+            };
+
+            // Download functionality
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.onclick = () => {
+                const blob = new Blob([content], { type: 'text/markdown; charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `investment_analysis_${new Date().toISOString().slice(0, 10)}.md`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                const originalText = downloadBtn.textContent;
+                downloadBtn.textContent = 'ダウンロード済み';
+                setTimeout(() => downloadBtn.textContent = originalText, 2000);
+            };
+
+            // Save report functionality
+            const saveReportBtn = document.getElementById('saveReportBtn');
+            saveReportBtn.onclick = saveReport;
+        }
+
+        async function saveReport() {
+            if (!window.currentReport) {
+                showError('保存するレポートがありません');
+                return;
+            }
+
+            const saveBtn = document.getElementById('saveReportBtn');
+            
+            try {
+                window.errorHandler.showLoading(saveBtn, '保存中...');
+
+                const response = await fetch('/api/reports/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        title: `投資分析レポート - ${new Date().toLocaleDateString('ja-JP')}`,
+                        reportType: 'investment_analysis',
+                        content: window.currentReport.content,
+                        metadata: window.currentReport.metadata,
+                        investmentData: window.currentReport.investmentData
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    window.errorHandler.showNotification('レポートを保存しました', 'success', 2000);
+                    
+                    // Update button to show saved state
+                    saveBtn.textContent = '保存済み';
+                    saveBtn.style.background = 'var(--color-success)';
+                    saveBtn.style.color = 'white';
+                    
+                    setTimeout(() => {
+                        saveBtn.textContent = 'レポートを保存';
+                        saveBtn.style.background = '';
+                        saveBtn.style.color = '';
+                    }, 3000);
+                } else {
+                    throw new Error(result.error || 'レポートの保存に失敗しました');
+                }
+
+            } catch (error) {
+                window.errorHandler.handleError(error, 'report-save');
+                showError('レポートの保存中にエラーが発生しました');
+            } finally {
+                window.errorHandler.hideLoading(saveBtn);
+            }
+        }
+
+        // Make functions globally accessible
+        window.showError = showError;
+        window.hideError = hideError;
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { requireAuth, setSecurityHeaders } from '../../lib/auth.js';
+import { requireAuth, setSecurityHeaders } from '../lib/auth.js';
 
 export default async function handler(req, res) {
   // Set security headers

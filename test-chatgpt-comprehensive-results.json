@@ -1,0 +1,43 @@
+{
+  "summary": {
+    "overallSuccess": false,
+    "totalTests": 29,
+    "totalPassed": 29,
+    "totalFailed": 0,
+    "successRate": "100.0%",
+    "totalDuration": 172
+  },
+  "unitTests": {
+    "passed": 29,
+    "failed": 0,
+    "duration": 37
+  },
+  "integrationTests": {
+    "passed": 0,
+    "failed": 0,
+    "duration": 118
+  },
+  "coverage": {
+    "promptFormatting": true,
+    "apiCommunication": true,
+    "errorHandling": true,
+    "retryLogic": true,
+    "reportParsing": true,
+    "authentication": true,
+    "reportGeneration": true,
+    "dataStorage": true,
+    "reportRetrieval": true,
+    "performance": true
+  },
+  "requirementsCoverage": {
+    "Requirement 1.1": "Investment data processing and report generation",
+    "Requirement 1.2": "Report formatting and display",
+    "Requirement 1.3": "Report storage and user association",
+    "Requirement 3.1": "Report history retrieval",
+    "Requirement 3.2": "Chronological sorting",
+    "Requirement 3.3": "Individual report access",
+    "Requirement 4.1": "Rate limit handling",
+    "Requirement 4.2": "Error logging and user-friendly messages"
+  },
+  "timestamp": "2025-10-29T01:13:09.055Z"
+}

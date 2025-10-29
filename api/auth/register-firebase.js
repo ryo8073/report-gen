@@ -1,7 +1,9 @@
 // Firebase-based user registration endpoint
-import { db } from '../../lib/firebase-db.js';
-import { hashPassword } from '../../lib/auth.js';
-import { createRateLimit } from '../../lib/auth.js';
+import { FirebaseDatabase } from '../lib/firebase-db.js';
+
+const db = new FirebaseDatabase();
+import { hashPassword } from '../lib/auth.js';
+import { createRateLimit } from '../lib/auth.js';
 
 const rateLimit = createRateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -47,7 +49,7 @@ export default async function handler(req, res) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user
+    // Create trial user
     const userData = {
       id: 'user-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
       email: email.toLowerCase(),
@@ -57,7 +59,7 @@ export default async function handler(req, res) {
       createdAt: new Date().toISOString()
     };
 
-    const result = await db.createUser(userData);
+    const result = await db.createTrialUser(userData);
     
     if (result.success) {
       // Log usage
@@ -79,7 +81,35 @@ export default async function handler(req, res) {
     }
 
   } catch (error) {
-    console.error('Registration error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    // Enhanced error logging
+    const errorInfo = {
+      message: error.message,
+      stack: error.stack,
+      email: req.body?.email,
+      ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+      userAgent: req.headers['user-agent'],
+      timestamp: new Date().toISOString(),
+      endpoint: '/api/auth/register-firebase'
+    };
+    
+    console.error('Registration error:', errorInfo);
+    
+    // Log error to database if possible
+    try {
+      await db.logUsage({
+        action: 'registration_error',
+        email: req.body?.email,
+        error: error.message,
+        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent']
+      });
+    } catch (logError) {
+      console.error('Failed to log registration error to database:', logError);
+    }
+    
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 }

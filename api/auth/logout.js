@@ -1,4 +1,4 @@
-import { destroySession, setSecurityHeaders } from '../../lib/auth.js';
+import { destroySession, setSecurityHeaders } from '../lib/auth.js';
 
 export default async function handler(req, res) {
   // Set security headers
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     // Get session token from various sources
     const authHeader = req.headers.authorization;
     const sessionToken = req.headers['x-session-token'];
-    const cookieToken = req.cookies?.sessionToken;
+    const cookieToken = req.cookies?.sessionToken || req.cookies?.token;
     
     let token = null;
     
@@ -40,8 +40,11 @@ export default async function handler(req, res) {
       await destroySession(token);
     }
 
-    // Clear cookie
-    res.setHeader('Set-Cookie', 'sessionToken=; HttpOnly; Secure; SameSite=strict; Max-Age=0; Path=/');
+    // Clear cookies (both possible names for compatibility)
+    res.setHeader('Set-Cookie', [
+      'sessionToken=; HttpOnly; Secure; SameSite=strict; Max-Age=0; Path=/',
+      'token=; HttpOnly; Secure; SameSite=strict; Max-Age=0; Path=/'
+    ]);
 
     res.status(200).json({
       success: true,
@@ -49,10 +52,23 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Logout error:', error);
+    // Enhanced error logging
+    const errorInfo = {
+      message: error.message,
+      stack: error.stack,
+      hasToken: !!token,
+      ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+      userAgent: req.headers['user-agent'],
+      timestamp: new Date().toISOString(),
+      endpoint: '/api/auth/logout'
+    };
+    
+    console.error('Logout error:', errorInfo);
+    
     res.status(500).json({ 
       error: 'Logout failed',
-      code: 'LOGOUT_ERROR'
+      code: 'LOGOUT_ERROR',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 }

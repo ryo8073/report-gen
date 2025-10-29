@@ -1,0 +1,72 @@
+{
+  "summary": {
+    "passed": 10,
+    "failed": 0,
+    "total": 10,
+    "successRate": "100.0%"
+  },
+  "tests": [
+    {
+      "testName": "API Structure Validation",
+      "passed": true,
+      "message": "All required components found",
+      "timestamp": "2025-10-28T11:21:28.686Z"
+    },
+    {
+      "testName": "Report Type Validation",
+      "passed": true,
+      "message": "All report types and validation found",
+      "timestamp": "2025-10-28T11:21:28.688Z"
+    },
+    {
+      "testName": "File Processing Logic",
+      "passed": true,
+      "message": "All file processing components found",
+      "timestamp": "2025-10-28T11:21:28.689Z"
+    },
+    {
+      "testName": "Error Handling",
+      "passed": true,
+      "message": "All error handling patterns found",
+      "timestamp": "2025-10-28T11:21:28.690Z"
+    },
+    {
+      "testName": "Authentication Flow",
+      "passed": true,
+      "message": "All authentication components found",
+      "timestamp": "2025-10-28T11:21:28.690Z"
+    },
+    {
+      "testName": "OpenAI Integration",
+      "passed": true,
+      "message": "All OpenAI integration components found",
+      "timestamp": "2025-10-28T11:21:28.691Z"
+    },
+    {
+      "testName": "Prompt Template Loading",
+      "passed": true,
+      "message": "All template components and files found",
+      "timestamp": "2025-10-28T11:21:28.692Z"
+    },
+    {
+      "testName": "Usage Logging",
+      "passed": true,
+      "message": "All usage logging components found",
+      "timestamp": "2025-10-28T11:21:28.693Z"
+    },
+    {
+      "testName": "Response Format",
+      "passed": true,
+      "message": "All response format components found",
+      "timestamp": "2025-10-28T11:21:28.694Z"
+    },
+    {
+      "testName": "Frontend Integration",
+      "passed": true,
+      "message": "All frontend integration components found",
+      "timestamp": "2025-10-28T11:21:28.695Z"
+    }
+  ],
+  "timestamp": "2025-10-28T11:21:28.696Z",
+  "testType": "mock_validation"
+}

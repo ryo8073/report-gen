@@ -5,6 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ログイン - クライアント向けレポート生成</title>
     <link rel="stylesheet" href="/styles.css">
+    <script src="/lib/frontend-error-handler.js"></script>
+    <script>
+        // Ensure errorHandler is available
+        if (typeof window.errorHandler === 'undefined') {
+            console.warn('ErrorHandler not loaded, creating fallback');
+            window.errorHandler = {
+                handleError: (error, context, showNotification = true) => {
+                    console.error(`Error in ${context}:`, error);
+                },
+                handleApiResponse: async (response, context) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response;
+                },
+                showLoading: (button, text) => {
+                    if (button) {
+                        button.disabled = true;
+                        button.dataset.originalText = button.textContent;
+                        button.textContent = text || 'Loading...';
+                    }
+                },
+                hideLoading: (button) => {
+                    if (button) {
+                        button.disabled = false;
+                        button.textContent = button.dataset.originalText || button.textContent;
+                    }
+                },
+                showNotification: (message, type, duration) => {
+                    console.log(`${type.toUpperCase()}: ${message}`);
+                },
+                getUserFriendlyMessage: (error, context) => {
+                    return error.message || 'エラーが発生しました';
+                }
+            };
+        }
+    </script>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="container">
@@ -102,7 +139,11 @@
             const email = formData.get('email');
             const password = formData.get('password');
 
+            const submitBtn = document.querySelector('button[type="submit"]');
+            
             try {
+                // Show loading state
+                window.errorHandler.showLoading(submitBtn, 'ログイン中...');
                 showStatus('ログイン中...');
                 hideError();
                 hideSuccess();
@@ -113,27 +154,39 @@
                         'Content-Type': 'application/json; charset=utf-8'
                     },
                     body: JSON.stringify({ email, password }),
-                    credentials: 'include' // Include cookies
+                    credentials: 'include'
                 });
+
+                // Use error handler for API response
+                await window.errorHandler.handleApiResponse(response, 'login');
 
                 const result = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(result.error || 'ログインに失敗しました');
+                if (result.success) {
+                    showSuccess('ログイン成功！リダイレクト中...');
+                    hideStatus();
+                    
+                    // Show success notification
+                    window.errorHandler.showNotification('ログインしました', 'success', 1500);
+
+                    // Redirect to main page after successful login
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    throw new Error('ログインに失敗しました');
                 }
 
-                showSuccess('ログイン成功！リダイレクト中...');
-                hideStatus();
-
-                // Redirect to main page after successful login
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 1500);
-
             } catch (error) {
-                console.error('Login error:', error);
-                showError(`ログインエラー: ${error.message}`);
+                // Enhanced error handling
+                window.errorHandler.handleError(error, 'login');
                 hideStatus();
+                
+                // Show legacy error display as fallback
+                showError(window.errorHandler.getUserFriendlyMessage(error, 'login'));
+            } finally {
+                // Hide loading state
+                window.errorHandler.hideLoading(submitBtn);
             }
         });
 
@@ -167,7 +220,7 @@
         // Check if already logged in
         async function checkAuth() {
             try {
-                const response = await fetch('/api/auth/me-simple', {
+                const response = await fetch('/api/auth/me-firebase', {
                     credentials: 'include'
                 });
                 
@@ -176,6 +229,10 @@
                     window.location.href = '/';
                 }
             } catch (error) {
+                // Enhanced error handling - only log non-auth errors
+                if (error.status && error.status !== 401 && error.status !== 403) {
+                    window.errorHandler.handleError(error, 'authentication', false);
+                }
                 // Not logged in, stay on login page
                 console.log('Not authenticated');
             }

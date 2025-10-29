@@ -1,5 +1,5 @@
-import { requireFirebaseAuth, createFirebaseAuthRateLimit } from '../../lib/firebase-auth.js';
-import { getDatabase } from '../../lib/database.js';
+import { requireFirebaseAuth, createFirebaseAuthRateLimit } from '../lib/firebase-auth.js';
+import { getDatabase } from '../lib/database.js';
 
 const rateLimit = createFirebaseAuthRateLimit();
 

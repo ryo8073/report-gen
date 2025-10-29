@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新規登録 - クライアント向けレポート生成</title>
     <link rel="stylesheet" href="/styles.css">
+    <script src="/lib/frontend-error-handler.js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="container">
@@ -12,6 +13,21 @@
         <header class="header">
             <h1>新規登録</h1>
             <p>アカウントを作成してレポート生成を開始</p>
+            
+            <!-- Trial Information -->
+            <div style="background: linear-gradient(135deg, #e0f2fe, #81d4fa); border: 1px solid #29b6f6; border-radius: 8px; padding: var(--space-4); margin-top: var(--space-4); color: #01579b;">
+                <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <strong>🎉 2週間無料トライアル</strong>
+                </div>
+                <div style="font-size: var(--font-size-sm);">
+                    <div>✓ 15回まで無料でレポート生成</div>
+                    <div>✓ 全機能をお試しいただけます</div>
+                    <div>✓ クレジットカード登録不要</div>
+                </div>
+            </div>
         </header>
 
         <!-- Registration Form -->

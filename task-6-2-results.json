@@ -1,0 +1,106 @@
+{
+  "task": "6.2 Test report generation functionality",
+  "timestamp": "2025-10-28T12:52:11.924Z",
+  "summary": {
+    "passed": 17,
+    "failed": 2,
+    "total": 19
+  },
+  "tests": [
+    {
+      "name": "Report generation returns 200",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Response has success field",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Response contains content",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Response includes usage data",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Content includes expected sections",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "jp_tax_strategy generation works",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "jp_tax_strategy returns content",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "jp_inheritance_strategy generation works",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "jp_inheritance_strategy returns content",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "custom generation works",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "custom returns content",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "File upload processing works",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "File upload returns content",
+      "passed": "# 投資分析レポート\n\n## 1. Executive Summary（投資概要）\nこの投資案件は、安定した収益性と成長性を兼ね備えた魅力的な投資機会です。\n\n## 2. Benefits（投資の優位性）\n- 高い収益率（FCR: 8.5%）\n- 安定したキャッシュフロー\n- 優良立地による資産価値の維持\n\n## 3. Risks（潜在リスクの分析）\n- 市場変動リスク\n- 金利上昇リスク\n- 流動性リスク\n\n## 4. Evidence（定量的証拠）\n- 投資額: ¥50,000,000\n- 年間収益: ¥4,250,000\n- ROI: 8.5%\n\n## 添付ファイル分析\n- test-document.pdf: application/pdf\n",
+      "message": ""
+    },
+    {
+      "name": "Content mentions file analysis",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Unauthenticated request rejected",
+      "passed": false,
+      "message": ""
+    },
+    {
+      "name": "Invalid request data rejected",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Invalid HTTP method rejected",
+      "passed": false,
+      "message": ""
+    },
+    {
+      "name": "Empty input handled gracefully",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "name": "Long input processed",
+      "passed": true,
+      "message": ""
+    }
+  ]
+}

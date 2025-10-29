@@ -4,7 +4,7 @@ import {
   validatePassword, 
   validateName,
   setSecurityHeaders 
-} from '../../lib/auth.js';
+} from '../lib/auth.js';
 
 export default async function handler(req, res) {
   // Set security headers

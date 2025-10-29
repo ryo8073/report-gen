@@ -1,227 +1,223 @@
-# クライアント向けレポート生成アプリ
+# クライアント向けレポート生成システム
 
-認証システム付きの日本語レポート生成アプリケーション。ユーザー登録・ログイン機能により使用状況を追跡し、テキスト・画像・PDFからOpenAI APIでプロフェッショナルな日本語レポートを自動生成します。
+プロフェッショナルなレポートを自動生成するWebアプリケーション。投資分析、税務戦略、相続対策などの専門的なレポートをAIで生成します。
 
-## 🚀 主要機能
+## 🎯 主な機能
 
-### 認証システム
-- **ユーザー登録・ログイン**: bcrypt + JWT による安全な認証
-- **セッション管理**: HTTP-only クッキーによるセキュアなセッション
-- **レート制限**: ブルートフォース攻撃対策
-- **使用状況追跡**: 匿名化された統計データ
-
-### レポート生成
-- **3つの主要日本語テンプレート**:
-  - 投資分析（4部構成）
-  - 税務戦略（減価償却）
-  - 相続対策戦略
+### 📊 レポート生成
+- **投資分析（4部構成）**: Executive Summary、Benefits、Risks、Evidence
+- **税務戦略（減価償却）**: 年収・家族構成を考慮した節税分析
+- **相続対策戦略**: 資産情報・法定相続人を基にした相続税対策
 - **カスタムプロンプト**: 独自の分析要求に対応
-- **比較分析**: 複数データの相対評価
-- **汎用レポート**: エグゼクティブサマリー、詳細分析等
 
-### ファイル処理
-- **対応形式**: PDF、PNG、JPG
-- **ドラッグ&ドロップ**: 直感的なファイルアップロード
-- **サイズ制限**: 合計4.5MB以内
-- **テキスト抽出**: PDFからの自動テキスト抽出
+### 👤 ユーザー管理
+- **試用期間システム**: 2週間または15回の利用制限
+- **認証システム**: Firebase Authentication
+- **カスタムプロンプト保存**: ユーザー別のプロンプト管理
 
-### 管理者機能
-- **ダッシュボード**: システム使用統計
-- **アクティビティ監視**: ユーザー活動の追跡
-- **セキュリティログ**: 認証・セキュリティ監視
+### 🔧 管理機能
+- **Admin Dashboard**: 使用統計、ユーザー管理
+- **試用期間統計**: コンバージョン率、利用状況分析
+- **カスタムプロンプト管理**: 全ユーザーのプロンプト確認・削除
 
-## 🛠️ 技術スタック
+## 🚀 セットアップ
 
-- **フロントエンド**: HTML5、CSS3、Vanilla JavaScript
-- **バックエンド**: Node.js (Vercel Functions)
-- **認証**: bcryptjs、jsonwebtoken
-- **データベース**: SQLite（開発）/ PostgreSQL（本番推奨）
-- **AI**: OpenAI GPT-4 API
-- **デプロイ**: Vercel
-
-## 📦 セットアップ
-
-### 1. リポジトリのクローン
-
-```bash
-git clone <repository-url>
-cd proformer-1-page-report
-```
-
-### 2. 依存関係のインストール
-
+### 1. 依存関係のインストール
 ```bash
 npm install
 ```
 
-### 3. 環境変数の設定
-
-`.env` ファイルを作成：
-
+### 2. 環境変数の設定
 ```bash
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key_here
+# .env.exampleをコピーして.envを作成
+cp .env.example .env
 
-# JWT Secret (generate a strong secret for production)
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-
-# Frontend URL (for CORS)
-FRONTEND_URL=http://localhost:3000
-
-# Environment
-NODE_ENV=development
+# .envファイルを編集して実際の値を設定
+# - OPENAI_API_KEY: OpenAIのAPIキー
+# - JWT_SECRET: ランダムな文字列（セキュリティ用）
+# - Firebase関連の設定値
 ```
 
-### 4. 開発サーバーの起動
-
+### 3. Firebase設定
 ```bash
+# Firebase設定の検証
+npm run firebase:validate
+
+# 環境変数チェック
+npm run firebase:env-check
+
+# データベース初期化
+npm run db:init
+
+# 管理者ユーザー作成
+npm run admin:init
+```
+
+### 4. 開発サーバー起動
+```bash
+# 通常の開発サーバー
 npm run dev
+
+# または、デバッグ用サーバー（問題がある場合）
+npm run debug
 ```
 
-## 🏗️ プロジェクト構造
+サーバーは `http://localhost:3000` で起動します。
 
-```
-├── api/
-│   ├── auth/
-│   │   ├── login.js          # ログインAPI
-│   │   ├── register.js       # 登録API
-│   │   ├── logout.js         # ログアウトAPI
-│   │   └── me.js            # ユーザー情報API
-│   ├── admin/
-│   │   ├── stats.js         # 統計API
-│   │   ├── usage-chart.js   # 使用状況API
-│   │   └── recent-activity.js # アクティビティAPI
-│   └── generate.js          # レポート生成API
-├── lib/
-│   ├── auth.js              # 認証ユーティリティ
-│   └── database.js          # データベース管理
-├── PROMPTS/
-│   ├── jp_investment_4part.md
-│   ├── jp_tax_strategy.md
-│   └── jp_inheritance_strategy.md
-├── public/
-│   └── styles.css           # ビルド済みCSS
-├── index.html               # メインアプリ
-├── login.html               # ログインページ
-├── register.html            # 登録ページ
-├── admin.html               # 管理者ダッシュボード
-└── 各種ドキュメント
-```
+### 🔧 トラブルシューティング
 
-## 🔐 セキュリティ機能
+レポート生成が動作しない場合：
 
-### パスワードセキュリティ
-- bcrypt（salt rounds: 12）による強力なハッシュ化
-- 強力なパスワード要件（8文字以上、大文字・小文字・数字）
-- 平文でのパスワード保存なし
+1. **環境変数の確認**
+   ```bash
+   npm run firebase:env-check
+   ```
 
-### セッション管理
-- JWT トークン（7日間有効）
-- HTTP-only クッキー
-- セッション無効化機能
+2. **デバッグサーバーでテスト**
+   ```bash
+   npm run debug
+   # http://localhost:3001 でアクセス
+   ```
 
-### レート制限
-- 認証エンドポイント：15分間に5回まで
-- IPアドレスベースの制限
-- 自動的な古い試行のクリーンアップ
+3. **APIキーの確認**
+   - OpenAI APIキーが正しく設定されているか
+   - Firebase設定が正しいか
 
-### セキュリティヘッダー
-- X-Content-Type-Options: nosniff
-- X-Frame-Options: DENY
-- X-XSS-Protection: 1; mode=block
-- Referrer-Policy: strict-origin-when-cross-origin
-
-## 📊 使用状況追跡
-
-### 追跡される情報
-- ユーザーアクション（ログイン、レポート生成等）
-- ファイルアップロード統計
-- レポート生成頻度
-- IPアドレス（匿名化）
-
-### プライバシー保護
-- 個人を特定できる情報は最小限
-- 匿名化された統計データ
-- 管理者のみが統計にアクセス可能
-
-## 🚀 デプロイ
-
-### Vercel へのデプロイ
-
-1. **GitHub リポジトリの作成**
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin <your-github-repo-url>
-git push -u origin main
-```
-
-2. **Vercel での設定**
-   - Vercel アカウントで GitHub リポジトリをインポート
-   - 環境変数を設定：
-     - `OPENAI_API_KEY`
-     - `JWT_SECRET`
-     - `FRONTEND_URL`
-     - `NODE_ENV=production`
-
-3. **デプロイ実行**
-   - Vercel が自動的にデプロイを実行
-   - 本番URLが提供される
-
-### 環境変数（本番）
-
-```bash
-OPENAI_API_KEY=your_production_openai_key
-JWT_SECRET=your_very_strong_production_secret
-FRONTEND_URL=https://your-domain.vercel.app
-NODE_ENV=production
-```
+4. **ログの確認**
+   - ブラウザのコンソールでエラーを確認
+   - サーバーのログを確認
 
 ## 🧪 テスト
 
-### テスト実行
+### 全テスト実行
 ```bash
-# 単体テスト（将来実装）
-npm test
-
-# 統合テスト（将来実装）
-npm run test:integration
-
-# セキュリティテスト（将来実装）
-npm run test:security
+npm run test:all
 ```
 
-### テストカバレッジ
-- 認証機能テスト
-- レポート生成テスト
-- ファイルアップロードテスト
-- セキュリティテスト
-- パフォーマンステスト
+### 個別テスト
+```bash
+npm run test:auth      # 認証システムテスト
+npm run test:reports   # レポート生成テスト
+npm run test:trial     # 試用期間システムテスト
+```
 
-## 📚 ドキュメント
+## 📁 プロジェクト構造
 
-- [PRD.md](PRD.md) - プロダクト要件定義
-- [USER_STORIES.md](USER_STORIES.md) - ユーザーストーリー
-- [GHERKIN_SCENARIOS.md](GHERKIN_SCENARIOS.md) - Gherkin シナリオ
-- [TEST_PLAN.md](TEST_PLAN.md) - テスト計画
-- [SECURITY.md](SECURITY.md) - セキュリティガイド
+```
+├── api/                    # API エンドポイント
+│   ├── auth/              # 認証関連
+│   ├── admin/             # 管理者機能
+│   ├── custom-prompts/    # カスタムプロンプト管理
+│   └── trial/             # 試用期間管理
+├── lib/                   # ライブラリ
+│   ├── firebase-admin.js  # Firebase Admin SDK
+│   ├── firebase-db.js     # データベース操作
+│   └── auth.js           # 認証ヘルパー
+├── scripts/              # セットアップスクリプト
+├── PROMPTS/              # レポートテンプレート
+├── *.html               # フロントエンド画面
+└── test-*.js           # テストスクリプト
+```
 
-## 🤝 貢献
+## 🔑 環境変数
 
-1. フォークを作成
-2. フィーチャーブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m 'Add amazing feature'`)
-4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
-5. プルリクエストを作成
+`.env` ファイルに以下を設定：
 
-## 📄 ライセンス
+```env
+# Firebase設定
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxx@your-project.iam.gserviceaccount.com
 
-このプロジェクトは内部使用目的で作成されています。
+# JWT設定
+JWT_SECRET=your-jwt-secret-key
 
-## 🆘 サポート
+# OpenAI設定
+OPENAI_API_KEY=your-openai-api-key
 
-問題が発生した場合：
-1. [Issues](https://github.com/your-repo/issues) で既存の問題を確認
-2. 新しい Issue を作成
-3. 詳細なエラー情報と再現手順を提供
+# その他
+NODE_ENV=development
+```
+
+## 💰 試用期間システム
+
+### 制限内容
+- **期間制限**: 登録から2週間
+- **利用制限**: レポート生成15回まで
+- **制限到達時**: 有料プランへの誘導
+
+### 料金プラン
+- **ベーシック**: ¥2,980/月（月50回まで）
+- **プロ**: ¥4,980/月（無制限）
+- **エンタープライズ**: お問い合わせ
+
+## 🛠 開発
+
+### API エンドポイント
+
+#### 認証
+- `POST /api/auth/register-firebase` - ユーザー登録
+- `POST /api/auth/login-firebase` - ログイン
+- `GET /api/auth/me-firebase` - ユーザー情報取得
+- `POST /api/auth/logout` - ログアウト
+
+#### レポート生成
+- `POST /api/generate-firebase` - レポート生成
+
+#### 試用期間
+- `GET /api/trial/status` - 試用期間状況確認
+- `POST /api/trial/upgrade` - アップグレード（デモ）
+
+#### カスタムプロンプト
+- `POST /api/custom-prompts/save` - プロンプト保存
+- `GET /api/custom-prompts/list` - プロンプト一覧
+- `DELETE /api/custom-prompts/delete` - プロンプト削除
+
+#### 管理者
+- `GET /api/admin/stats-firebase` - 使用統計
+- `GET /api/admin/trial-stats` - 試用期間統計
+- `GET /api/admin/custom-prompts` - カスタムプロンプト管理
+
+### データベーススキーマ
+
+#### users コレクション
+```javascript
+{
+  id: string,
+  email: string,
+  password: string,
+  role: 'user' | 'admin',
+  isActive: boolean,
+  // 試用期間情報
+  trialStartDate: timestamp,
+  trialEndDate: timestamp,
+  trialUsageCount: number,
+  trialMaxUsage: number,
+  subscriptionStatus: 'trial' | 'trial_expired' | 'active',
+  subscriptionPlan: string | null
+}
+```
+
+#### custom_prompts コレクション
+```javascript
+{
+  id: string,
+  userId: string,
+  userEmail: string,
+  title: string,
+  content: string,
+  description: string,
+  tags: string[],
+  isActive: boolean,
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+```
+
+## 📝 ライセンス
+
+このプロジェクトは商用利用を想定した有料サービスです。
+
+## 🤝 サポート
+
+技術的な問題や質問については、開発チームまでお問い合わせください。

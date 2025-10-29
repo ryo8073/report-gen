@@ -1,8 +1,10 @@
 // Firebase-based report generation endpoint
 import OpenAI from 'openai';
 import pdf from 'pdf-parse';
-import { db } from '../../lib/firebase-db.js';
+import { FirebaseDatabase } from '../../lib/firebase-db.js';
 import { verifyToken } from '../../lib/auth.js';
+
+const db = new FirebaseDatabase();
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -60,10 +62,68 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'User not found or inactive' });
     }
 
-    const { reportType, customPrompt, files } = req.body;
+    // Check user permissions based on role
+    if (userResult.data.role === 'team_member') {
+      // Check team member permissions
+      const permissionCheck = await db.checkTeamMemberPermissions(decoded.userId, 'canGenerateReports');
+      if (!permissionCheck.success || !permissionCheck.hasPermission) {
+        return res.status(403).json({
+          error: 'レポート生成の権限がありません。管理者にお問い合わせください。',
+          code: 'PERMISSION_DENIED'
+        });
+      }
+
+      // Check monthly usage limit for team members
+      const usageResult = await db.getTeamMemberUsage(decoded.userId, 30);
+      if (usageResult.success && !usageResult.data.canGenerateMore) {
+        return res.status(403).json({
+          error: `月間レポート生成上限（${usageResult.data.monthlyLimit}回）に達しました。`,
+          code: 'MONTHLY_LIMIT_EXCEEDED',
+          usageInfo: usageResult.data
+        });
+      }
+    } else if (userResult.data.role === 'user') {
+      // Check trial status for regular users
+      const trialResult = await db.checkTrialStatus(decoded.userId);
+      if (!trialResult.success) {
+        return res.status(500).json({ error: 'Failed to check trial status' });
+      }
+
+      if (!trialResult.data.canUseService) {
+        const { isDateExpired, isUsageExpired, remainingDays, remainingUsage } = trialResult.data;
+
+        let errorMessage = '試用期間が終了しました。';
+        if (isDateExpired && isUsageExpired) {
+          errorMessage += '期間と利用回数の両方が上限に達しています。';
+        } else if (isDateExpired) {
+          errorMessage += '試用期間（2週間）が終了しています。';
+        } else if (isUsageExpired) {
+          errorMessage += '利用回数（15回）が上限に達しています。';
+        }
+
+        // Mark trial as expired if not already done
+        if (trialResult.data.subscriptionStatus === 'trial') {
+          await db.expireTrial(decoded.userId);
+        }
+
+        return res.status(403).json({
+          error: errorMessage,
+          code: 'TRIAL_EXPIRED',
+          trialInfo: {
+            isDateExpired,
+            isUsageExpired,
+            remainingDays,
+            remainingUsage
+          }
+        });
+      }
+    }
+    // Admin users have unlimited access
+
+    const { reportType, customPrompt, inputText, files, additionalInfo } = req.body;
 
     // Validate report type
-    const validReportTypes = ['jp_investment_4part', 'jp_tax_strategy', 'jp_inheritance_strategy', 'comparison_analysis', 'custom'];
+    const validReportTypes = ['jp_investment_4part', 'jp_tax_strategy', 'jp_inheritance_strategy', 'custom'];
     if (!validReportTypes.includes(reportType)) {
       return res.status(400).json({ error: 'Invalid report type' });
     }
@@ -78,7 +138,7 @@ export default async function handler(req, res) {
     if (files && files.length > 0) {
       for (const file of files) {
         const { name, type, data } = file;
-        
+
         // Validate file size (4.5MB limit)
         const buffer = Buffer.from(data, 'base64');
         if (buffer.length > 4.5 * 1024 * 1024) {
@@ -92,7 +152,7 @@ export default async function handler(req, res) {
           'image/jpeg',
           'image/jpg'
         ];
-        
+
         if (!validTypes.includes(type)) {
           return res.status(400).json({ error: `Unsupported file type: ${type}` });
         }
@@ -119,8 +179,6 @@ export default async function handler(req, res) {
     let promptTemplate = '';
     if (reportType === 'custom') {
       promptTemplate = customPrompt;
-    } else if (reportType === 'comparison_analysis') {
-      promptTemplate = 'Please analyze and compare the provided documents, highlighting key differences, similarities, and insights.';
     } else {
       const template = await loadPromptTemplate(reportType);
       if (!template) {
@@ -137,48 +195,78 @@ export default async function handler(req, res) {
       }
     ];
 
+    // Prepare user input content
+    let userContent = '';
+
+    // Add input text if provided
+    if (inputText && inputText.trim()) {
+      userContent += `\n【入力テキスト】\n${inputText.trim()}\n`;
+    }
+
     // Add file contents to the prompt
     if (fileContents.length > 0) {
-      let fileContentText = '\n\n--- 添付ファイル ---\n';
+      userContent += '\n--- 添付ファイル ---\n';
       for (const file of fileContents) {
         if (file.type === 'application/pdf') {
-          fileContentText += `\n【${file.name}】\n${file.content}\n`;
+          userContent += `\n【${file.name}】\n${file.content}\n`;
         } else {
-          fileContentText += `\n【${file.name}】\n画像ファイルが添付されています。\n`;
+          userContent += `\n【${file.name}】\n画像ファイルが添付されています。内容を分析してください。\n`;
         }
       }
-      fileContentText += '\n--- ファイル終了 ---\n';
-      
+      userContent += '\n--- ファイル終了 ---\n';
+    }
+
+    // Add user content if we have any
+    if (userContent.trim()) {
       messages.push({
         role: 'user',
-        content: fileContentText
+        content: userContent
       });
     }
 
-    // Add image attachments if any
-    const imageAttachments = fileContents.filter(file => 
+    // Handle image attachments for vision model
+    const imageAttachments = fileContents.filter(file =>
       file.type.startsWith('image/')
     );
 
-    if (imageAttachments.length > 0) {
+    if (imageAttachments.length > 0 && messages.length > 1) {
       const lastMessage = messages[messages.length - 1];
-      lastMessage.content = [
+
+      // Convert to vision format if we have images
+      const contentParts = [
         {
           type: 'text',
           text: lastMessage.content
-        },
-        ...imageAttachments.map(file => ({
+        }
+      ];
+
+      // Add each image
+      imageAttachments.forEach(file => {
+        contentParts.push({
           type: 'image_url',
           image_url: {
-            url: file.content
+            url: file.content,
+            detail: 'high'
           }
-        }))
-      ];
+        });
+      });
+
+      lastMessage.content = contentParts;
+    }
+
+    // Validate that we have content to process
+    if (messages.length < 2 && (!inputText || !inputText.trim())) {
+      return res.status(400).json({
+        error: 'テキストまたはファイルを入力してください',
+        code: 'NO_INPUT_PROVIDED'
+      });
     }
 
     // Call OpenAI API
+    const modelToUse = imageAttachments.length > 0 ? 'gpt-4o' : 'gpt-4o';
+
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: modelToUse,
       messages: messages,
       max_tokens: 4000,
       temperature: 0.7
@@ -186,17 +274,57 @@ export default async function handler(req, res) {
 
     const generatedContent = response.choices[0].message.content;
 
+    // Extract token usage information
+    const usage = response.usage || {};
+    const promptTokens = usage.prompt_tokens || 0;
+    const completionTokens = usage.completion_tokens || 0;
+    const totalTokens = usage.total_tokens || 0;
+
+    // Calculate estimated cost
+    const estimatedCost = db.calculateTokenCost(promptTokens, completionTokens, modelToUse);
+
+    // Log token usage
+    await db.logTokenUsage({
+      userId: decoded.userId,
+      userEmail: userResult.data.email,
+      reportType,
+      model: modelToUse,
+      promptTokens,
+      completionTokens,
+      totalTokens,
+      estimatedCost,
+      hasImages: imageAttachments.length > 0,
+      fileCount: files ? files.length : 0,
+      fileTypes: files ? files.map(f => f.type) : [],
+      inputTextLength: inputText ? inputText.length : 0,
+      outputTextLength: generatedContent ? generatedContent.length : 0,
+      ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+      userAgent: req.headers['user-agent']
+    });
+
     // Log report generation
     await db.logReportGeneration({
       userId: decoded.userId,
       email: userResult.data.email,
       reportType,
       customPrompt: reportType === 'custom' ? customPrompt : null,
+      additionalInfo: additionalInfo || null,
       fileCount: files ? files.length : 0,
       fileNames: files ? files.map(f => f.name) : [],
+      tokenUsage: {
+        promptTokens,
+        completionTokens,
+        totalTokens,
+        estimatedCost
+      },
       ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
       userAgent: req.headers['user-agent']
     });
+
+    // Increment trial usage if user is on trial
+    if (trialResult.data.subscriptionStatus === 'trial') {
+      await db.incrementTrialUsage(decoded.userId);
+    }
 
     // Log usage
     await db.logUsage({
@@ -204,6 +332,7 @@ export default async function handler(req, res) {
       userId: decoded.userId,
       email: userResult.data.email,
       reportType,
+      trialUsageCount: trialResult.data.trialUsageCount + (trialResult.data.subscriptionStatus === 'trial' ? 1 : 0),
       ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
       userAgent: req.headers['user-agent']
     });
@@ -211,12 +340,62 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       content: generatedContent,
+      markdown: generatedContent, // For backward compatibility
       reportType,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      usage: {
+        promptTokens,
+        completionTokens,
+        totalTokens,
+        estimatedCost: estimatedCost.toFixed(6)
+      }
     });
 
   } catch (error) {
-    console.error('Generation error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    // Enhanced error logging
+    const errorInfo = {
+      message: error.message,
+      stack: error.stack,
+      userId: decoded?.userId,
+      reportType: req.body?.reportType,
+      fileCount: req.body?.files?.length || 0,
+      ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+      userAgent: req.headers['user-agent'],
+      timestamp: new Date().toISOString(),
+      endpoint: '/api/generate-firebase'
+    };
+
+    console.error('Generation error:', errorInfo);
+
+    // Log error to database if possible
+    try {
+      if (decoded?.userId) {
+        await db.logUsage({
+          action: 'generation_error',
+          userId: decoded.userId,
+          reportType: req.body?.reportType,
+          error: error.message,
+          ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+          userAgent: req.headers['user-agent']
+        });
+      }
+    } catch (logError) {
+      console.error('Failed to log generation error to database:', logError);
+    }
+
+    // Provide specific error messages based on error type
+    let userMessage = 'Internal server error';
+    if (error.message.includes('OpenAI')) {
+      userMessage = 'AI service temporarily unavailable. Please try again later.';
+    } else if (error.message.includes('PDF')) {
+      userMessage = 'Failed to process PDF file. Please ensure the file is not corrupted.';
+    } else if (error.message.includes('File')) {
+      userMessage = 'File processing error. Please check your file format and size.';
+    }
+
+    return res.status(500).json({
+      error: userMessage,
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 }

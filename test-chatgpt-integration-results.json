@@ -1,0 +1,94 @@
+{
+  "summary": {
+    "passed": 1,
+    "failed": 11,
+    "total": 12,
+    "successRate": "8.3%",
+    "totalTime": 150,
+    "reportsGenerated": 0
+  },
+  "tests": [
+    {
+      "testName": "Server Health Check",
+      "passed": false,
+      "message": "Server returned 404",
+      "timestamp": "2025-10-29T01:13:08.986Z"
+    },
+    {
+      "testName": "Authentication Setup",
+      "passed": false,
+      "message": "Failed to obtain authentication token",
+      "timestamp": "2025-10-29T01:13:09.008Z"
+    },
+    {
+      "testName": "Basic Report Generation",
+      "passed": false,
+      "message": "No authentication token available",
+      "timestamp": "2025-10-29T01:13:09.009Z"
+    },
+    {
+      "testName": "Intermediate Report Generation",
+      "passed": false,
+      "message": "No authentication token available",
+      "timestamp": "2025-10-29T01:13:09.009Z"
+    },
+    {
+      "testName": "Invalid Data Handling",
+      "passed": false,
+      "message": "No authentication token available",
+      "timestamp": "2025-10-29T01:13:09.009Z"
+    },
+    {
+      "testName": "Unauthorized Access Prevention",
+      "passed": true,
+      "message": "Correctly rejected unauthenticated request",
+      "timestamp": "2025-10-29T01:13:09.021Z"
+    },
+    {
+      "testName": "Report History Retrieval",
+      "passed": false,
+      "message": "No authentication token available",
+      "timestamp": "2025-10-29T01:13:09.021Z"
+    },
+    {
+      "testName": "Individual Report Retrieval",
+      "passed": false,
+      "message": "No authentication token or reports available",
+      "timestamp": "2025-10-29T01:13:09.022Z"
+    },
+    {
+      "testName": "Report Access Control",
+      "passed": false,
+      "message": "No reports available for testing",
+      "timestamp": "2025-10-29T01:13:09.022Z"
+    },
+    {
+      "testName": "Error Handling and Recovery",
+      "passed": false,
+      "message": "No authentication token available",
+      "timestamp": "2025-10-29T01:13:09.022Z"
+    },
+    {
+      "testName": "Performance and Response Times",
+      "passed": false,
+      "message": "No authentication token available",
+      "timestamp": "2025-10-29T01:13:09.023Z"
+    },
+    {
+      "testName": "Data Persistence and Storage",
+      "passed": false,
+      "message": "No authentication token available",
+      "timestamp": "2025-10-29T01:13:09.023Z"
+    }
+  ],
+  "testData": {
+    "userId": null,
+    "reportsGenerated": []
+  },
+  "configuration": {
+    "baseUrl": "http://localhost:3000",
+    "timeout": 30000,
+    "testUser": "integration-test@example.com"
+  },
+  "timestamp": "2025-10-29T01:13:09.043Z"
+}
