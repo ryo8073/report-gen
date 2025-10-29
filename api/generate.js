@@ -930,8 +930,18 @@ export default async (req, res) => {
     sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
 
     // Enhanced input validation
+    console.log('[VALIDATION] Starting input validation', {
+      reportType,
+      hasInputText: !!inputText,
+      inputTextLength: inputText?.length || 0,
+      hasFiles: !!(files && files.length > 0),
+      fileCount: files?.length || 0,
+      hasAdditionalInfo: !!additionalInfo
+    });
+    
     const validationError = validateInput({ reportType, inputText, files, additionalInfo, options });
     if (validationError) {
+      console.log('[VALIDATION] Validation failed:', validationError);
       // Track validation error
       await trialAnalytics.trackReportGeneration({
         reportType: reportType || 'unknown',
@@ -996,6 +1006,13 @@ export default async (req, res) => {
 
   } catch (error) {
     console.error('Generate API error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      status: error.status,
+      code: error.code
+    });
     
     // Handle comprehensive error scenarios
     const errorResponse = handleApiError(error);
@@ -1523,15 +1540,7 @@ async function processTextFile(file) {
 
 // Legacy file processing function (kept for compatibility)
 async function processFiles(files) {
-  // Use new vision processing if files contain PDF or images
-  const hasVisionFiles = files.some(file => 
-    file.type === 'application/pdf' || file.type.startsWith('image/')
-  );
-  
-  if (hasVisionFiles) {
-    console.log('[FILE PROCESSING] Using vision-based processing for multimodal files');
-    return await processFilesWithVision(files, 'jp_investment_4part');
-  }
+  console.log(`[FILE PROCESSING] Processing ${files.length} files with legacy processing`);
 
   // Fallback to legacy processing for text files
   let content = '';
@@ -1952,7 +1961,18 @@ function validateComparisonRequest(requestBody) {
 function validateFiles(files) {
   const maxFiles = 5;
   const maxFileSize = 10 * 1024 * 1024; // 10MB in bytes
-  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'text/plain'];
+  const allowedTypes = [
+    'application/pdf', 
+    'image/jpeg', 
+    'image/jpg', 
+    'image/png', 
+    'image/gif', 
+    'image/webp',
+    'text/plain',
+    'text/csv',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ];
 
   if (files.length > maxFiles) {
     return {
