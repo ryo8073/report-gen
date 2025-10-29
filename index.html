@@ -1332,8 +1332,20 @@ ${inputText || ''}`;
                     displayResults(result);
                     hideStatus();
                     
-                    // Show success notification
-                    window.errorHandler.showNotification('レポートが正常に生成されました', 'success', 3000);
+                    // Show success notification with service info
+                    const aiService = result.report?.aiService || 'openai';
+                    const serviceNotification = result.report?.serviceNotification;
+                    
+                    let notificationMessage = 'レポートが正常に生成されました';
+                    if (serviceNotification) {
+                        notificationMessage += ' (バックアップサービス使用)';
+                        // Show additional info about backup service usage
+                        setTimeout(() => {
+                            window.errorHandler.showNotification(serviceNotification.message, 'info', 5000);
+                        }, 3500);
+                    }
+                    
+                    window.errorHandler.showNotification(notificationMessage, 'success', 3000);
                 }, 1500);
 
             } catch (error) {
@@ -1648,7 +1660,8 @@ ${inputText || ''}`;
         }
 
         function displayResults(result) {
-            const content = result.content || result.markdown || '';
+            // Handle both old and new API response formats
+            const content = result.report?.content || result.content || result.markdown || '';
             
             if (!content) {
                 const reportContent = document.getElementById('reportContent');
@@ -1676,7 +1689,8 @@ ${inputText || ''}`;
             }
             
             // Show usage information if available
-            if (result.usage) {
+            const usage = result.report?.usage || result.usage;
+            if (usage) {
                 const usageInfo = document.createElement('div');
                 usageInfo.className = 'usage-info';
                 usageInfo.style.cssText = `
@@ -1688,10 +1702,10 @@ ${inputText || ''}`;
                     text-align: right;
                 `;
                 usageInfo.innerHTML = `
-                    Token使用量: ${result.usage.totalTokens.toLocaleString()} 
-                    (入力: ${result.usage.promptTokens.toLocaleString()}, 
-                    出力: ${result.usage.completionTokens.toLocaleString()})
-                    ${result.usage.estimatedCost ? ` | 推定コスト: ${result.usage.estimatedCost}` : ''}
+                    Token使用量: ${usage.totalTokens.toLocaleString()} 
+                    (入力: ${usage.promptTokens.toLocaleString()}, 
+                    出力: ${usage.completionTokens.toLocaleString()})
+                    ${usage.estimatedCost ? ` | 推定コスト: ${usage.estimatedCost}` : ''}
                 `;
                 
                 const reportContainer = document.querySelector('.report-display-container');
