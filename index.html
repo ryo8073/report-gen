@@ -737,6 +737,130 @@
             padding: var(--space-8);
             color: var(--color-gray-500);
         }
+
+        /* File Preview Styles */
+        .file-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .file-preview-btn {
+            background: var(--color-blue-50);
+            color: var(--color-blue-600);
+            border: 1px solid var(--color-blue-200);
+            border-radius: 6px;
+            padding: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-preview-btn:hover {
+            background: var(--color-blue-100);
+            color: var(--color-blue-700);
+        }
+
+        .file-type-badge {
+            font-size: 11px;
+            color: var(--color-green-600);
+            background: var(--color-green-50);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 2px;
+        }
+
+        .pdf-icon {
+            color: var(--color-red-600);
+        }
+
+        /* Preview Modal Content Styles */
+        .image-preview-container {
+            text-align: center;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .image-info, .pdf-info {
+            text-align: left;
+            background: var(--color-gray-50);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .pdf-preview-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .pdf-icon-large {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .pdf-icon-large svg {
+            color: var(--color-red-600);
+        }
+
+        .pdf-label {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .ai-analysis-note {
+            background: var(--color-blue-50);
+            border: 1px solid var(--color-blue-200);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--color-blue-800);
+        }
+
+        .ai-analysis-note svg {
+            color: var(--color-blue-600);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .pdf-capabilities {
+            margin-top: 20px;
+        }
+
+        .pdf-capabilities h4 {
+            margin-bottom: 12px;
+            color: var(--color-gray-800);
+            font-size: 16px;
+        }
+
+        .pdf-capabilities ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .pdf-capabilities li {
+            padding: 6px 0;
+            color: var(--color-gray-700);
+            font-size: 14px;
+        }
     </style>
 
     <!-- Trial Expired Modal -->
@@ -844,6 +968,23 @@
                         すべてのプランで14日間の返金保証付き
                     </p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Preview Modal -->
+    <div id="filePreviewModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3 id="previewModalTitle">ファイルプレビュー</h3>
+                <button onclick="closePreviewModal()" class="modal-close">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="previewModalContent" class="modal-body">
+                <!-- Content will be dynamically inserted here -->
             </div>
         </div>
     </div>
@@ -1272,23 +1413,132 @@
         function displayFile(file) {
             const fileItem = document.createElement('div');
             fileItem.className = 'file-item';
+            
+            // Generate unique ID for this file
+            const fileId = `file_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+            
+            // Determine file type icon and preview capability
+            const isImage = file.type.startsWith('image/');
+            const isPDF = file.type === 'application/pdf';
+            const canPreview = isImage || isPDF;
+            
+            const fileIcon = isPDF ? 
+                `<svg class="file-icon pdf-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M4 18h12V6l-4-4H4v16zM9 2h2v4h4v2H9V2z"/>
+                    <text x="10" y="14" text-anchor="middle" font-size="6" fill="white">PDF</text>
+                </svg>` :
+                `<svg class="file-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                </svg>`;
+            
             fileItem.innerHTML = `
                 <div class="file-info">
-                    <svg class="file-icon" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-                    </svg>
+                    ${fileIcon}
                     <div class="file-details">
                         <div class="file-name">${file.name}</div>
                         <div class="file-size">(${(file.size / 1024 / 1024).toFixed(1)}MB)</div>
+                        ${canPreview ? `<div class="file-type-badge">${isPDF ? 'PDF' : '画像'} - AI読み取り対応</div>` : ''}
                     </div>
                 </div>
-                <button onclick="removeFile('${file.name}')" class="file-remove">
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                    </svg>
-                </button>
+                <div class="file-actions">
+                    ${canPreview ? `<button onclick="previewFile('${fileId}')" class="file-preview-btn" title="プレビュー">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>` : ''}
+                    <button onclick="removeFile('${file.name}')" class="file-remove" title="削除">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
             `;
+            
+            // Store file reference for preview
+            fileItem.dataset.fileId = fileId;
+            fileItem.fileReference = file;
+            
             fileList.appendChild(fileItem);
+        }
+
+        // File preview functionality
+        function previewFile(fileId) {
+            const fileItem = document.querySelector(`[data-file-id="${fileId}"]`);
+            if (!fileItem || !fileItem.fileReference) {
+                console.error('File not found for preview');
+                return;
+            }
+            
+            const file = fileItem.fileReference;
+            const modal = document.getElementById('filePreviewModal');
+            const modalTitle = document.getElementById('previewModalTitle');
+            const modalContent = document.getElementById('previewModalContent');
+            
+            modalTitle.textContent = `${file.name} のプレビュー`;
+            
+            if (file.type.startsWith('image/')) {
+                // Image preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    modalContent.innerHTML = `
+                        <div class="image-preview-container">
+                            <img src="${e.target.result}" alt="${file.name}" class="preview-image">
+                            <div class="image-info">
+                                <p><strong>ファイル名:</strong> ${file.name}</p>
+                                <p><strong>サイズ:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                <p><strong>形式:</strong> ${file.type}</p>
+                                <div class="ai-analysis-note">
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                    </svg>
+                                    この画像はAIが自動的に読み取り、投資分析レポートに反映されます
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            } else if (file.type === 'application/pdf') {
+                // PDF preview
+                modalContent.innerHTML = `
+                    <div class="pdf-preview-container">
+                        <div class="pdf-icon-large">
+                            <svg width="64" height="64" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M4 18h12V6l-4-4H4v16zM9 2h2v4h4v2H9V2z"/>
+                            </svg>
+                            <div class="pdf-label">PDF</div>
+                        </div>
+                        <div class="pdf-info">
+                            <h3>${file.name}</h3>
+                            <p><strong>サイズ:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            <p><strong>形式:</strong> PDF文書</p>
+                            <div class="ai-analysis-note">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                </svg>
+                                このPDFはAIが自動的に読み取り、投資分析レポートに反映されます
+                            </div>
+                            <div class="pdf-capabilities">
+                                <h4>AI読み取り機能:</h4>
+                                <ul>
+                                    <li>✓ 投資指標の自動抽出（FCR、DCR、BER、IRR、NPV等）</li>
+                                    <li>✓ 物件情報の読み取り（所在地、構造、築年数等）</li>
+                                    <li>✓ 財務データの分析（収入、支出、キャッシュフロー等）</li>
+                                    <li>✓ 表やグラフの内容理解</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            modal.classList.remove('hidden');
+        }
+        
+        // Close modal functionality
+        function closePreviewModal() {
+            document.getElementById('filePreviewModal').classList.add('hidden');
         }
 
         function removeFile(fileName) {

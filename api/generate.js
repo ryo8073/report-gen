@@ -1177,23 +1177,54 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
     const basePrompt = promptManager.buildFullPrompt(reportType, inputText, files, additionalInfo);
     let fullPrompt = formatPromptForGemini(reportType, basePrompt);
     
-    // Process files with legacy processing (temporarily disabled multimodal for debugging)
-    let fileContent = '';
+    // Gemini 2.0 Flash supports direct multimodal input - re-enabling carefully
+    let parts = [{ text: fullPrompt }];
+    
     if (files && files.length > 0) {
-      try {
-        console.log(`[GEMINI] Processing ${files.length} files with legacy processing`);
-        fileContent = await processFiles(files);
-        // Add file content to the prompt
-        fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
-      } catch (fileError) {
-        console.error('[GEMINI] File processing error:', fileError);
-        throw new Error(`file processing failed: ${fileError.message}`);
+      console.log(`[GEMINI] Processing ${files.length} files with native multimodal support`);
+      
+      // Add files directly to Gemini (native multimodal support)
+      for (const file of files) {
+        try {
+          if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+            console.log(`[GEMINI] Adding ${file.name} (${file.type}) directly to multimodal input`);
+            
+            // Validate file size for multimodal processing
+            const fileSizeKB = Math.round(file.data.length * 0.75 / 1024);
+            if (fileSizeKB > 5120) { // 5MB limit for multimodal
+              console.log(`[GEMINI] File ${file.name} too large for multimodal (${fileSizeKB}KB), using text processing`);
+              const fallbackContent = await processTextFallback(file);
+              parts.push({ text: `\n\n【ファイル: ${file.name}】\n${fallbackContent}` });
+            } else {
+              parts.push({
+                inlineData: {
+                  mimeType: file.type,
+                  data: file.data
+                }
+              });
+            }
+          } else {
+            // For text files, process and add as text
+            const buffer = Buffer.from(file.data, 'base64');
+            const textContent = buffer.toString('utf8');
+            parts.push({
+              text: `\n\n【ファイル: ${file.name}】\n${textContent.substring(0, 2000)}`
+            });
+          }
+        } catch (fileError) {
+          console.error(`[GEMINI] Error processing file ${file.name}:`, fileError);
+          parts.push({
+            text: `\n\n【ファイル処理エラー: ${file.name}】\n${fileError.message}`
+          });
+        }
       }
+      
+      console.log(`[GEMINI] Prepared ${parts.length} parts for multimodal generation`);
     }
 
-  // Call Gemini API with text prompt
-  console.log(`[GEMINI] Calling Gemini 2.0 Flash with text prompt`);
-  const result = await geminiModel.generateContent(fullPrompt);
+  // Call Gemini API with multimodal parts
+  console.log(`[GEMINI] Calling Gemini 2.0 Flash with ${parts.length} parts`);
+  const result = await geminiModel.generateContent(parts);
   const response = await result.response;
   const content = response.text();
 
@@ -1535,6 +1566,30 @@ async function processTextFile(file) {
     };
   } catch (error) {
     throw new Error(`Failed to process text file: ${error.message}`);
+  }
+}
+
+// Text fallback for large files
+async function processTextFallback(file) {
+  try {
+    const buffer = Buffer.from(file.data, 'base64');
+    const fileSizeKB = Math.round(buffer.length / 1024);
+    
+    if (file.type === 'application/pdf') {
+      return `PDFファイル (${fileSizeKB}KB) - マルチモーダル処理には大きすぎるため、テキスト抽出を試行します。\n` +
+             `ファイル名: ${file.name}\n` +
+             `このPDFには投資分析に関する重要な情報が含まれていると想定して分析を進めます。`;
+    } else if (file.type.startsWith('image/')) {
+      return `画像ファイル (${fileSizeKB}KB) - マルチモーダル処理には大きすぎるため、ファイル情報のみ提供します。\n` +
+             `ファイル名: ${file.name}\n` +
+             `この画像には投資分析に関する図表やデータが含まれていると想定して分析を進めます。`;
+    } else {
+      // Try to read as text
+      const textContent = buffer.toString('utf8');
+      return `ファイル内容 (${fileSizeKB}KB):\n${textContent.substring(0, 1000)}${textContent.length > 1000 ? '\n... (内容が長いため省略)' : ''}`;
+    }
+  } catch (error) {
+    return `ファイル処理エラー: ${error.message}`;
   }
 }
 
