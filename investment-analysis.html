@@ -382,39 +382,13 @@
         // Authentication check
         let currentUser = null;
         
-        async function checkAuth() {
-            try {
-                const response = await fetch('/api/auth/me-firebase', {
-                    credentials: 'include'
-                });
-                
-                await window.errorHandler.handleApiResponse(response, 'authentication');
-                
-                const result = await response.json();
-                if (result.success && result.user) {
-                    currentUser = result.user;
-                    updateUIForLoggedInUser();
-                } else {
-                    console.error('Invalid response format:', result);
-                    window.location.href = '/login.html';
-                }
-            } catch (error) {
-                window.errorHandler.handleError(error, 'authentication', false);
-                
-                if (error.status === 401 || error.status === 403) {
-                    window.location.href = '/login.html';
-                } else {
-                    window.errorHandler.showNotification(
-                        'Unable to verify authentication. Please refresh the page.',
-                        'warning'
-                    );
-                }
-            }
+        // Trial site - no authentication needed
+        function checkAuth() {
+            console.log('Investment analysis page loaded - authentication disabled for trial');
         }
 
         function updateUIForLoggedInUser() {
-            const header = document.querySelector('.header p');
-            header.innerHTML = `こんにちは、${currentUser.name}さん！投資ポートフォリオデータを入力して、AIによる詳細な分析レポートを生成します`;
+            // No user-specific UI needed for trial
         }
 
         // Check authentication on page load
