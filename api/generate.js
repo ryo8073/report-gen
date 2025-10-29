@@ -941,12 +941,14 @@ export default async (req, res) => {
       inputTextLength: inputText?.length || 0,
       hasFiles: !!(files && files.length > 0),
       fileCount: files?.length || 0,
-      hasAdditionalInfo: !!additionalInfo
+      hasAdditionalInfo: !!additionalInfo,
+      filesDetails: files ? files.map(f => ({ name: f.name, type: f.type, hasData: !!f.data })) : []
     });
     
     const validationError = validateInput({ reportType, inputText, files, additionalInfo, options });
     if (validationError) {
       console.log('[VALIDATION] Validation failed:', validationError);
+      console.log('[VALIDATION] Request details:', { reportType, inputText: inputText?.substring(0, 100), filesCount: files?.length });
       // Track validation error
       await trialAnalytics.trackReportGeneration({
         reportType: reportType || 'unknown',
@@ -1906,10 +1908,13 @@ function validateInput({ reportType, inputText, files, additionalInfo, options }
 
   // Validate files
   if (files && files.length > 0) {
+    console.log(`[VALIDATION] Validating ${files.length} files`);
     const fileValidation = validateFiles(files);
     if (fileValidation) {
+      console.log('[VALIDATION] File validation failed:', fileValidation);
       return fileValidation;
     }
+    console.log('[VALIDATION] File validation passed');
   }
 
   return null; // No validation errors
