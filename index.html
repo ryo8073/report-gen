@@ -552,9 +552,6 @@
                         <button onclick="showUpgradeModal()" class="btn btn-primary">
                             有料プランを見る
                         </button>
-                        <button onclick="logout()" class="btn btn-secondary">
-                            ログアウト
-                        </button>
                     </div>
                 </div>
             </div>
@@ -1179,193 +1176,14 @@ ${inputText || ''}`;
             };
         }
 
-        // Custom Prompt Management
-        document.getElementById('savePromptBtn').addEventListener('click', openSavePromptModal);
-        document.getElementById('loadPromptBtn').addEventListener('click', openLoadPromptModal);
-
-        function openSavePromptModal() {
-            const customPrompt = document.getElementById('customPrompt').value.trim();
-            if (!customPrompt) {
-                showError('保存するプロンプトを入力してください');
-                return;
-            }
-            
-            document.getElementById('promptPreview').value = customPrompt;
-            document.getElementById('savePromptModal').classList.remove('hidden');
-        }
-
-        function closeSavePromptModal() {
-            document.getElementById('savePromptModal').classList.add('hidden');
-            document.getElementById('savePromptForm').reset();
-        }
-
-        async function saveCustomPrompt() {
-            const title = document.getElementById('promptTitle').value.trim();
-            const description = document.getElementById('promptDescription').value.trim();
-            const tagsInput = document.getElementById('promptTags').value.trim();
-            const content = document.getElementById('customPrompt').value.trim();
-
-            if (!title || !content) {
-                showError('タイトルとプロンプト内容は必須です');
-                return;
-            }
-
-            const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
-
-            try {
-                const response = await fetch('/api/custom-prompts/save', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        title,
-                        description,
-                        content,
-                        tags
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    window.errorHandler.showNotification('プロンプトを保存しました', 'success', 2000);
-                    closeSavePromptModal();
-                } else {
-                    showError(result.error || 'プロンプトの保存に失敗しました');
-                }
-
-            } catch (error) {
-                console.error('Save prompt error:', error);
-                showError('プロンプトの保存中にエラーが発生しました');
-            }
-        }
-
-        async function openLoadPromptModal() {
-            document.getElementById('loadPromptModal').classList.remove('hidden');
-            await loadUserPrompts();
-        }
-
-        function closeLoadPromptModal() {
-            document.getElementById('loadPromptModal').classList.add('hidden');
-        }
-
-        async function loadUserPrompts() {
-            const promptsList = document.getElementById('promptsList');
-            promptsList.innerHTML = '<div class="loading-message">読み込み中...</div>';
-
-            try {
-                const response = await fetch('/api/custom-prompts/list', {
-                    credentials: 'include'
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    displayPrompts(result.prompts);
-                } else {
-                    promptsList.innerHTML = '<div class="loading-message">プロンプトの読み込みに失敗しました</div>';
-                }
-
-            } catch (error) {
-                console.error('Load prompts error:', error);
-                promptsList.innerHTML = '<div class="loading-message">エラーが発生しました</div>';
-            }
-        }
-
-        function displayPrompts(prompts) {
-            const promptsList = document.getElementById('promptsList');
-
-            if (prompts.length === 0) {
-                promptsList.innerHTML = '<div class="loading-message">保存されたプロンプトがありません</div>';
-                return;
-            }
-
-            promptsList.innerHTML = prompts.map(prompt => `
-                <div class="prompt-item" onclick="loadPrompt('${prompt.id}')">
-                    <div class="prompt-item-header">
-                        <div class="prompt-item-title">${escapeHtml(prompt.title)}</div>
-                        <div class="prompt-item-date">${formatDate(prompt.createdAt)}</div>
-                    </div>
-                    ${prompt.description ? `<div class="prompt-item-description">${escapeHtml(prompt.description)}</div>` : ''}
-                    ${prompt.tags && prompt.tags.length > 0 ? `
-                        <div class="prompt-item-tags">
-                            ${prompt.tags.map(tag => `<span class="prompt-tag">${escapeHtml(tag)}</span>`).join('')}
-                        </div>
-                    ` : ''}
-                    <div class="prompt-item-actions">
-                        <button class="prompt-action-btn" onclick="event.stopPropagation(); loadPrompt('${prompt.id}')">読込</button>
-                        <button class="prompt-action-btn delete" onclick="event.stopPropagation(); deletePrompt('${prompt.id}', '${escapeHtml(prompt.title)}')">削除</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function loadPrompt(promptId) {
-            try {
-                const response = await fetch(`/api/custom-prompts/list`, {
-                    credentials: 'include'
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    const prompt = result.prompts.find(p => p.id === promptId);
-                    if (prompt) {
-                        document.getElementById('customPrompt').value = prompt.content;
-                        closeLoadPromptModal();
-                        window.errorHandler.showNotification('プロンプトを読み込みました', 'success', 1500);
-                    }
-                }
-
-            } catch (error) {
-                console.error('Load prompt error:', error);
-                showError('プロンプトの読み込みに失敗しました');
-            }
-        }
-
-        async function deletePrompt(promptId, promptTitle) {
-            if (!confirm(`「${promptTitle}」を削除しますか？`)) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/custom-prompts/delete?promptId=${promptId}`, {
-                    method: 'DELETE',
-                    credentials: 'include'
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    window.errorHandler.showNotification('プロンプトを削除しました', 'success', 1500);
-                    await loadUserPrompts(); // Reload the list
-                } else {
-                    showError(result.error || 'プロンプトの削除に失敗しました');
-                }
-
-            } catch (error) {
-                console.error('Delete prompt error:', error);
-                showError('プロンプトの削除中にエラーが発生しました');
-            }
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function formatDate(timestamp) {
-            if (!timestamp) return '';
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleDateString('ja-JP', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-        }
+        // Custom Prompt Management - Disabled for trial
+        document.getElementById('savePromptBtn').addEventListener('click', function() {
+            window.errorHandler.showNotification('プロンプト保存機能は有料版で利用可能です', 'warning', 3000);
+        });
+        
+        document.getElementById('loadPromptBtn').addEventListener('click', function() {
+            window.errorHandler.showNotification('プロンプト読込機能は有料版で利用可能です', 'warning', 3000);
+        });
 
         // Trial and Upgrade Management
         function showTrialExpiredModal(trialInfo) {
@@ -1412,7 +1230,7 @@ ${inputText || ''}`;
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'include',
+
                     body: JSON.stringify({ planType })
                 });
 
