@@ -7,6 +7,14 @@
     <link rel="stylesheet" href="/styles.css">
     <script src="/lib/frontend-error-handler.js"></script>
     <script src="/lib/enhanced-error-handler.js"></script>
+    <script src="/lib/markdown-renderer.js"></script>
+    <script src="/lib/preview-tab.js"></script>
+    <script src="/lib/formatting-toolbar.js"></script>
+    <script src="/lib/rich-text-editor.js"></script>
+    <script src="/lib/diff-engine.js"></script>
+    <script src="/lib/comparison-view.js"></script>
+    <script src="/lib/content-state.js"></script>
+    <script src="/lib/tab-navigation.js"></script>
     <script>
         // Ensure errorHandler is available
         if (typeof window.errorHandler === 'undefined') {
@@ -117,6 +125,126 @@
 
         .modal-body {
             padding: 0;
+        }
+
+        /* Tab Navigation Styles */
+        .tab-navigation {
+            border-bottom: 1px solid var(--color-gray-200);
+            background: white;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+        }
+
+        .tab-buttons {
+            display: flex;
+            background: var(--color-gray-50);
+            padding: 0;
+            margin: 0;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: var(--space-3) var(--space-4);
+            border: none;
+            background: transparent;
+            color: var(--color-gray-600);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+        }
+
+        .tab-button:hover {
+            background: var(--color-gray-100);
+            color: var(--color-gray-800);
+        }
+
+        .tab-button.active {
+            background: white;
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .tab-button:focus {
+            outline: 2px solid var(--color-primary);
+            outline-offset: -2px;
+        }
+
+        /* Tab Content Styles */
+        .tab-content {
+            background: white;
+            border-radius: 0 0 8px 8px;
+            min-height: 400px;
+        }
+
+        .tab-pane {
+            display: none;
+            padding: var(--space-4);
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Tab-specific content styles */
+        .preview-content {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            line-height: 1.6;
+            color: var(--color-gray-800);
+        }
+
+        .editor-content {
+            border: 1px solid var(--color-gray-300);
+            border-radius: 6px;
+            min-height: 400px;
+            background: white;
+        }
+
+        .comparison-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+            min-height: 400px;
+        }
+
+        /* Responsive design for tabs */
+        @media (max-width: 768px) {
+            .tab-buttons {
+                flex-wrap: wrap;
+            }
+            
+            .tab-button {
+                flex: 1 1 50%;
+                min-width: 120px;
+            }
+            
+            .comparison-content {
+                grid-template-columns: 1fr;
+                gap: var(--space-2);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tab-button {
+                flex: 1 1 100%;
+                padding: var(--space-2) var(--space-3);
+                font-size: var(--font-size-xs);
+            }
         }
     </style>
 </head>
@@ -362,8 +490,54 @@
                     </button>
                 </div>
             </div>
-            <div id="preview" class="results-preview prose">
-                <!-- Preview content will be inserted here -->
+            
+            <!-- Tab Navigation -->
+            <div class="tab-navigation" role="tablist" aria-label="レポート表示オプション">
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="raw" role="tab" aria-selected="true" aria-controls="rawTab" id="rawTabButton">
+                        Raw
+                    </button>
+                    <button class="tab-button" data-tab="preview" role="tab" aria-selected="false" aria-controls="previewTab" id="previewTabButton">
+                        Preview
+                    </button>
+                    <button class="tab-button" data-tab="editor" role="tab" aria-selected="false" aria-controls="editorTab" id="editorTabButton">
+                        Editor
+                    </button>
+                    <button class="tab-button" data-tab="comparison" role="tab" aria-selected="false" aria-controls="comparisonTab" id="comparisonTabButton">
+                        Comparison
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Raw Tab (existing preview) -->
+                <div id="rawTab" class="tab-pane active" role="tabpanel" aria-labelledby="rawTabButton" aria-hidden="false">
+                    <div id="preview" class="results-preview prose">
+                        <!-- Raw content will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Preview Tab -->
+                <div id="previewTab" class="tab-pane" role="tabpanel" aria-labelledby="previewTabButton" aria-hidden="true">
+                    <div id="previewContent" class="preview-content">
+                        <!-- Formatted preview content will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Editor Tab -->
+                <div id="editorTab" class="tab-pane" role="tabpanel" aria-labelledby="editorTabButton" aria-hidden="true">
+                    <div id="editorContent" class="editor-content">
+                        <!-- Rich text editor will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Comparison Tab -->
+                <div id="comparisonTab" class="tab-pane" role="tabpanel" aria-labelledby="comparisonTabButton" aria-hidden="true">
+                    <div id="comparisonContent" class="comparison-content">
+                        <!-- Comparison view will be inserted here -->
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -377,6 +551,15 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Enhanced Tab Navigation System with State Management
+        // The TabNavigation class is now loaded from /lib/tab-navigation.js
+        // This provides integrated state management, content persistence, and auto-save functionality
+        
+        // Global tab navigation instance
+        let tabNavigation = null;
+    </script>
 
     <script type="module">
         // Authentication check - Enhanced error suppression for trial site
@@ -739,44 +922,28 @@
         }
 
         function displayResults(result) {
-            const preview = document.getElementById('preview');
             const content = result.report || result.content || '';
             
             if (!content) {
+                const preview = document.getElementById('preview');
                 preview.innerHTML = '<p style="color: var(--color-red-600);">レポートが生成されましたが、内容を表示できません。</p>';
                 document.getElementById('resultsSection').classList.remove('hidden');
                 return;
             }
 
-            // Display the report content
-            preview.innerHTML = `
-                <div style="margin-bottom: var(--space-4);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
-                        <span style="font-size: var(--font-size-sm); color: var(--color-gray-600);">
-                            生成された投資分析レポート
-                        </span>
-                        <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">
-                            ${result.metadata ? `
-                                生成日時: ${new Date(result.metadata.createdAt).toLocaleString('ja-JP')}
-                                ${result.metadata.processingTime ? `<br>処理時間: ${result.metadata.processingTime}秒` : ''}
-                            ` : ''}
-                        </div>
-                    </div>
-                    <div 
-                        id="reportContent" 
-                        style="
-                            border: 1px solid var(--color-gray-300); 
-                            border-radius: 6px; 
-                            padding: var(--space-4); 
-                            background: white;
-                            min-height: 400px;
-                            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
-                            line-height: 1.6;
-                        "
-                    >${formatReportContent(content)}</div>
-                </div>
-            `;
+            // Initialize enhanced tab navigation system with state management
+            if (!tabNavigation) {
+                tabNavigation = new TabNavigation(document.getElementById('resultsSection'), {
+                    enableStateManagement: true,
+                    enableAutoSave: true,
+                    autoSaveInterval: 5000
+                });
+            }
             
+            // Set content in tab navigation system
+            tabNavigation.setContent(content);
+            
+            // Show results section
             document.getElementById('resultsSection').classList.remove('hidden');
 
             // Store report data for saving
@@ -790,16 +957,7 @@
             setupResultButtons(content);
         }
 
-        function formatReportContent(content) {
-            // Simple markdown-like formatting
-            return content
-                .replace(/\n/g, '<br>')
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/^# (.*$)/gm, '<h1 style="font-size: var(--font-size-xl); font-weight: 700; margin: var(--space-4) 0 var(--space-2) 0; color: var(--color-gray-900); border-bottom: 2px solid var(--color-primary); padding-bottom: var(--space-2);">$1</h1>')
-                .replace(/^## (.*$)/gm, '<h2 style="font-size: var(--font-size-lg); font-weight: 600; margin: var(--space-3) 0 var(--space-2) 0; color: var(--color-primary);">$1</h2>')
-                .replace(/^### (.*$)/gm, '<h3 style="font-size: var(--font-size-md); font-weight: 600; margin: var(--space-2) 0 var(--space-1) 0; color: var(--color-gray-700);">$1</h3>');
-        }
+
 
         function setupResultButtons(content) {
             // Copy functionality

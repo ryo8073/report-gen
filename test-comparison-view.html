@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparison View Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            padding: 20px;
+            background: #007bff;
+            color: white;
+        }
+        
+        .test-controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .test-controls button {
+            margin-right: 10px;
+            padding: 8px 16px;
+            border: 1px solid #007bff;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .test-controls button:hover {
+            background: #0056b3;
+        }
+        
+        .comparison-container {
+            height: 600px;
+        }
+        
+        .sample-content {
+            margin: 10px 0;
+        }
+        
+        .sample-content textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Comparison View Test</h1>
+            <p>Test the diff engine and comparison view functionality</p>
+        </div>
+        
+        <div class="test-controls">
+            <button onclick="loadSampleData()">Load Sample Data</button>
+            <button onclick="testWordDiff()">Test Word Diff</button>
+            <button onclick="testLineDiff()">Test Line Diff</button>
+            <button onclick="clearComparison()">Clear</button>
+            
+            <div class="sample-content">
+                <label>Original Content:</label>
+                <textarea id="original-input" placeholder="Enter original content...">
+# Investment Analysis Report
+
+## Executive Summary
+This report provides a comprehensive analysis of the investment opportunity.
+
+## Key Findings
+- Strong market position
+- Solid financial performance
+- Growth potential identified
+
+## Recommendations
+We recommend proceeding with the investment.
+                </textarea>
+                
+                <label>Edited Content:</label>
+                <textarea id="edited-input" placeholder="Enter edited content...">
+# Investment Analysis Report
+
+## Executive Summary
+This report provides a detailed analysis of the investment opportunity with updated metrics.
+
+## Key Findings
+- Excellent market position
+- Outstanding financial performance
+- Significant growth potential identified
+- New market opportunities discovered
+
+## Recommendations
+We strongly recommend proceeding with the investment immediately.
+
+## Risk Assessment
+Low to moderate risk profile with high return potential.
+                </textarea>
+                
+                <button onclick="updateComparison()">Update Comparison</button>
+            </div>
+        </div>
+        
+        <div class="comparison-container" id="comparison-container">
+            <!-- Comparison view will be rendered here -->
+        </div>
+    </div>
+
+    <script src="lib/diff-engine.js"></script>
+    <script src="lib/comparison-view.js"></script>
+    
+    <script>
+        let comparisonView;
+        
+        // Initialize comparison view
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('comparison-container');
+            comparisonView = new ComparisonView(container, {
+                showLineNumbers: true,
+                syncScroll: true,
+                allowReversion: true
+            });
+            
+            // Listen for revert events
+            container.addEventListener('revertChange', function(e) {
+                console.log('Revert change requested:', e.detail);
+                alert(`Revert requested for line ${e.detail.lineNumber} (${e.detail.changeType})`);
+            });
+            
+            container.addEventListener('resetAllChanges', function(e) {
+                console.log('Reset all changes requested');
+                document.getElementById('edited-input').value = e.detail.originalContent;
+                updateComparison();
+            });
+            
+            // Load initial sample data
+            loadSampleData();
+        });
+        
+        function loadSampleData() {
+            const originalContent = `# Investment Analysis Report
+
+## Executive Summary
+This report provides a comprehensive analysis of the investment opportunity.
+
+## Key Findings
+- Strong market position
+- Solid financial performance
+- Growth potential identified
+
+## Recommendations
+We recommend proceeding with the investment.`;
+
+            const editedContent = `# Investment Analysis Report
+
+## Executive Summary
+This report provides a detailed analysis of the investment opportunity with updated metrics.
+
+## Key Findings
+- Excellent market position
+- Outstanding financial performance
+- Significant growth potential identified
+- New market opportunities discovered
+
+## Recommendations
+We strongly recommend proceeding with the investment immediately.
+
+## Risk Assessment
+Low to moderate risk profile with high return potential.`;
+
+            document.getElementById('original-input').value = originalContent;
+            document.getElementById('edited-input').value = editedContent;
+            updateComparison();
+        }
+        
+        function testWordDiff() {
+            const originalContent = "The quick brown fox jumps over the lazy dog.";
+            const editedContent = "The fast brown fox leaps over the sleepy cat.";
+            
+            document.getElementById('original-input').value = originalContent;
+            document.getElementById('edited-input').value = editedContent;
+            updateComparison();
+        }
+        
+        function testLineDiff() {
+            const originalContent = `Line 1
+Line 2
+Line 3
+Line 4
+Line 5`;
+
+            const editedContent = `Line 1
+Modified Line 2
+Line 3
+New Line 3.5
+Line 5
+New Line 6`;
+
+            document.getElementById('original-input').value = originalContent;
+            document.getElementById('edited-input').value = editedContent;
+            updateComparison();
+        }
+        
+        function updateComparison() {
+            const originalContent = document.getElementById('original-input').value;
+            const editedContent = document.getElementById('edited-input').value;
+            
+            comparisonView.updateComparison(originalContent, editedContent);
+        }
+        
+        function clearComparison() {
+            document.getElementById('original-input').value = '';
+            document.getElementById('edited-input').value = '';
+            comparisonView.updateComparison('', '');
+        }
+    </script>
+</body>
+</html>

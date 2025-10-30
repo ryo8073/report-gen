@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Text Editor Test</title>
+    <style>
+        :root {
+            --color-primary: #3b82f6;
+            --color-gray-50: #f9fafb;
+            --color-gray-100: #f3f4f6;
+            --color-gray-200: #e5e7eb;
+            --color-gray-300: #d1d5db;
+            --color-gray-400: #9ca3af;
+            --color-gray-500: #6b7280;
+            --color-gray-600: #4b5563;
+            --color-gray-700: #374151;
+            --color-gray-800: #1f2937;
+            --color-gray-900: #111827;
+            --color-red-50: #fef2f2;
+            --color-red-200: #fecaca;
+            --color-red-500: #ef4444;
+            --color-red-600: #dc2626;
+            --color-red-700: #b91c1c;
+            --color-green-500: #10b981;
+            --color-yellow-500: #f59e0b;
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --font-size-sm: 0.875rem;
+            --font-size-md: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin-bottom: 2rem;
+            color: var(--color-gray-800);
+        }
+        
+        .test-section {
+            margin-bottom: 2rem;
+        }
+        
+        .test-editor {
+            border: 1px solid var(--color-gray-300);
+            border-radius: 6px;
+            min-height: 400px;
+        }
+        
+        .test-controls {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--color-gray-300);
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .btn:hover {
+            background: var(--color-gray-50);
+        }
+        
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .output {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--color-gray-50);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Rich Text Editor Test</h1>
+        
+        <div class="test-section">
+            <h2>Rich Text Editor Component</h2>
+            <div id="richTextEditor" class="test-editor"></div>
+            
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="setTestContent()">テストコンテンツを設定</button>
+                <button class="btn" onclick="getContent()">コンテンツを取得</button>
+                <button class="btn" onclick="clearContent()">クリア</button>
+                <button class="btn" onclick="saveContent()">保存</button>
+            </div>
+            
+            <div id="output" class="output" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script src="/lib/formatting-toolbar.js"></script>
+    <script src="/lib/rich-text-editor.js"></script>
+    
+    <script>
+        let richTextEditor;
+        
+        // Initialize the rich text editor
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('richTextEditor');
+            
+            try {
+                richTextEditor = new RichTextEditor(container, {
+                    enableToolbar: true,
+                    enableRealTimePreview: true,
+                    enableAutoSave: true,
+                    placeholder: 'ここにテキストを入力してテストしてください...',
+                    onContentChange: (content, textContent) => {
+                        console.log('Content changed:', textContent.length, 'characters');
+                    },
+                    onAutoSave: (content) => {
+                        console.log('Auto-saving content...');
+                        showOutput('Auto-save triggered: ' + new Date().toLocaleTimeString());
+                    }
+                });
+                
+                console.log('RichTextEditor initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize RichTextEditor:', error);
+                container.innerHTML = '<div style="padding: 2rem; text-align: center; color: red;">エラー: ' + error.message + '</div>';
+            }
+        });
+        
+        function setTestContent() {
+            if (richTextEditor && richTextEditor.isReady()) {
+                const testContent = `
+                    <h1>テストレポート</h1>
+                    <h2>概要</h2>
+                    <p>これは<strong>リッチテキストエディター</strong>のテストコンテンツです。</p>
+                    <p><em>斜体</em>や<u>下線</u>などの基本的なフォーマットをテストできます。</p>
+                    <h3>機能一覧</h3>
+                    <ul>
+                        <li>フォントファミリーの変更</li>
+                        <li>フォントサイズの調整</li>
+                        <li>太字、斜体、下線</li>
+                        <li>文字色の変更</li>
+                        <li>ハイライト機能</li>
+                    </ul>
+                `;
+                richTextEditor.setContent(testContent);
+                showOutput('テストコンテンツを設定しました');
+            } else {
+                showOutput('エラー: エディターが初期化されていません');
+            }
+        }
+        
+        function getContent() {
+            if (richTextEditor && richTextEditor.isReady()) {
+                const content = richTextEditor.getContent();
+                const textContent = richTextEditor.getTextContent();
+                showOutput('HTML Content:\n' + content + '\n\nText Content:\n' + textContent);
+            } else {
+                showOutput('エラー: エディターが初期化されていません');
+            }
+        }
+        
+        function clearContent() {
+            if (richTextEditor && richTextEditor.isReady()) {
+                richTextEditor.clear();
+                showOutput('コンテンツをクリアしました');
+            } else {
+                showOutput('エラー: エディターが初期化されていません');
+            }
+        }
+        
+        function saveContent() {
+            if (richTextEditor && richTextEditor.isReady()) {
+                richTextEditor.save();
+                showOutput('コンテンツを保存しました: ' + new Date().toLocaleTimeString());
+            } else {
+                showOutput('エラー: エディターが初期化されていません');
+            }
+        }
+        
+        function showOutput(text) {
+            const output = document.getElementById('output');
+            output.textContent = text;
+            output.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

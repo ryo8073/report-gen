@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Handling and Fallback Mechanisms Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: #3b82f6;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .test-controls {
+            padding: 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .test-button {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .test-button:hover {
+            background: #f3f4f6;
+        }
+        
+        .test-button.danger {
+            background: #ef4444;
+            color: white;
+            border-color: #dc2626;
+        }
+        
+        .test-button.danger:hover {
+            background: #dc2626;
+        }
+        
+        .tab-navigation {
+            display: flex;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .tab-button {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .tab-button:hover {
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .tab-button.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+            background: white;
+        }
+        
+        .tab-content {
+            min-height: 400px;
+            position: relative;
+        }
+        
+        .tab-pane {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-pane.active {
+            display: block;
+        }
+        
+        .status-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .status-header {
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .status-content {
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .status-dot.healthy { background: #10b981; }
+        .status-dot.error { background: #ef4444; }
+        .status-dot.warning { background: #f59e0b; }
+        
+        @media (max-width: 768px) {
+            .status-panel {
+                position: relative;
+                top: auto;
+                right: auto;
+                width: 100%;
+                margin: 20px 0;
+            }
+            
+            .test-controls {
+                flex-direction: column;
+            }
+            
+            .tab-navigation {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Error Handling and Fallback Mechanisms Test</h1>
+            <p>Test the error boundary system and graceful fallback functionality</p>
+        </div>
+        
+        <div class="test-controls">
+            <button class="test-button" onclick="testNormalOperation()">Normal Operation</button>
+            <button class="test-button danger" onclick="simulatePreviewError()">Simulate Preview Error</button>
+            <button class="test-button danger" onclick="simulateEditorError()">Simulate Editor Error</button>
+            <button class="test-button danger" onclick="simulateComparisonError()">Simulate Comparison Error</button>
+            <button class="test-button danger" onclick="simulateTabSwitchError()">Simulate Tab Switch Error</button>
+            <button class="test-button danger" onclick="simulateJavaScriptError()">Simulate JS Error</button>
+            <button class="test-button" onclick="clearAllErrors()">Clear All Errors</button>
+            <button class="test-button" onclick="showErrorStats()">Show Error Stats</button>
+        </div>
+        
+        <div id="tabContainer">
+            <div class="tab-navigation">
+                <button class="tab-button active" data-tab="raw">Raw</button>
+                <button class="tab-button" data-tab="preview">Preview</button>
+                <button class="tab-button" data-tab="editor">Editor</button>
+                <button class="tab-button" data-tab="comparison">Comparison</button>
+            </div>
+            
+            <div class="tab-content">
+                <div id="rawTab" class="tab-pane active">
+                    <h3>Raw Content</h3>
+                    <div id="preview">
+                        <div id="reportContent" style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; background: #f8fafc; min-height: 300px;">
+                            <p>This is the raw content tab. This tab should always work as a fallback.</p>
+                            <p>Click the test buttons above to simulate various error conditions and observe how the system handles them gracefully.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="previewTab" class="tab-pane">
+                    <h3>Preview Content</h3>
+                    <div id="previewContent" style="min-height: 300px;">
+                        <!-- Preview content will be rendered here -->
+                    </div>
+                </div>
+                
+                <div id="editorTab" class="tab-pane">
+                    <h3>Rich Text Editor</h3>
+                    <div id="editorContent" style="min-height: 300px;">
+                        <!-- Editor will be initialized here -->
+                    </div>
+                </div>
+                
+                <div id="comparisonTab" class="tab-pane">
+                    <h3>Comparison View</h3>
+                    <div id="comparisonContent" style="min-height: 300px;">
+                        <!-- Comparison view will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="status-panel">
+        <div class="status-header">System Status</div>
+        <div class="status-content" id="statusContent">
+            <div class="status-item">
+                <div class="status-dot healthy"></div>
+                <span>System initializing...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load dependencies -->
+    <script src="lib/error-boundary.js"></script>
+    <script src="lib/markdown-renderer.js"></script>
+    <script src="lib/preview-tab.js"></script>
+    <script src="lib/formatting-toolbar.js"></script>
+    <script src="lib/rich-text-editor.js"></script>
+    <script src="lib/diff-engine.js"></script>
+    <script src="lib/comparison-view.js"></script>
+    <script src="lib/content-state.js"></script>
+    <script src="lib/tab-navigation.js"></script>
+
+    <script>
+        let tabNavigation;
+        let errorBoundary;
+        
+        // Sample content for testing
+        const sampleContent = `# Investment Analysis Report
+
+## Executive Summary
+
+This is a comprehensive analysis of the investment opportunity.
+
+### Key Findings
+
+- **Strong Growth Potential**: The market shows significant upward trends
+- **Risk Assessment**: Moderate risk with good mitigation strategies
+- **Financial Projections**: Positive ROI expected within 2-3 years
+
+## Detailed Analysis
+
+The investment presents several compelling factors:
+
+1. Market demand is increasing
+2. Competition is manageable
+3. Technology advantages are sustainable
+
+### Recommendations
+
+We recommend proceeding with the investment with the following considerations:
+
+- Monitor market conditions closely
+- Implement risk mitigation strategies
+- Regular performance reviews`;
+
+        // Initialize the system
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // Initialize error boundary first
+                errorBoundary = new ErrorBoundary({
+                    enableLogging: true,
+                    enableFallback: true,
+                    enableUserNotification: true,
+                    fallbackTab: 'raw',
+                    maxRetries: 3
+                });
+                
+                // Initialize tab navigation with error handling
+                tabNavigation = new TabNavigation(document.getElementById('tabContainer'), {
+                    enableStateManagement: true,
+                    enableAutoSave: true,
+                    enableErrorHandling: true,
+                    enableFallback: true,
+                    fallbackTab: 'raw',
+                    maxRetries: 3
+                });
+                
+                // Set initial content
+                tabNavigation.setContent(sampleContent);
+                
+                // Listen for errors
+                tabNavigation.on('error', (errorInfo) => {
+                    updateStatus(`Error in ${errorInfo.component || errorInfo.type}: ${errorInfo.error?.message || 'Unknown error'}`, 'error');
+                });
+                
+                // Listen for tab changes
+                tabNavigation.on('tabChange', (data) => {
+                    updateStatus(`Switched from ${data.from} to ${data.to}`, 'healthy');
+                });
+                
+                updateStatus('System initialized successfully', 'healthy');
+                
+            } catch (error) {
+                console.error('Initialization failed:', error);
+                updateStatus('System initialization failed', 'error');
+            }
+        });
+        
+        // Test functions
+        function testNormalOperation() {
+            updateStatus('Testing normal operation...', 'healthy');
+            
+            // Test tab switching
+            setTimeout(() => tabNavigation.switchTab('preview'), 500);
+            setTimeout(() => tabNavigation.switchTab('editor'), 1500);
+            setTimeout(() => tabNavigation.switchTab('comparison'), 2500);
+            setTimeout(() => tabNavigation.switchTab('raw'), 3500);
+            setTimeout(() => updateStatus('Normal operation test completed', 'healthy'), 4000);
+        }
+        
+        function simulatePreviewError() {
+            updateStatus('Simulating preview error...', 'warning');
+            
+            // Simulate error in preview tab
+            if (tabNavigation.previewTab) {
+                try {
+                    // Force an error
+                    tabNavigation.previewTab.setContent = function() {
+                        throw new Error('Simulated preview rendering error');
+                    };
+                    
+                    tabNavigation.switchTab('preview');
+                } catch (error) {
+                    console.error('Preview error simulation:', error);
+                }
+            }
+        }
+        
+        function simulateEditorError() {
+            updateStatus('Simulating editor error...', 'warning');
+            
+            // Simulate error in editor
+            if (tabNavigation.richTextEditor) {
+                try {
+                    // Force an error
+                    tabNavigation.richTextEditor.setContent = function() {
+                        throw new Error('Simulated editor initialization error');
+                    };
+                    
+                    tabNavigation.switchTab('editor');
+                } catch (error) {
+                    console.error('Editor error simulation:', error);
+                }
+            }
+        }
+        
+        function simulateComparisonError() {
+            updateStatus('Simulating comparison error...', 'warning');
+            
+            // Simulate error in comparison view
+            if (tabNavigation.comparisonView) {
+                try {
+                    // Force an error
+                    tabNavigation.comparisonView.updateComparison = function() {
+                        throw new Error('Simulated comparison update error');
+                    };
+                    
+                    tabNavigation.switchTab('comparison');
+                } catch (error) {
+                    console.error('Comparison error simulation:', error);
+                }
+            }
+        }
+        
+        function simulateTabSwitchError() {
+            updateStatus('Simulating tab switch error...', 'warning');
+            
+            // Temporarily break tab switching
+            const originalSwitchTab = tabNavigation.switchTab;
+            tabNavigation.switchTab = function(tabName) {
+                if (tabName === 'preview') {
+                    throw new Error('Simulated tab switch error');
+                }
+                return originalSwitchTab.call(this, tabName);
+            };
+            
+            // Try to switch to preview (should fail and fallback to raw)
+            try {
+                tabNavigation.switchTab('preview');
+            } catch (error) {
+                console.error('Tab switch error simulation:', error);
+            }
+            
+            // Restore original function after a delay
+            setTimeout(() => {
+                tabNavigation.switchTab = originalSwitchTab;
+                updateStatus('Tab switch function restored', 'healthy');
+            }, 3000);
+        }
+        
+        function simulateJavaScriptError() {
+            updateStatus('Simulating JavaScript error...', 'warning');
+            
+            // Trigger a global JavaScript error
+            setTimeout(() => {
+                throw new Error('Simulated global JavaScript error for testing');
+            }, 100);
+        }
+        
+        function clearAllErrors() {
+            updateStatus('Clearing all errors...', 'healthy');
+            
+            if (tabNavigation) {
+                tabNavigation.clearErrors();
+            }
+            
+            if (errorBoundary) {
+                errorBoundary.clearErrors();
+            }
+            
+            // Clear status
+            setTimeout(() => {
+                updateStatus('All errors cleared', 'healthy');
+            }, 500);
+        }
+        
+        function showErrorStats() {
+            const stats = tabNavigation ? tabNavigation.getErrorStats() : { totalErrors: 0 };
+            const boundaryStats = errorBoundary ? errorBoundary.getErrorStats() : { totalErrors: 0 };
+            
+            updateStatus(`Tab Navigation Errors: ${stats.totalErrors}, Global Errors: ${boundaryStats.totalErrors}`, 'healthy');
+            
+            console.log('Tab Navigation Error Stats:', stats);
+            console.log('Error Boundary Stats:', boundaryStats);
+        }
+        
+        function updateStatus(message, type = 'healthy') {
+            const statusContent = document.getElementById('statusContent');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const statusItem = document.createElement('div');
+            statusItem.className = 'status-item';
+            statusItem.innerHTML = `
+                <div class="status-dot ${type}"></div>
+                <span>${timestamp}: ${message}</span>
+            `;
+            
+            statusContent.insertBefore(statusItem, statusContent.firstChild);
+            
+            // Keep only last 10 status items
+            while (statusContent.children.length > 10) {
+                statusContent.removeChild(statusContent.lastChild);
+            }
+        }
+        
+        // Global error handler for demonstration
+        window.addEventListener('error', (event) => {
+            updateStatus(`Global error: ${event.message}`, 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            updateStatus(`Unhandled promise rejection: ${event.reason}`, 'error');
+        });
+    </script>
+</body>
+</html>

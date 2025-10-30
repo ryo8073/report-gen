@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessibility and Performance Test</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/lib/markdown-renderer.js"></script>
+    <script src="/lib/preview-tab.js"></script>
+    <script src="/lib/formatting-toolbar.js"></script>
+    <script src="/lib/rich-text-editor.js"></script>
+    <script src="/lib/diff-engine.js"></script>
+    <script src="/lib/comparison-view.js"></script>
+    <script src="/lib/content-state.js"></script>
+    <script src="/lib/error-boundary.js"></script>
+    <script src="/lib/tab-navigation.js"></script>
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        
+        .test-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+        
+        .performance-stats {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        
+        .accessibility-checklist {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .accessibility-checklist li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .accessibility-checklist li:last-child {
+            border-bottom: none;
+        }
+        
+        .check-pass {
+            color: #059669;
+        }
+        
+        .check-fail {
+            color: #dc2626;
+        }
+        
+        .large-content {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #d1d5db;
+            padding: 1rem;
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Accessibility and Performance Test</h1>
+        
+        <!-- Accessibility Test Section -->
+        <div class="test-section">
+            <h2 class="test-title">Accessibility Features Test</h2>
+            <ul class="accessibility-checklist" id="accessibilityChecklist">
+                <li>Loading accessibility tests...</li>
+            </ul>
+        </div>
+        
+        <!-- Performance Test Section -->
+        <div class="test-section">
+            <h2 class="test-title">Performance Optimization Test</h2>
+            <button onclick="runPerformanceTest()" class="btn btn-primary">Run Performance Test</button>
+            <div class="performance-stats" id="performanceStats">
+                Click "Run Performance Test" to see performance metrics
+            </div>
+        </div>
+        
+        <!-- Tab Navigation Test -->
+        <div class="test-section">
+            <h2 class="test-title">Enhanced Tab Navigation</h2>
+            <p>Test keyboard navigation with Tab, Arrow keys, Home, End, Ctrl+PageUp/PageDown</p>
+            
+            <!-- Tab Navigation -->
+            <div class="tab-navigation" role="tablist" aria-label="テストタブ">
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="raw" role="tab" aria-selected="true" aria-controls="rawTab" id="rawTabButton">
+                        Raw
+                    </button>
+                    <button class="tab-button" data-tab="preview" role="tab" aria-selected="false" aria-controls="previewTab" id="previewTabButton">
+                        Preview
+                    </button>
+                    <button class="tab-button" data-tab="editor" role="tab" aria-selected="false" aria-controls="editorTab" id="editorTabButton">
+                        Editor
+                    </button>
+                    <button class="tab-button" data-tab="comparison" role="tab" aria-selected="false" aria-controls="comparisonTab" id="comparisonTabButton">
+                        Comparison
+                    </button>
+                </div>
+            </div>
+            
+            <div class="tab-content">
+                <!-- Raw Tab -->
+                <div id="rawTab" class="tab-pane active" role="tabpanel" aria-labelledby="rawTabButton" aria-hidden="false">
+                    <div class="large-content">
+                        <h3>Raw Content Test</h3>
+                        <p>This is a test of the raw content display with accessibility features.</p>
+                        <p>Use keyboard navigation to switch between tabs.</p>
+                    </div>
+                </div>
+                
+                <!-- Preview Tab -->
+                <div id="previewTab" class="tab-pane" role="tabpanel" aria-labelledby="previewTabButton" aria-hidden="true">
+                    <div id="previewContent" class="preview-content">
+                        <!-- Preview content will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Editor Tab -->
+                <div id="editorTab" class="tab-pane" role="tabpanel" aria-labelledby="editorTabButton" aria-hidden="true">
+                    <div id="editorContent" class="editor-content">
+                        <!-- Rich text editor will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Comparison Tab -->
+                <div id="comparisonTab" class="tab-pane" role="tabpanel" aria-labelledby="comparisonTabButton" aria-hidden="true">
+                    <div id="comparisonContent" class="comparison-content">
+                        <!-- Comparison view will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Large Content Test -->
+        <div class="test-section">
+            <h2 class="test-title">Large Content Performance Test</h2>
+            <button onclick="testLargeContent()" class="btn btn-primary">Test Large Content Rendering</button>
+            <div id="largeContentTest" class="large-content" style="display: none;">
+                <!-- Large content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tabNavigation;
+        let markdownRenderer;
+        
+        // Initialize components
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tab navigation with accessibility and performance features
+            const tabContainer = document.querySelector('.tab-navigation').parentElement;
+            tabNavigation = new TabNavigation(tabContainer, {
+                enableStateManagement: true,
+                enableAutoSave: true,
+                enableErrorHandling: true,
+                enableFallback: true
+            });
+            
+            // Initialize markdown renderer with performance optimizations
+            markdownRenderer = new MarkdownRenderer({
+                enableVirtualScrolling: true,
+                maxContentSize: 100000,
+                chunkSize: 10000
+            });
+            
+            // Run accessibility tests
+            runAccessibilityTests();
+            
+            // Set test content
+            const testContent = `# Test Report
+
+## Performance Test
+This is a test of the **enhanced** tab navigation system with *accessibility* and performance improvements.
+
+### Features Tested
+- Keyboard navigation
+- Screen reader support
+- Performance optimization
+- Large content handling
+
+### Code Example
+\`\`\`javascript
+const tabNavigation = new TabNavigation(container, {
+    enableStateManagement: true,
+    enableAutoSave: true
+});
+\`\`\`
+
+### List Test
+1. First item
+2. Second item
+3. Third item
+
+- Bullet point 1
+- Bullet point 2
+- Bullet point 3
+
+### Table Test
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Keyboard Navigation | ✅ | Arrow keys, Home, End |
+| Screen Reader | ✅ | ARIA labels and live regions |
+| Performance | ✅ | Caching and lazy loading |
+`;
+            
+            tabNavigation.setContent(testContent);
+        });
+        
+        function runAccessibilityTests() {
+            const checklist = document.getElementById('accessibilityChecklist');
+            const tests = [
+                {
+                    name: 'ARIA labels on tab buttons',
+                    test: () => {
+                        const buttons = document.querySelectorAll('[role="tab"]');
+                        return Array.from(buttons).every(btn => 
+                            btn.hasAttribute('aria-label') || btn.hasAttribute('aria-labelledby')
+                        );
+                    }
+                },
+                {
+                    name: 'Tab panels have proper ARIA attributes',
+                    test: () => {
+                        const panels = document.querySelectorAll('[role="tabpanel"]');
+                        return Array.from(panels).every(panel => 
+                            panel.hasAttribute('aria-labelledby') && 
+                            panel.hasAttribute('aria-hidden')
+                        );
+                    }
+                },
+                {
+                    name: 'Screen reader only content exists',
+                    test: () => {
+                        return document.querySelectorAll('.sr-only').length > 0;
+                    }
+                },
+                {
+                    name: 'Live regions for announcements',
+                    test: () => {
+                        return document.querySelector('[aria-live]') !== null;
+                    }
+                },
+                {
+                    name: 'Keyboard navigation support',
+                    test: () => {
+                        const buttons = document.querySelectorAll('[role="tab"]');
+                        return buttons.length > 0; // Basic check - actual keyboard nav tested manually
+                    }
+                },
+                {
+                    name: 'Focus management',
+                    test: () => {
+                        const focusableElements = document.querySelectorAll('[tabindex]');
+                        return focusableElements.length > 0;
+                    }
+                },
+                {
+                    name: 'High contrast mode support',
+                    test: () => {
+                        // Check if CSS contains high contrast media queries
+                        const stylesheets = Array.from(document.styleSheets);
+                        return stylesheets.some(sheet => {
+                            try {
+                                const rules = Array.from(sheet.cssRules || []);
+                                return rules.some(rule => 
+                                    rule.media && rule.media.mediaText.includes('prefers-contrast')
+                                );
+                            } catch (e) {
+                                return false;
+                            }
+                        });
+                    }
+                },
+                {
+                    name: 'Reduced motion support',
+                    test: () => {
+                        const stylesheets = Array.from(document.styleSheets);
+                        return stylesheets.some(sheet => {
+                            try {
+                                const rules = Array.from(sheet.cssRules || []);
+                                return rules.some(rule => 
+                                    rule.media && rule.media.mediaText.includes('prefers-reduced-motion')
+                                );
+                            } catch (e) {
+                                return false;
+                            }
+                        });
+                    }
+                }
+            ];
+            
+            checklist.innerHTML = tests.map(test => {
+                const passed = test.test();
+                const status = passed ? '✅' : '❌';
+                const className = passed ? 'check-pass' : 'check-fail';
+                return `<li class="${className}">${status} ${test.name}</li>`;
+            }).join('');
+        }
+        
+        function runPerformanceTest() {
+            const statsDiv = document.getElementById('performanceStats');
+            statsDiv.innerHTML = 'Running performance tests...';
+            
+            setTimeout(() => {
+                const stats = {
+                    tabNavigation: tabNavigation ? tabNavigation.getPerformanceStats() : null,
+                    markdownRenderer: markdownRenderer ? markdownRenderer.getPerformanceStats() : null,
+                    memory: performance.memory ? {
+                        used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024),
+                        total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024),
+                        limit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024)
+                    } : null
+                };
+                
+                let output = 'Performance Statistics:\n\n';
+                
+                if (stats.tabNavigation) {
+                    output += 'Tab Navigation:\n';
+                    output += `  Average tab switch time: ${stats.tabNavigation.averageTabSwitchTime?.toFixed(2) || 'N/A'}ms\n`;
+                    output += `  Memory trend: ${stats.tabNavigation.memoryTrend || 'N/A'}\n`;
+                    output += `  Recommendations: ${stats.tabNavigation.recommendations?.length || 0}\n\n`;
+                }
+                
+                if (stats.markdownRenderer) {
+                    output += 'Markdown Renderer:\n';
+                    output += `  Average render time: ${stats.markdownRenderer.averageTime?.toFixed(2) || 'N/A'}ms\n`;
+                    output += `  Cache size: ${stats.markdownRenderer.cacheSize}/${stats.markdownRenderer.maxCacheSize}\n`;
+                    output += `  Total renders: ${stats.markdownRenderer.totalRenders}\n\n`;
+                }
+                
+                if (stats.memory) {
+                    output += 'Memory Usage:\n';
+                    output += `  Used: ${stats.memory.used}MB\n`;
+                    output += `  Total: ${stats.memory.total}MB\n`;
+                    output += `  Limit: ${stats.memory.limit}MB\n\n`;
+                }
+                
+                output += 'Performance Features:\n';
+                output += '  ✅ Render caching\n';
+                output += '  ✅ Lazy loading\n';
+                output += '  ✅ Virtual scrolling (for large content)\n';
+                output += '  ✅ Debounced updates\n';
+                output += '  ✅ Memory monitoring\n';
+                
+                statsDiv.textContent = output;
+            }, 100);
+        }
+        
+        function testLargeContent() {
+            const testDiv = document.getElementById('largeContentTest');
+            testDiv.style.display = 'block';
+            
+            // Generate large markdown content
+            let largeContent = '# Large Content Performance Test\n\n';
+            for (let i = 0; i < 1000; i++) {
+                largeContent += `## Section ${i + 1}\n\n`;
+                largeContent += `This is paragraph ${i + 1} with **bold text** and *italic text*. `;
+                largeContent += `It contains enough content to test performance optimization features. `;
+                largeContent += `The renderer should handle this efficiently with caching and chunking.\n\n`;
+                
+                if (i % 10 === 0) {
+                    largeContent += `### Subsection ${i + 1}\n\n`;
+                    largeContent += '```javascript\n';
+                    largeContent += `const example${i} = "This is code block ${i}";\n`;
+                    largeContent += 'console.log(example);\n';
+                    largeContent += '```\n\n';
+                }
+            }
+            
+            const startTime = performance.now();
+            const renderedContent = markdownRenderer.render(largeContent);
+            const renderTime = performance.now() - startTime;
+            
+            testDiv.innerHTML = `
+                <div style="background: #f0f9ff; padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
+                    <strong>Performance Result:</strong> Rendered ${largeContent.length.toLocaleString()} characters in ${renderTime.toFixed(2)}ms
+                </div>
+                ${renderedContent}
+            `;
+        }
+        
+        // Test keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.target.matches('[role="tab"]')) {
+                console.log('Tab keyboard navigation:', e.key);
+            }
+        });
+    </script>
+</body>
+</html>

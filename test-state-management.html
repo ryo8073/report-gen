@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Management Test</title>
+    <script src="lib/content-state.js"></script>
+    <script src="lib/tab-navigation.js"></script>
+</head>
+<body>
+    <div id="test-container">
+        <h1>State Management Test</h1>
+        <div id="test-results"></div>
+        
+        <!-- Mock tab structure -->
+        <div id="resultsSection">
+            <div class="tab-navigation">
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="raw">Raw</button>
+                    <button class="tab-button" data-tab="preview">Preview</button>
+                    <button class="tab-button" data-tab="editor">Editor</button>
+                    <button class="tab-button" data-tab="comparison">Comparison</button>
+                </div>
+            </div>
+            
+            <div class="tab-content">
+                <div id="rawTab" class="tab-pane active">
+                    <div id="preview">Raw content area</div>
+                </div>
+                <div id="previewTab" class="tab-pane">
+                    <div id="previewContent">Preview content area</div>
+                </div>
+                <div id="editorTab" class="tab-pane">
+                    <div id="editorContent">Editor content area</div>
+                </div>
+                <div id="comparisonTab" class="tab-pane">
+                    <div id="comparisonContent">Comparison content area</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function runTests() {
+            const results = document.getElementById('test-results');
+            let testsPassed = 0;
+            let totalTests = 0;
+            
+            function test(name, fn) {
+                totalTests++;
+                try {
+                    fn();
+                    results.innerHTML += `<p style="color: green;">✓ ${name}</p>`;
+                    testsPassed++;
+                } catch (error) {
+                    results.innerHTML += `<p style="color: red;">✗ ${name}: ${error.message}</p>`;
+                }
+            }
+            
+            // Test ContentState
+            test('ContentState can be instantiated', () => {
+                const contentState = new ContentState({
+                    enableLocalStorage: false,
+                    autoSave: false
+                });
+                if (!contentState) throw new Error('ContentState not created');
+            });
+            
+            test('ContentState can set original content', () => {
+                const contentState = new ContentState({
+                    enableLocalStorage: false,
+                    autoSave: false
+                });
+                contentState.setOriginalContent('# Test Report\n\nThis is a test.');
+                const state = contentState.getState();
+                if (state.original.content !== '# Test Report\n\nThis is a test.') {
+                    throw new Error('Original content not set correctly');
+                }
+            });
+            
+            test('ContentState can set edited content', () => {
+                const contentState = new ContentState({
+                    enableLocalStorage: false,
+                    autoSave: false
+                });
+                contentState.setOriginalContent('Original');
+                contentState.setEditedContent('Edited');
+                const state = contentState.getState();
+                if (state.edited.content !== 'Edited') {
+                    throw new Error('Edited content not set correctly');
+                }
+            });
+            
+            test('ContentState tracks dirty state', () => {
+                const contentState = new ContentState({
+                    enableLocalStorage: false,
+                    autoSave: false
+                });
+                contentState.setOriginalContent('Original');
+                contentState.setEditedContent('Edited');
+                if (!contentState.isDirty()) {
+                    throw new Error('Dirty state not tracked correctly');
+                }
+            });
+            
+            test('ContentState can switch tabs', () => {
+                const contentState = new ContentState({
+                    enableLocalStorage: false,
+                    autoSave: false
+                });
+                const result = contentState.setActiveTab('editor');
+                if (!result) throw new Error('Tab switch failed');
+                if (contentState.getActiveTab() !== 'editor') {
+                    throw new Error('Active tab not set correctly');
+                }
+            });
+            
+            // Test TabNavigation (basic instantiation)
+            test('TabNavigation can be instantiated', () => {
+                const container = document.getElementById('resultsSection');
+                const tabNav = new TabNavigation(container, {
+                    enableStateManagement: false // Disable for testing
+                });
+                if (!tabNav) throw new Error('TabNavigation not created');
+            });
+            
+            // Summary
+            results.innerHTML += `<hr><p><strong>Tests: ${testsPassed}/${totalTests} passed</strong></p>`;
+            
+            if (testsPassed === totalTests) {
+                results.innerHTML += '<p style="color: green; font-weight: bold;">All tests passed! ✓</p>';
+            } else {
+                results.innerHTML += '<p style="color: red; font-weight: bold;">Some tests failed! ✗</p>';
+            }
+        }
+        
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

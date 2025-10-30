@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tab Navigation Test</title>
+    <style>
+        :root {
+            --color-primary: #3b82f6;
+            --color-gray-50: #f9fafb;
+            --color-gray-100: #f3f4f6;
+            --color-gray-200: #e5e7eb;
+            --color-gray-500: #6b7280;
+            --color-gray-600: #4b5563;
+            --color-gray-800: #1f2937;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --font-size-sm: 0.875rem;
+            --font-size-xs: 0.75rem;
+        }
+
+        /* Tab Navigation Styles */
+        .tab-navigation {
+            border-bottom: 1px solid var(--color-gray-200);
+            background: white;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            margin: 20px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            background: var(--color-gray-50);
+            padding: 0;
+            margin: 0;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: var(--space-3) var(--space-4);
+            border: none;
+            background: transparent;
+            color: var(--color-gray-600);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+        }
+
+        .tab-button:hover {
+            background: var(--color-gray-100);
+            color: var(--color-gray-800);
+        }
+
+        .tab-button.active {
+            background: white;
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .tab-button:focus {
+            outline: 2px solid var(--color-primary);
+            outline-offset: -2px;
+        }
+
+        /* Tab Content Styles */
+        .tab-content {
+            background: white;
+            border-radius: 0 0 8px 8px;
+            min-height: 400px;
+            margin: 0 20px 20px 20px;
+        }
+
+        .tab-pane {
+            display: none;
+            padding: var(--space-4);
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Tab Navigation Test</h1>
+    
+    <!-- Tab Navigation -->
+    <div class="tab-navigation" role="tablist" aria-label="Test tabs">
+        <div class="tab-buttons">
+            <button class="tab-button active" data-tab="raw" role="tab" aria-selected="true" aria-controls="rawTab" id="rawTabButton">
+                Raw
+            </button>
+            <button class="tab-button" data-tab="preview" role="tab" aria-selected="false" aria-controls="previewTab" id="previewTabButton">
+                Preview
+            </button>
+            <button class="tab-button" data-tab="editor" role="tab" aria-selected="false" aria-controls="editorTab" id="editorTabButton">
+                Editor
+            </button>
+            <button class="tab-button" data-tab="comparison" role="tab" aria-selected="false" aria-controls="comparisonTab" id="comparisonTabButton">
+                Comparison
+            </button>
+        </div>
+    </div>
+    
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Raw Tab -->
+        <div id="rawTab" class="tab-pane active" role="tabpanel" aria-labelledby="rawTabButton" aria-hidden="false">
+            <h2>Raw Tab Content</h2>
+            <p>This is the raw tab content. It shows the original markdown content.</p>
+        </div>
+        
+        <!-- Preview Tab -->
+        <div id="previewTab" class="tab-pane" role="tabpanel" aria-labelledby="previewTabButton" aria-hidden="true">
+            <h2>Preview Tab Content</h2>
+            <p>This is the preview tab content. It shows formatted content.</p>
+        </div>
+        
+        <!-- Editor Tab -->
+        <div id="editorTab" class="tab-pane" role="tabpanel" aria-labelledby="editorTabButton" aria-hidden="true">
+            <h2>Editor Tab Content</h2>
+            <p>This is the editor tab content. It allows rich text editing.</p>
+        </div>
+        
+        <!-- Comparison Tab -->
+        <div id="comparisonTab" class="tab-pane" role="tabpanel" aria-labelledby="comparisonTabButton" aria-hidden="true">
+            <h2>Comparison Tab Content</h2>
+            <p>This is the comparison tab content. It shows side-by-side comparison.</p>
+        </div>
+    </div>
+
+    <script>
+        // Tab Navigation System (simplified version for testing)
+        class TabNavigation {
+            constructor() {
+                this.activeTab = 'raw';
+                this.tabs = ['raw', 'preview', 'editor', 'comparison'];
+                this.tabButtons = {};
+                this.tabPanes = {};
+                
+                this.init();
+            }
+            
+            init() {
+                // Get tab buttons and panes
+                this.tabs.forEach(tabName => {
+                    this.tabButtons[tabName] = document.querySelector(`[data-tab="${tabName}"]`);
+                    this.tabPanes[tabName] = document.getElementById(`${tabName}Tab`);
+                    
+                    if (this.tabButtons[tabName]) {
+                        this.tabButtons[tabName].addEventListener('click', () => this.switchTab(tabName));
+                    }
+                });
+                
+                console.log('Tab navigation initialized');
+            }
+            
+            switchTab(tabName) {
+                if (!this.tabs.includes(tabName)) {
+                    console.warn(`Invalid tab: ${tabName}`);
+                    return;
+                }
+                
+                console.log(`Switching to tab: ${tabName}`);
+                
+                // Update active tab
+                this.activeTab = tabName;
+                
+                // Update button states
+                Object.keys(this.tabButtons).forEach(tab => {
+                    if (this.tabButtons[tab]) {
+                        this.tabButtons[tab].classList.toggle('active', tab === tabName);
+                        this.tabButtons[tab].setAttribute('aria-selected', tab === tabName);
+                    }
+                });
+                
+                // Update pane visibility
+                Object.keys(this.tabPanes).forEach(tab => {
+                    if (this.tabPanes[tab]) {
+                        this.tabPanes[tab].classList.toggle('active', tab === tabName);
+                        this.tabPanes[tab].setAttribute('aria-hidden', tab !== tabName);
+                    }
+                });
+            }
+        }
+        
+        // Initialize tab navigation when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabNav = new TabNavigation();
+            console.log('Tab navigation test loaded');
+        });
+    </script>
+</body>
+</html>
+</content>

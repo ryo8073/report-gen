@@ -7,6 +7,47 @@
   padding: 0;
 }
 
+/* Accessibility: Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Accessibility: Focus management */
+.focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Accessibility: High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-primary: #0000ff;
+    --color-gray-300: #000000;
+    --color-gray-600: #000000;
+    --color-gray-800: #000000;
+  }
+}
+
+/* Accessibility: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 :root {
   /* Modern Color Palette - High Contrast */
   --color-primary: #1d4ed8;
@@ -1309,17 +1350,177 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
+  position: relative;
+  
+  /* Performance: Use transform for better performance */
+  will-change: transform, background-color, border-color;
+  
+  /* Accessibility: Ensure minimum touch target size */
+  min-height: 44px;
+  min-width: 44px;
+  
+  /* Accessibility: Better focus styles */
+  outline: none;
 }
 
 .tab-button:hover {
   background: var(--color-gray-100);
   border-color: var(--color-gray-400);
+  
+  /* Performance: Use transform instead of changing layout */
+  transform: translateY(-1px);
+}
+
+.tab-button:focus {
+  /* Accessibility: High contrast focus indicator */
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+.tab-button:focus:not(:focus-visible) {
+  /* Hide focus outline for mouse users */
+  outline: none;
+}
+
+.tab-button:focus-visible {
+  /* Show focus outline for keyboard users */
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  z-index: 1;
 }
 
 .tab-button.active {
   background: var(--color-primary);
   color: var(--color-white);
   border-color: var(--color-primary);
+  
+  /* Accessibility: Ensure sufficient contrast */
+  font-weight: 600;
+}
+
+.tab-button:active {
+  /* Performance: Use transform for press feedback */
+  transform: translateY(0);
+}
+
+/* Performance: Tab content optimization */
+.tab-pane {
+  /* Performance: Use contain for better rendering */
+  contain: layout style paint;
+  
+  /* Performance: Enable hardware acceleration */
+  will-change: transform, opacity;
+  
+  /* Accessibility: Ensure focusable for screen readers */
+  outline: none;
+}
+
+.tab-pane:not(.active) {
+  /* Performance: Hide inactive tabs completely */
+  display: none;
+  
+  /* Accessibility: Hide from screen readers */
+  visibility: hidden;
+  
+  /* Performance: Remove from layout */
+  position: absolute;
+  left: -9999px;
+}
+
+.tab-pane.active {
+  /* Performance: Optimize active tab rendering */
+  display: block;
+  visibility: visible;
+  position: relative;
+  left: auto;
+  
+  /* Performance: Enable GPU acceleration */
+  transform: translateZ(0);
+}
+
+/* Performance: Lazy loading indicator */
+.tab-pane.loading {
+  position: relative;
+  min-height: 200px;
+}
+
+.tab-pane.loading::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  border: 3px solid var(--color-gray-300);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Performance: Virtual scrolling container */
+.virtual-scroll-container {
+  height: 400px;
+  overflow-y: auto;
+  position: relative;
+  
+  /* Performance: Enable smooth scrolling */
+  scroll-behavior: smooth;
+  
+  /* Performance: Optimize scrolling */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.virtual-scroll-content {
+  position: relative;
+  
+  /* Performance: Use transform for positioning */
+  will-change: transform;
+}
+
+/* Accessibility: High contrast mode support for tabs */
+@media (prefers-contrast: high) {
+  .tab-button {
+    border-width: 2px;
+    font-weight: 600;
+  }
+  
+  .tab-button:focus {
+    outline-width: 3px;
+  }
+  
+  .tab-button.active {
+    background: #000000;
+    color: #ffffff;
+    border-color: #000000;
+  }
+}
+
+/* Accessibility: Reduced motion support for tabs */
+@media (prefers-reduced-motion: reduce) {
+  .tab-button {
+    transition: none;
+  }
+  
+  .tab-button:hover {
+    transform: none;
+  }
+  
+  .tab-pane.loading::before {
+    animation: none;
+  }
+  
+  .virtual-scroll-container {
+    scroll-behavior: auto;
+  }
 }
 
 .editor-actions {
