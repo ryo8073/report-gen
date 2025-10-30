@@ -118,5 +118,395 @@
     "sessionId": "session_1761712583382_1nksg5aqwnci",
     "context": {},
     "severity": "medium"
+  },
+  {
+    "id": "error_1761784809307_ogjjcssuyy",
+    "timestamp": "2025-10-30T00:40:09.307Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761784809302_v4scedeoh1s",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761784809354_fdvho3q72za",
+    "timestamp": "2025-10-30T00:40:09.354Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761784809351_4lax6oqhzc",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761784809386_cvza3q079uj",
+    "timestamp": "2025-10-30T00:40:09.386Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761784809381_87bg5agnlxk",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761785766287_gn7rn54swzv",
+    "timestamp": "2025-10-30T00:56:06.287Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761785766284_1oicwiz0tva",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761785766305_sbuekjvvnue",
+    "timestamp": "2025-10-30T00:56:06.305Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761785766303_bnc8a5x44e8",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761785766324_k2jne10mltg",
+    "timestamp": "2025-10-30T00:56:06.324Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761785766318_0ym8anho2tr",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761785766339_vinlyu4hxvs",
+    "timestamp": "2025-10-30T00:56:06.339Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761785766336_jsv1brm0ao",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761785766360_t78ick6qw2q",
+    "timestamp": "2025-10-30T00:56:06.360Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761785766356_b08xyq5jzjb",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761785766376_284rrew04he",
+    "timestamp": "2025-10-30T00:56:06.376Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761785766371_z9g305i85ae",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761785766393_3odwtsqoitc",
+    "timestamp": "2025-10-30T00:56:06.393Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761785766387_b56wi4zjtd",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761785766411_929yqt37i2c",
+    "timestamp": "2025-10-30T00:56:06.411Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761785766409_kwsd114r9c",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761785766429_zxfkwh3hvzd",
+    "timestamp": "2025-10-30T00:56:06.429Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761785766425_me4zdnooo5m",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761785766448_jlncrjbj29a",
+    "timestamp": "2025-10-30T00:56:06.448Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761785766446_47cmzmrwtfw",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761785766466_6r8azw4ouf9",
+    "timestamp": "2025-10-30T00:56:06.466Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761785766460_mqhkrblsv7g",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761785766484_ifwdvlsge7i",
+    "timestamp": "2025-10-30T00:56:06.484Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761785766481_s109xf1o2un",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786051784_t27enu6gj1",
+    "timestamp": "2025-10-30T01:00:51.784Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786051782_jn6el374jml",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786051802_qvepcp428x",
+    "timestamp": "2025-10-30T01:00:51.802Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786051800_h7ay9cbe9f7",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786051821_22cxdhwf9f7",
+    "timestamp": "2025-10-30T01:00:51.821Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786051819_afjkmayetw",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786051883_xwyvxkfs1on",
+    "timestamp": "2025-10-30T01:00:51.883Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786051876_zu1mvap0be",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786251253_ie1seyuzvqi",
+    "timestamp": "2025-10-30T01:04:11.253Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786251250_7pjqu3ef0mq",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786251275_eaqiaz4limg",
+    "timestamp": "2025-10-30T01:04:11.275Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786251273_eiexvbsdfl8",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786251295_21zc7pr3euh",
+    "timestamp": "2025-10-30T01:04:11.295Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786251293_y9d39bc85n",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786251316_8ydqowe9ik5",
+    "timestamp": "2025-10-30T01:04:11.316Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786251312_3lqqsizi0kn",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786268892_5kloj4ijnyh",
+    "timestamp": "2025-10-30T01:04:28.892Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786268889_yvaoflwfe1",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786268927_pfxp3liynh",
+    "timestamp": "2025-10-30T01:04:28.927Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786268921_16qh5ud8b1r",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786268990_aenyz4ou2g",
+    "timestamp": "2025-10-30T01:04:28.990Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786268975_vgfy2yzr6ir",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786269115_0jmlc8s2w6wp",
+    "timestamp": "2025-10-30T01:04:29.115Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786269102_if50abvr32",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786269171_zm9pothknu",
+    "timestamp": "2025-10-30T01:04:29.171Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786269167_m9klwptdmk",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786269201_ir3qd3m0ti8",
+    "timestamp": "2025-10-30T01:04:29.201Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786269196_a4rft11orko",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786269223_prwr0jbrdc",
+    "timestamp": "2025-10-30T01:04:29.223Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786269219_i7le6w0wpq",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786269244_qdlwvcr2d6",
+    "timestamp": "2025-10-30T01:04:29.244Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786269238_rvbglhrfnlr",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786269264_1tg42nj0hwf",
+    "timestamp": "2025-10-30T01:04:29.264Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786269259_pih8utu0hpg",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786269287_ag4pjwei9yu",
+    "timestamp": "2025-10-30T01:04:29.287Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786269279_tsqfxm1aav",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786269307_cp1md5iliof",
+    "timestamp": "2025-10-30T01:04:29.307Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786269301_z4vqht15djh",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786269327_m223gjw1jc",
+    "timestamp": "2025-10-30T01:04:29.327Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786269322_y52pgw8v1x",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786427337_gus7ttnszma",
+    "timestamp": "2025-10-30T01:07:07.337Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786427334_yh550s34n5",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786427360_wqq416qf4a",
+    "timestamp": "2025-10-30T01:07:07.360Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786427348_s1nh3n9p9q",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786427379_vj6pd3do4m9",
+    "timestamp": "2025-10-30T01:07:07.379Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786427377_zn5iplo90k",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761786427421_skk20f50ohb",
+    "timestamp": "2025-10-30T01:07:07.421Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761786427416_mg9xj7gbujh",
+    "context": {},
+    "severity": "medium"
   }
 ]
