@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Formatting Features Test</title>
+    <style>
+        :root {
+            --color-primary: #3b82f6;
+            --color-gray-50: #f9fafb;
+            --color-gray-100: #f3f4f6;
+            --color-gray-200: #e5e7eb;
+            --color-gray-300: #d1d5db;
+            --color-gray-400: #9ca3af;
+            --color-gray-600: #4b5563;
+            --color-gray-700: #374151;
+            --color-gray-800: #1f2937;
+            --color-gray-900: #111827;
+            --color-white: #ffffff;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-error: #ef4444;
+            --color-red-700: #b91c1c;
+            --color-blue-700: #1d4ed8;
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --radius-sm: 0.125rem;
+            --radius-md: 0.375rem;
+            --radius-lg: 0.5rem;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            --font-size-3xl: 1.875rem;
+            --transition-fast: 0.15s ease-in-out;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .test-section {
+            margin-bottom: 3rem;
+        }
+        
+        .test-section h2 {
+            color: #666;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .editor-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 0.5rem 1rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .test-btn:hover {
+            background: #2563eb;
+        }
+        
+        .test-btn.secondary {
+            background: #6b7280;
+        }
+        
+        .test-btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .test-output {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .feature-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .feature-item h3 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+            font-size: 1rem;
+        }
+        
+        .feature-item p {
+            margin: 0;
+            color: #666;
+            font-size: 0.875rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-indicator.success {
+            background: #10b981;
+        }
+        
+        .status-indicator.pending {
+            background: #f59e0b;
+        }
+        
+        .status-indicator.error {
+            background: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Advanced Formatting Features Test</h1>
+        
+        <div class="feature-list">
+            <div class="feature-item">
+                <h3><span class="status-indicator success"></span>Bulleted Lists</h3>
+                <p>Create and edit bulleted lists with proper indentation</p>
+            </div>
+            <div class="feature-item">
+                <h3><span class="status-indicator success"></span>Numbered Lists</h3>
+                <p>Create and edit numbered lists with automatic numbering</p>
+            </div>
+            <div class="feature-item">
+                <h3><span class="status-indicator success"></span>Image Upload</h3>
+                <p>Upload and insert images from local files</p>
+            </div>
+            <div class="feature-item">
+                <h3><span class="status-indicator success"></span>Image Resize</h3>
+                <p>Resize images with drag handles while maintaining aspect ratio</p>
+            </div>
+            <div class="feature-item">
+                <h3><span class="status-indicator success"></span>Table Insertion</h3>
+                <p>Insert tables with customizable rows and columns</p>
+            </div>
+            <div class="feature-item">
+                <h3><span class="status-indicator success"></span>Text Color</h3>
+                <p>Apply different text colors from a color palette</p>
+            </div>
+            <div class="feature-item">
+                <h3><span class="status-indicator success"></span>Highlight Color</h3>
+                <p>Apply background highlight colors to text</p>
+            </div>
+            <div class="feature-item">
+                <h3><span class="status-indicator success"></span>List Indentation</h3>
+                <p>Indent and outdent list items for nested structures</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Enhanced WYSIWYG Editor with Advanced Formatting</h2>
+            <div class="test-controls">
+                <button class="test-btn" onclick="loadSampleContent()">Load Sample Content</button>
+                <button class="test-btn secondary" onclick="clearEditor()">Clear Editor</button>
+                <button class="test-btn secondary" onclick="getEditorContent()">Get Content</button>
+                <button class="test-btn secondary" onclick="testImageUpload()">Test Image Upload</button>
+                <button class="test-btn secondary" onclick="testTableInsertion()">Test Table Insertion</button>
+            </div>
+            
+            <div class="editor-container">
+                <div id="enhanced-editor"></div>
+            </div>
+            
+            <div class="test-output" id="output" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Feature Testing Instructions</h2>
+            <ol>
+                <li><strong>Lists:</strong> Use the bullet and numbered list buttons in the toolbar, then use indent/outdent buttons to create nested lists</li>
+                <li><strong>Images:</strong> Click the image button to upload a local image file, then click on inserted images to resize them</li>
+                <li><strong>Tables:</strong> Click the table button to open the table insertion modal, hover over cells to select size</li>
+                <li><strong>Colors:</strong> Click the text color or highlight color buttons to open color palettes</li>
+                <li><strong>Formatting:</strong> Select text and use the formatting buttons to apply bold, italic, underline</li>
+                <li><strong>Headings:</strong> Use the heading dropdown to apply different heading levels</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Include required dependencies -->
+    <script src="lib/rich-text-editor.js"></script>
+    <script src="lib/markdown-renderer.js"></script>
+    <script src="lib/business-document-formatter.js"></script>
+    <script src="lib/enhanced-wysiwyg-editor.css"></script>
+    <script src="lib/enhanced-wysiwyg-editor.js"></script>
+
+    <script>
+        let editor;
+        
+        // Initialize the enhanced WYSIWYG editor
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('enhanced-editor');
+            
+            try {
+                editor = new EnhancedWYSIWYGEditor(container, {
+                    enableMarkdownParsing: true,
+                    enableBusinessFormatting: false,
+                    enableRealTimePreview: true,
+                    enableAutoSave: false,
+                    placeholder: 'Start typing to test advanced formatting features...',
+                    onContentChange: (content, textContent) => {
+                        console.log('Content changed:', { content, textContent });
+                    }
+                });
+                
+                console.log('Enhanced WYSIWYG Editor initialized successfully');
+                
+                // Load sample content
+                setTimeout(() => {
+                    loadSampleContent();
+                }, 500);
+                
+            } catch (error) {
+                console.error('Failed to initialize editor:', error);
+                container.innerHTML = `
+                    <div style="padding: 2rem; text-align: center; color: #ef4444;">
+                        <h3>Editor Initialization Failed</h3>
+                        <p>Error: ${error.message}</p>
+                        <p>Please check the console for more details.</p>
+                    </div>
+                `;
+            }
+        });
+        
+        function loadSampleContent() {
+            if (!editor) return;
+            
+            const sampleContent = `# Advanced Formatting Test Document
+
+This document demonstrates the advanced formatting features of the Enhanced WYSIWYG Editor.
+
+## Text Formatting
+
+This text shows **bold**, *italic*, and <u>underlined</u> formatting options.
+
+## Lists
+
+### Bulleted Lists
+- First item
+- Second item
+  - Nested item 1
+  - Nested item 2
+- Third item
+
+### Numbered Lists
+1. First numbered item
+2. Second numbered item
+   1. Nested numbered item
+   2. Another nested item
+3. Third numbered item
+
+## Tables
+
+| Header 1 | Header 2 | Header 3 |
+|----------|----------|----------|
+| Cell 1   | Cell 2   | Cell 3   |
+| Cell 4   | Cell 5   | Cell 6   |
+
+## Images
+
+Images can be uploaded and resized using the toolbar controls.
+
+## Color and Highlighting
+
+Text can have different colors and highlight backgrounds applied.
+
+---
+
+Use the toolbar to test all the advanced formatting features!`;
+            
+            editor.setContent(sampleContent, 'markdown');
+            console.log('Sample content loaded');
+        }
+        
+        function clearEditor() {
+            if (!editor) return;
+            editor.clear();
+            console.log('Editor cleared');
+        }
+        
+        function getEditorContent() {
+            if (!editor) return;
+            
+            const htmlContent = editor.getContent('html');
+            const markdownContent = editor.getContent('markdown');
+            const textContent = editor.getContent('text');
+            
+            const output = document.getElementById('output');
+            output.style.display = 'block';
+            output.textContent = `HTML Content:\n${htmlContent}\n\nMarkdown Content:\n${markdownContent}\n\nText Content:\n${textContent}`;
+            
+            console.log('Editor content:', { htmlContent, markdownContent, textContent });
+        }
+        
+        function testImageUpload() {
+            if (!editor) return;
+            
+            // Create a test image data URL
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw a simple test image
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(0, 0, 200, 100);
+            ctx.fillStyle = 'white';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Test Image', 100, 55);
+            
+            const dataURL = canvas.toDataURL('image/png');
+            editor.insertImage(dataURL, 'Test Image');
+            
+            console.log('Test image inserted');
+        }
+        
+        function testTableInsertion() {
+            if (!editor) return;
+            
+            // Simulate table insertion
+            editor.insertTable(3, 4);
+            console.log('Test table inserted');
+        }
+        
+        // Global error handling
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled promise rejection:', e.reason);
+        });
+    </script>
+</body>
+</html>
