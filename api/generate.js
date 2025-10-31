@@ -2217,7 +2217,7 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
     parts.unshift({ text: fullPrompt });
 
   // Call Gemini API with optimized settings for report generation
-      console.log(`[GEMINI] Calling Gemini 1.5 Pro with ${parts.length} parts and optimized settings`);
+      console.log(`[GEMINI] Calling Gemini 2.5 Pro with ${parts.length} parts and optimized settings`);
   
   // Create optimized generation config for report type
   const optimizedConfig = getGeminiOptimizedConfig(reportType);
@@ -2544,7 +2544,7 @@ async function analyzeFileWithVision(file, reportType) {
     console.log(`[VISION] GPT-4o failed for ${file.name}, trying Gemini:`, gptError.message);
     
     try {
-      // Fallback to Gemini 1.5 Pro (supports PDF natively, good for documents)
+      // Fallback to Gemini 2.5 Pro (supports PDF natively, good for documents)
       console.log(`[VISION] Attempting Gemini Vision analysis for ${file.name}`);
       const geminiResult = await analyzeWithGeminiVision(file, reportType);
       console.log(`[VISION] Gemini Vision analysis successful for ${file.name}, result length: ${geminiResult ? geminiResult.length : 0}`);
