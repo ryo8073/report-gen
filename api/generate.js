@@ -2490,9 +2490,16 @@ async function analyzeWithGPT4Vision(file, reportType) {
 
   console.log(`[GPT-4V] Analyzing ${file.name} (${file.type})`);
 
-  // GPT-4V only supports images directly, not PDFs
+  // gpt-4o supports images, and PDFs can be converted to images
+  // For PDFs, we should use a PDF-to-image conversion service or OCR
+  // For now, we'll attempt to process as image if possible
+  // Note: Direct PDF support in GPT-4o is limited, but images work well
+  
   if (file.type === 'application/pdf') {
-    throw new Error('GPT-4V does not support PDF files directly');
+    console.log(`[GPT-4V] PDF file detected, attempting to process (may require conversion)`);
+    // Note: For PDFs, ideally convert to images first, but for now we'll skip GPT-4V for PDFs
+    // and rely on Gemini which has better PDF support
+    throw new Error('GPT-4V PDF support limited, using Gemini instead');
   }
 
   if (!file.type.startsWith('image/')) {
@@ -2503,28 +2510,31 @@ async function analyzeWithGPT4Vision(file, reportType) {
 
   try {
     console.log(`[GPT-4V] Sending request to OpenAI API`);
+    // Use gpt-4o (latest model) or gpt-4-turbo for better vision capabilities
+    const visionModel = "gpt-4o"; // Updated to use gpt-4o which has better vision and PDF support
+    
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-vision-preview",
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: analysisPrompt
-          },
-          {
-            type: "image_url",
-            image_url: {
-              url: `data:${file.type};base64,${file.data}`,
-              detail: "high"
+      model: visionModel,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: analysisPrompt
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:${file.type};base64,${file.data}`,
+                detail: "high" // High detail for accurate numerical extraction
+              }
             }
-          }
-        ]
-      }
-    ],
-      max_tokens: 2000,
-      temperature: 0.3
+          ]
+        }
+      ],
+      max_tokens: 4000, // Increased for better extraction
+      temperature: 0.2 // Lower temperature for more accurate numerical extraction
     });
 
     const content = completion.choices[0].message.content;
