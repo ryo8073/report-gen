@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiptap Editor Test - No API Calls</title>
+    <link rel="stylesheet" href="/lib/tiptap-editor-styles.css">
+    <style>
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        #editor-container {
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        #markdown-output {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .button-group {
+            margin: 10px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.secondary {
+            background: #6c757d;
+        }
+        button.secondary:hover {
+            background: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Tiptap Editor Test (No API Calls)</h1>
+        
+        <div id="status-container">
+            <div class="status info">Tiptapエディタの読み込み状況を確認しています...</div>
+        </div>
+        
+        <div class="button-group">
+            <button onclick="testLoadTiptap()">1. Tiptap読み込み確認</button>
+            <button onclick="testCreateEditor()" class="secondary">2. エディタ作成</button>
+            <button onclick="testMarkdownInput()" class="secondary">3. Markdown入力テスト</button>
+            <button onclick="testMarkdownOutput()" class="secondary">4. Markdown出力テスト</button>
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h2>エディタ (TiptapEditorClean)</h2>
+        <div id="editor-container"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Markdown出力（リアルタイム更新）</h2>
+        <div id="markdown-output">エディタが初期化されるまで待っています...</div>
+    </div>
+    
+    <div class="test-container">
+        <h2>テスト用Markdown（コピーして使用）</h2>
+        <textarea id="test-markdown" style="width: 100%; height: 200px; font-family: monospace; padding: 10px;">
+# 投資分析レポート
+
+## 1. Executive Summary（投資概要）
+
+この投資案件は、**愛知県小牧市のセントマルベリー**という物件に関する投資分析です。
+
+### 初期分析
+
+**総収益率(FCR)**: 5.06%
+**ローン定数(K%)**: 5.06%
+**イールドギャップ**: 0.00% (FCR - K%)
+
+### 全体分析
+
+- **税引前IRR (融資利用時)**: 7.24%
+- **税引後IRR (融資利用時)**: 5.39%
+- **税引前IRR (全額自己資金時)**: 4.07%
+- **税引後IRR (全額自己資金時)**: 3.29%
+
+| 項目 | 融資利用時 | 全額自己資金時 |
+|------|------------|----------------|
+| 税引前IRR | 7.24% | 4.07% |
+| 税引後IRR | 5.39% | 3.29% |
+        </textarea>
+        <div class="button-group">
+            <button onclick="loadTestMarkdown()">テストMarkdownをエディタに読み込む</button>
+        </div>
+    </div>
+
+    <!-- Load TiptapEditorClean -->
+    <script type="module">
+        import TiptapEditorClean from '/lib/tiptap-editor-clean.js';
+        
+        window.TiptapEditorClean = TiptapEditorClean;
+        window.editorInstance = null;
+        
+        // Global functions for testing
+        window.testLoadTiptap = function() {
+            const statusContainer = document.getElementById('status-container');
+            
+            if (typeof TiptapEditorClean === 'undefined') {
+                statusContainer.innerHTML = `
+                    <div class="status error">❌ TiptapEditorCleanが読み込まれていません</div>
+                    <div class="status info">確認事項:</div>
+                    <ul>
+                        <li>/lib/tiptap-editor-clean.js が存在するか</li>
+                        <li>ES Modules形式で正しくエクスポートされているか</li>
+                        <li>ブラウザのコンソールにエラーがないか</li>
+                    </ul>
+                `;
+                return;
+            }
+            
+            statusContainer.innerHTML = `
+                <div class="status success">✅ TiptapEditorCleanが読み込まれました</div>
+                <div class="status info">
+                    <strong>確認済み:</strong><br>
+                    - TiptapEditorCleanクラス: ${typeof TiptapEditorClean !== 'undefined' ? '利用可能' : '未読み込み'}<br>
+                    - グローバル参照: ${typeof window.TiptapEditorClean !== 'undefined' ? '設定済み' : '未設定'}
+                </div>
+            `;
+        };
+        
+        window.testCreateEditor = async function() {
+            const statusContainer = document.getElementById('status-container');
+            const editorContainer = document.getElementById('editor-container');
+            
+            if (!editorContainer) {
+                statusContainer.innerHTML = '<div class="status error">❌ エディタコンテナが見つかりません</div>';
+                return;
+            }
+            
+            if (typeof TiptapEditorClean === 'undefined') {
+                statusContainer.innerHTML = '<div class="status error">❌ TiptapEditorCleanが読み込まれていません。まず「1. Tiptap読み込み確認」を実行してください。</div>';
+                return;
+            }
+            
+            try {
+                statusContainer.innerHTML = '<div class="status info">エディタを作成中...</div>';
+                
+                // Clear previous editor
+                editorContainer.innerHTML = '';
+                if (window.editorInstance) {
+                    window.editorInstance.destroy();
+                }
+                
+                // Create new editor
+                window.editorInstance = new TiptapEditorClean(editorContainer, {
+                    enableToolbar: true,
+                    enableAutoSave: false,
+                    placeholder: 'ここでテキストを編集してください...',
+                    onContentChange: (html, text) => {
+                        console.log('[Test] Content changed (HTML length:', html.length, ', Text length:', text.length, ')');
+                    },
+                    onMarkdownChange: (markdown) => {
+                        console.log('[Test] Markdown changed (length:', markdown.length, ')');
+                        document.getElementById('markdown-output').textContent = markdown;
+                    }
+                });
+                
+                // Wait for initialization
+                let attempts = 0;
+                const checkReady = setInterval(() => {
+                    attempts++;
+                    if (window.editorInstance && window.editorInstance.isReady()) {
+                        clearInterval(checkReady);
+                        statusContainer.innerHTML = `
+                            <div class="status success">✅ エディタが正常に作成されました</div>
+                            <div class="status info">
+                                <strong>エディタ状態:</strong><br>
+                                - 初期化完了: ${window.editorInstance.isInitialized ? 'はい' : 'いいえ'}<br>
+                                - エディタインスタンス: ${window.editorInstance.editor ? '存在' : 'なし'}<br>
+                                - 準備完了: ${window.editorInstance.isReady() ? 'はい' : 'いいえ'}
+                            </div>
+                        `;
+                    } else if (attempts > 50) {
+                        clearInterval(checkReady);
+                        statusContainer.innerHTML = `
+                            <div class="status error">❌ エディタの初期化がタイムアウトしました</div>
+                            <div class="status info">ブラウザのコンソールを確認してください</div>
+                        `;
+                    }
+                }, 100);
+                
+            } catch (error) {
+                statusContainer.innerHTML = `
+                    <div class="status error">❌ エディタの作成に失敗しました</div>
+                    <div class="status info">エラー: ${error.message}</div>
+                    <div class="status info">スタック: ${error.stack}</div>
+                `;
+                console.error('Editor creation error:', error);
+            }
+        };
+        
+        window.testMarkdownInput = function() {
+            if (!window.editorInstance) {
+                alert('まず「2. エディタ作成」を実行してください');
+                return;
+            }
+            
+            const testMarkdown = document.getElementById('test-markdown').value;
+            
+            try {
+                window.editorInstance.setContent(testMarkdown, 'markdown');
+                
+                const statusContainer = document.getElementById('status-container');
+                statusContainer.innerHTML = `
+                    <div class="status success">✅ Markdownをエディタに設定しました</div>
+                    <div class="status info">
+                        <strong>確認:</strong><br>
+                        - Markdown構文（#, **など）は表示されず、フォーマットされた見た目になっているはずです<br>
+                        - 見出し、太字、リスト、テーブルが正しく表示されているか確認してください
+                    </div>
+                `;
+            } catch (error) {
+                alert('エラー: ' + error.message);
+                console.error('Markdown input error:', error);
+            }
+        };
+        
+        window.testMarkdownOutput = function() {
+            if (!window.editorInstance) {
+                alert('まず「2. エディタ作成」を実行してください');
+                return;
+            }
+            
+            try {
+                const markdown = window.editorInstance.getMarkdown();
+                document.getElementById('markdown-output').textContent = markdown;
+                
+                const statusContainer = document.getElementById('status-container');
+                statusContainer.innerHTML = `
+                    <div class="status success">✅ Markdown出力を取得しました</div>
+                    <div class="status info">
+                        <strong>出力長:</strong> ${markdown.length} 文字<br>
+                        <strong>確認:</strong> 下の「Markdown出力」セクションを確認してください
+                    </div>
+                `;
+            } catch (error) {
+                alert('エラー: ' + error.message);
+                console.error('Markdown output error:', error);
+            }
+        };
+        
+        window.loadTestMarkdown = function() {
+            if (!window.editorInstance) {
+                testCreateEditor();
+                setTimeout(() => loadTestMarkdown(), 2000);
+                return;
+            }
+            testMarkdownInput();
+        };
+        
+        // Auto-check on load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                testLoadTiptap();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
