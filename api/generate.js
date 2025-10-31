@@ -3441,10 +3441,10 @@ function getOptimizedSystemMessage(reportType, service) {
   } else if (service === 'gemini') {
     // Gemini-specific optimizations
     const geminiOptimizations = {
-      jp_investment_4part: `Role: 機関投資家レベル不動産投資専門コンサルタント（CPM/CCIM資格、20年以上経験）\n\nTask: 添付ファイルから投資指標を抽出し、4部構成の投資分析レポートを作成\n\nQuality Requirements:\n- 数値精度の絶対性（FCR、K%、DCR、BER、IRR、NPV）\n- イールドギャップ計算の正確性（FCR - K%）\n- レバレッジ効果の定量化\n- 実務的投資判断の提供\n- 適切なリスク評価\n\nOutput: 機関投資家が実際の投資判断に使用できる高品質分析レポート`,
-      jp_tax_strategy: `Role: 日本税制精通タックスストラテジスト（Big4税理士法人パートナーレベル）\n\nTask: 不動産投資による税務最適化戦略の分析\n\nFocus: 減価償却費活用による所得税・住民税の合法的軽減\n\nOutput: 定量的根拠に基づく税務戦略レポート`,
-      jp_inheritance_strategy: `Role: エステートプランニング専門コンサルタント（CPM/CCIM資格、30年以上経験）\n\nTask: 収益不動産レバレッジを核とした相続対策戦略分析\n\nFocus: 相続税評価額圧縮と債務控除最適化\n\nOutput: 次世代資産承継最適化レポート`,
-      comparison_analysis: `Role: 不動産投資比較分析専門家（CPM/CCIM資格、30年以上経験）\n\nTask: 複数投資物件の多角的比較分析\n\nFocus: レバレッジの質・強度・持続可能性\n\nOutput: データ基づく客観的投資推奨レポート`,
+      jp_investment_4part: `Role: 機関投資家レベル不動産投資専門コンサルタント（20年以上経験）\n\nTask: 添付ファイルから投資指標を抽出し、4部構成の投資分析レポートを作成\n\nOutput Format Requirements:\n- 冒頭に「承知いたしました」「添付されたファイルを分析し」などの導入文や挨拶文を一切含めず、直接レポート内容から開始\n- タイトル不要。指定された構成（1. Executive Summary、2. Benefits、3. Risks、4. Evidence）の内容のみ記述\n\nQuality Requirements:\n- 数値精度の絶対性（FCR、K%、DCR、BER、IRR、NPV）\n- イールドギャップ計算の正確性（FCR - K%）\n- レバレッジ判定の厳密性：FCR > K% なら必ずポジティブ・レバレッジと判定。FCRとK%を直接数値比較し、誤ってネガティブと判断しない\n- レバレッジ効果の定量化\n- 実務的投資判断の提供\n- 適切なリスク評価\n\nOutput: 機関投資家が実際の投資判断に使用できる高品質分析レポート`,
+      jp_tax_strategy: `Role: 日本税制精通タックスストラテジスト（Big4税理士法人パートナーレベル）\n\nTask: 不動産投資による税務最適化戦略の分析\n\nOutput Format Requirements:\n- 冒頭に「承知いたしました」「添付されたファイルを分析し」などの導入文や挨拶文を一切含めず、直接レポート内容から開始\n- タイトル不要。指定された構成の内容のみ記述\n\nFocus: 減価償却費活用による所得税・住民税の合法的軽減\n\nOutput: 定量的根拠に基づく税務戦略レポート`,
+      jp_inheritance_strategy: `Role: エステートプランニング専門コンサルタント（30年以上経験）\n\nTask: 収益不動産レバレッジを核とした相続対策戦略分析\n\nOutput Format Requirements:\n- 冒頭に「承知いたしました」「添付されたファイルを分析し」などの導入文や挨拶文を一切含めず、直接レポート内容から開始\n- タイトル不要。指定された構成の内容のみ記述\n- 数値判定の厳密性：FCR > I% なら必ず「CF創出力あり」と判定。FCRとI%を直接数値比較し、誤って「CF創出力なし」と判断しない\n\nFocus: 相続税評価額圧縮と債務控除最適化\n\nOutput: 次世代資産承継最適化レポート`,
+      comparison_analysis: `Role: 不動産投資比較分析専門家（30年以上経験）\n\nTask: 複数投資物件の多角的比較分析\n\nOutput Format Requirements:\n- 冒頭に「承知いたしました」「添付されたファイルを分析し」などの導入文や挨拶文を一切含めず、直接レポート内容から開始\n- タイトル不要。指定された構成の内容のみ記述\n- レバレッジ判定の厳密性：FCR > K% なら必ずポジティブ・レバレッジと判定。FCRとK%を直接数値比較し、誤ってネガティブと判断しない\n\nFocus: レバレッジの質・強度・持続可能性\n\nOutput: データ基づく客観的投資推奨レポート`,
       custom: `Role: 投資分析専門家（金融・不動産分野経験豊富）\n\nTask: 提供要件に基づく専門的分析\n\nFocus: 実践的で具体的な分析結果\n\nOutput: 実行可能な推奨事項を含む専門レポート`
     };
     
