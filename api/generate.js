@@ -2547,14 +2547,9 @@ async function analyzeWithGPT4Vision(file, reportType) {
   // For now, we'll attempt to process as image if possible
   // Note: Direct PDF support in GPT-4o is limited, but images work well
   
-  if (file.type === 'application/pdf') {
-    console.log(`[GPT-4V] PDF file detected - gpt-4o can process PDFs, attempting analysis`);
-    // gpt-4o has improved PDF support, try processing it
-    // Note: For best results, PDF should be high quality and text-based
-  }
-
-  if (!file.type.startsWith('image/')) {
-    throw new Error('GPT-4V only supports image files');
+  // Support both PDFs and images with gpt-4o
+  if (file.type !== 'application/pdf' && !file.type.startsWith('image/')) {
+    throw new Error('GPT-4o Vision only supports PDF and image files');
   }
 
   const analysisPrompt = getVisionAnalysisPrompt(reportType, file.type);
