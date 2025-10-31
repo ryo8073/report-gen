@@ -1931,7 +1931,7 @@ export default async (req, res) => {
 };
 
 async function generateReport({ reportType, inputText, files, additionalInfo, options }) {
-  let aiService = 'gemini';
+  let aiService = 'openai'; // Changed: OpenAI/ChatGPT-4o is now priority for better Vision analysis
   let report;
   let investmentAnalysis = null;
   
@@ -1972,18 +1972,19 @@ async function generateReport({ reportType, inputText, files, additionalInfo, op
   }
   
   try {
-    // Try Gemini first (priority service)
-    report = await generateWithGemini({ reportType, inputText, files, additionalInfo, options });
-  } catch (geminiError) {
-    console.log('Gemini failed, trying OpenAI:', geminiError.message);
+    // Try OpenAI/ChatGPT-4o first (priority service for better Vision analysis and numerical accuracy)
+    console.log('[REPORT GENERATION] Using OpenAI/ChatGPT-4o as priority service for Vision analysis');
+    report = await generateWithOpenAI({ reportType, inputText, files, additionalInfo, options });
+  } catch (openaiError) {
+    console.log('OpenAI failed, trying Gemini:', openaiError.message);
     
     // Check if we should try fallback based on error type
-    if (shouldTryFallback(geminiError)) {
+    if (shouldTryFallback(openaiError)) {
       try {
-        // Fallback to OpenAI
-        aiService = 'openai';
-        report = await generateWithOpenAI({ reportType, inputText, files, additionalInfo, options });
-        console.log('Successfully generated report using OpenAI fallback');
+        // Fallback to Gemini
+        aiService = 'gemini';
+        report = await generateWithGemini({ reportType, inputText, files, additionalInfo, options });
+        console.log('Successfully generated report using Gemini fallback');
         
         // Add user-friendly notification about backup service usage
         report.serviceNotification = {
@@ -1992,14 +1993,14 @@ async function generateReport({ reportType, inputText, files, additionalInfo, op
           details: 'The primary service was temporarily unavailable, but report quality remains consistent.',
           timestamp: new Date().toISOString()
         };
-      } catch (openaiError) {
-        console.error('Both AI services failed:', { geminiError: geminiError.message, openaiError: openaiError.message });
+      } catch (geminiError) {
+        console.error('Both AI services failed:', { openaiError: openaiError.message, geminiError: geminiError.message });
         // Both failed - throw enhanced dual-service failure error
-        throw createDualServiceFailureError(geminiError, openaiError);
+        throw createDualServiceFailureError(openaiError, geminiError);
       }
     } else {
       // Don't try fallback for certain error types, just throw original error
-      throw geminiError;
+      throw openaiError;
     }
   }
   
@@ -2047,9 +2048,10 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
   // Get OpenAI-optimized system message for report type
   const systemMessage = getOptimizedSystemMessage(reportType, 'openai');
 
-  // Call OpenAI API with optimized settings
+  // Call OpenAI API with optimized settings for numerical accuracy
+  // Use gpt-4o for better Vision analysis and numerical reasoning
   const completion = await openai.chat.completions.create({
-    model: "gpt-4-turbo", // Use turbo model for larger context (128k tokens)
+    model: "gpt-4o", // Use gpt-4o for superior Vision analysis and numerical precision
     messages: [
       {
         role: "system",
@@ -2060,11 +2062,11 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
         content: fullPrompt
       }
     ],
-    max_tokens: 3000, // Increased for better report quality
-    temperature: 0.7,
-    top_p: 0.9, // Add top_p for better quality control
-    frequency_penalty: 0.1, // Reduce repetition
-    presence_penalty: 0.1 // Encourage diverse content
+    max_tokens: 4000, // Increased for comprehensive reports with detailed numerical data
+    temperature: 0.3, // Lower temperature for more accurate numerical extraction
+    top_p: 0.95,
+    frequency_penalty: 0.1,
+    presence_penalty: 0.1
   });
 
   const content = completion.choices[0].message.content;
@@ -2563,29 +2565,29 @@ async function analyzeWithGPT4Vision(file, reportType) {
     // Use gpt-4o (latest model) or gpt-4-turbo for better vision capabilities
     const visionModel = "gpt-4o"; // Updated to use gpt-4o which has better vision and PDF support
     
-    const completion = await openai.chat.completions.create({
-      model: visionModel,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: analysisPrompt
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:${file.type};base64,${file.data}`,
-                detail: "high" // High detail for accurate numerical extraction
+      const completion = await openai.chat.completions.create({
+        model: visionModel,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: analysisPrompt
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:${file.type};base64,${file.data}`,
+                  detail: "high" // High detail for accurate numerical extraction
+                }
               }
-            }
-          ]
-        }
-      ],
-      max_tokens: 4000, // Increased for better extraction
-      temperature: 0.2 // Lower temperature for more accurate numerical extraction
-    });
+            ]
+          }
+        ],
+        max_tokens: 6000, // Increased further for comprehensive numerical extraction
+        temperature: 0.1 // Very low temperature for maximum numerical accuracy
+      });
 
     const content = completion.choices[0].message.content;
     console.log(`[GPT-4V] Successfully analyzed ${file.name}, response length: ${content.length}`);
