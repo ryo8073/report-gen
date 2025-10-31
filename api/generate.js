@@ -27,8 +27,10 @@ try {
     console.error('GOOGLE_AI_API_KEY environment variable is not set');
   } else {
     gemini = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
+    // Use gemini-1.5-pro for better numerical reasoning and logical analysis
+    // This model is more stable and better at handling complex financial calculations
     geminiModel = gemini.getGenerativeModel({ 
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-1.5-pro",
       generationConfig: {
         temperature: 0.7,
         topK: 40,
@@ -2150,7 +2152,7 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
     }
 
   // Call Gemini API with optimized settings for report generation
-  console.log(`[GEMINI] Calling Gemini 2.0 Flash with ${parts.length} parts and optimized settings`);
+      console.log(`[GEMINI] Calling Gemini 1.5 Pro with ${parts.length} parts and optimized settings`);
   
   // Create optimized generation config for report type
   const optimizedConfig = getGeminiOptimizedConfig(reportType);
@@ -2382,7 +2384,7 @@ async function analyzeFileWithVision(file, reportType) {
     return {
       fileName: file.name,
       content: geminiResult,
-      model: 'gemini-2.0-flash'
+      model: 'gemini-1.5-pro'
     };
   } catch (geminiError) {
     console.log(`[VISION] Gemini failed for ${file.name}, trying GPT-4V:`, geminiError.message);
