@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Results Layout Integration Test</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/lib/enhanced-results-layout.css">
+    <link rel="stylesheet" href="/lib/accessibility-styles.css">
+    <link rel="stylesheet" href="/lib/enhanced-wysiwyg-editor.css">
+    
+    <!-- Load required JavaScript files -->
+    <script src="/lib/accessibility-manager.js"></script>
+    <script src="/lib/formatting-toolbar.js"></script>
+    <script src="/lib/rich-text-editor.js"></script>
+    <script src="/lib/enhanced-wysiwyg-editor.js"></script>
+    <script src="/lib/tab-navigation.js"></script>
+    <script src="/lib/content-state.js"></script>
+    <script src="/lib/enhanced-results-layout.js"></script>
+    <script src="/lib/markdown-renderer.js"></script>
+    <script src="/lib/business-document-formatter.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f9fafb;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #374151;
+        }
+        
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .test-button:hover {
+            background: #2563eb;
+        }
+        
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        #enhancedResultsContainer {
+            margin-top: 20px;
+            min-height: 400px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enhanced Results Layout Integration Test</h1>
+        <p>このページは、Enhanced Results Layoutの統合をテストするためのものです。</p>
+        
+        <div class="test-section">
+            <div class="test-title">1. JavaScript Dependencies Check</div>
+            <button class="test-button" onclick="checkDependencies()">依存関係をチェック</button>
+            <div id="dependencyStatus" class="status info" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">2. Enhanced Results Layout Initialization</div>
+            <button class="test-button" onclick="testInitialization()">初期化テスト</button>
+            <div id="initStatus" class="status info" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">3. Content Display Test</div>
+            <button class="test-button" onclick="testContentDisplay()">コンテンツ表示テスト</button>
+            <button class="test-button" onclick="testRichTextEditor()">リッチテキストエディタテスト</button>
+            <div id="contentStatus" class="status info" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">4. Enhanced Results Container</div>
+            <div id="enhancedResultsContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        let enhancedResultsLayout = null;
+        
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+            element.style.display = 'block';
+        }
+        
+        function checkDependencies() {
+            const dependencies = [
+                'EnhancedResultsLayout',
+                'AccessibilityManager', 
+                'FormattingToolbar',
+                'RichTextEditor',
+                'EnhancedWYSIWYGEditor',
+                'TabNavigation',
+                'ContentState',
+                'MarkdownRenderer',
+                'BusinessDocumentFormatter'
+            ];
+            
+            const results = [];
+            let allLoaded = true;
+            
+            dependencies.forEach(dep => {
+                const isLoaded = typeof window[dep] !== 'undefined';
+                results.push(`${dep}: ${isLoaded ? '✓' : '✗'}`);
+                if (!isLoaded) allLoaded = false;
+            });
+            
+            const message = results.join('\n');
+            const type = allLoaded ? 'success' : 'error';
+            showStatus('dependencyStatus', message, type);
+        }
+        
+        function testInitialization() {
+            try {
+                const container = document.getElementById('enhancedResultsContainer');
+                
+                if (typeof EnhancedResultsLayout === 'undefined') {
+                    showStatus('initStatus', 'EnhancedResultsLayoutクラスが見つかりません', 'error');
+                    return;
+                }
+                
+                enhancedResultsLayout = new EnhancedResultsLayout(container, {
+                    enableBusinessFormatting: true,
+                    enablePDFExport: true,
+                    enableFormatControls: true,
+                    enableAccessibility: true,
+                    defaultView: 'preview'
+                });
+                
+                enhancedResultsLayout.init();
+                showStatus('initStatus', 'Enhanced Results Layout が正常に初期化されました', 'success');
+                
+            } catch (error) {
+                showStatus('initStatus', `初期化エラー: ${error.message}`, 'error');
+                console.error('Initialization error:', error);
+            }
+        }
+        
+        function testContentDisplay() {
+            if (!enhancedResultsLayout) {
+                showStatus('contentStatus', '先に初期化テストを実行してください', 'error');
+                return;
+            }
+            
+            const sampleContent = `# 投資分析レポート
+
+## 概要
+このレポートは、投資機会の分析結果を示しています。
+
+### 主要な発見事項
+- **収益性**: 年間利回り8.5%が期待される
+- **リスク評価**: 中程度のリスクレベル
+- **推奨事項**: 投資を推奨
+
+## 詳細分析
+
+### 財務指標
+1. ROI: 8.5%
+2. NPV: ¥2,500,000
+3. IRR: 12.3%
+
+### リスク要因
+- 市場変動リスク
+- 流動性リスク
+- 信用リスク
+
+## 結論
+総合的な評価として、この投資機会は**推奨**されます。`;
+            
+            try {
+                enhancedResultsLayout.setContent(sampleContent);
+                showStatus('contentStatus', 'サンプルコンテンツが正常に表示されました', 'success');
+            } catch (error) {
+                showStatus('contentStatus', `コンテンツ表示エラー: ${error.message}`, 'error');
+                console.error('Content display error:', error);
+            }
+        }
+        
+        function testRichTextEditor() {
+            if (!enhancedResultsLayout) {
+                showStatus('contentStatus', '先に初期化テストを実行してください', 'error');
+                return;
+            }
+            
+            try {
+                // Switch to edit view to test rich text editor
+                if (enhancedResultsLayout.switchView) {
+                    enhancedResultsLayout.switchView('edit');
+                    showStatus('contentStatus', 'リッチテキストエディタビューに切り替えました', 'success');
+                } else {
+                    showStatus('contentStatus', 'switchViewメソッドが見つかりません', 'error');
+                }
+            } catch (error) {
+                showStatus('contentStatus', `リッチテキストエディタエラー: ${error.message}`, 'error');
+                console.error('Rich text editor error:', error);
+            }
+        }
+        
+        // Auto-run dependency check on load
+        window.addEventListener('load', () => {
+            setTimeout(checkDependencies, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Document Styling Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Test page specific styles */
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        
+        .test-section {
+            background: white;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: #2563eb;
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .test-content {
+            padding: 1.5rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .control-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .control-group select,
+        .control-group input {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-section">
+            <div class="test-header">
+                Business Document Styling Test
+            </div>
+            <div class="test-content">
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="template-select">Template:</label>
+                        <select id="template-select">
+                            <option value="standard">Standard</option>
+                            <option value="formal">Formal</option>
+                            <option value="modern">Modern</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="font-family">Font Family:</label>
+                        <select id="font-family">
+                            <option value="serif">Serif (Times New Roman)</option>
+                            <option value="sans">Sans-serif (Arial)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="font-size">Font Size:</label>
+                        <select id="font-size">
+                            <option value="small">Small (11pt)</option>
+                            <option value="normal" selected>Normal (12pt)</option>
+                            <option value="large">Large (14pt)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="line-height">Line Height:</label>
+                        <select id="line-height">
+                            <option value="tight">Tight (1.2)</option>
+                            <option value="normal" selected>Normal (1.5)</option>
+                            <option value="relaxed">Relaxed (1.8)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="header-text">Header Text:</label>
+                        <input type="text" id="header-text" placeholder="Company Proposal" value="Business Proposal">
+                    </div>
+                    <div class="control-group">
+                        <label for="footer-text">Footer Text:</label>
+                        <input type="text" id="footer-text" placeholder="Confidential" value="Confidential Document">
+                    </div>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="applyBusinessStyling()">Apply Business Styling</button>
+                    <button class="btn btn-secondary" onclick="removeBusinessStyling()">Remove Styling</button>
+                    <button class="btn btn-primary" onclick="togglePrintPreview()">Toggle Print Preview</button>
+                    <button class="btn btn-secondary" onclick="printDocument()">Print Document</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">
+                Sample Business Document Content
+            </div>
+            <div class="test-content">
+                <div id="document-content" class="document-preview">
+                    <h1>Executive Summary</h1>
+                    <p>This document presents a comprehensive business proposal for the implementation of advanced document formatting capabilities. The proposed solution will enhance the professional appearance of business communications while maintaining ease of use and accessibility.</p>
+                    
+                    <h2>Project Overview</h2>
+                    <p>Our organization requires a sophisticated document formatting system that can produce client-ready business documents. The current system produces raw markdown output, which requires additional processing to achieve professional presentation standards.</p>
+                    
+                    <h3>Key Objectives</h3>
+                    <ul>
+                        <li>Implement professional document styling with consistent typography</li>
+                        <li>Provide multiple document templates for different business contexts</li>
+                        <li>Enable PDF and Word document export functionality</li>
+                        <li>Ensure responsive design for various screen sizes</li>
+                        <li>Maintain accessibility compliance throughout the system</li>
+                    </ul>
+                    
+                    <h2>Technical Specifications</h2>
+                    <p>The solution will be built using modern web technologies with a focus on performance and user experience. The following table outlines the key technical requirements:</p>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Technology</th>
+                                <th>Purpose</th>
+                                <th>Priority</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>CSS Framework</td>
+                                <td>Custom CSS Variables</td>
+                                <td>Professional styling system</td>
+                                <td>High</td>
+                            </tr>
+                            <tr>
+                                <td>Typography</td>
+                                <td>Web-safe fonts</td>
+                                <td>Consistent text rendering</td>
+                                <td>High</td>
+                            </tr>
+                            <tr>
+                                <td>Export Engine</td>
+                                <td>Browser APIs</td>
+                                <td>PDF generation</td>
+                                <td>Medium</td>
+                            </tr>
+                            <tr>
+                                <td>Print Optimization</td>
+                                <td>CSS Media Queries</td>
+                                <td>Print-friendly layouts</td>
+                                <td>Medium</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h3>Implementation Timeline</h3>
+                    <ol>
+                        <li><strong>Phase 1:</strong> Foundation setup and basic styling implementation</li>
+                        <li><strong>Phase 2:</strong> Template system development and testing</li>
+                        <li><strong>Phase 3:</strong> Export functionality integration</li>
+                        <li><strong>Phase 4:</strong> User interface enhancements and optimization</li>
+                    </ol>
+                    
+                    <h2>Code Implementation</h2>
+                    <p>The following code snippet demonstrates the basic structure of the business document formatter:</p>
+                    
+                    <pre><code>class BusinessDocumentFormatter {
+  constructor() {
+    this.currentTemplate = 'standard';
+    this.settings = {
+      fontFamily: 'serif',
+      fontSize: 'normal',
+      lineHeight: 'normal'
+    };
+  }
+  
+  applyStandardStyling(contentElement) {
+    contentElement.classList.add('business-document');
+    this.styleHeadings(contentElement);
+    this.styleParagraphs(contentElement);
+  }
+}</code></pre>
+                    
+                    <blockquote>
+                        <p><em>"Professional document presentation is crucial for business success. The right formatting can make the difference between a proposal that gets approved and one that gets overlooked."</em></p>
+                        <p>— Business Communications Expert</p>
+                    </blockquote>
+                    
+                    <h2>Conclusion</h2>
+                    <p>The implementation of professional business document styling will significantly enhance our organization's ability to produce client-ready materials. This investment in presentation quality will improve our professional image and increase the likelihood of successful business outcomes.</p>
+                    
+                    <p>We recommend proceeding with the implementation as outlined in this proposal, with an expected completion timeline of 4-6 weeks for full deployment.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="lib/business-document-formatter.js"></script>
+    <script>
+        let formatter = new BusinessDocumentFormatter();
+        let isPrintPreview = false;
+        
+        function applyBusinessStyling() {
+            const content = document.getElementById('document-content');
+            const template = document.getElementById('template-select').value;
+            const fontFamily = document.getElementById('font-family').value;
+            const fontSize = document.getElementById('font-size').value;
+            const lineHeight = document.getElementById('line-height').value;
+            const headerText = document.getElementById('header-text').value;
+            const footerText = document.getElementById('footer-text').value;
+            
+            // Update formatter settings
+            formatter.updateSettings({
+                fontFamily: fontFamily,
+                fontSize: fontSize,
+                lineHeight: lineHeight
+            });
+            
+            // Apply template
+            formatter.applyTemplate(template);
+            
+            // Set header and footer
+            formatter.setHeaderFooter(headerText, footerText);
+            
+            // Apply styling to content
+            formatter.applyStandardStyling(content);
+            
+            console.log('Business styling applied with settings:', formatter.getSettings());
+        }
+        
+        function removeBusinessStyling() {
+            const content = document.getElementById('document-content');
+            formatter.removeBusinessStyling(content);
+            formatter.reset();
+            
+            // Remove print preview if active
+            if (isPrintPreview) {
+                togglePrintPreview();
+            }
+            
+            console.log('Business styling removed');
+        }
+        
+        function togglePrintPreview() {
+            const content = document.getElementById('document-content');
+            
+            if (!isPrintPreview) {
+                content.classList.add('business-print-preview');
+                content.innerHTML = '<div class="business-document">' + content.innerHTML + '</div>';
+                isPrintPreview = true;
+                console.log('Print preview enabled');
+            } else {
+                content.classList.remove('business-print-preview');
+                const businessDoc = content.querySelector('.business-document');
+                if (businessDoc) {
+                    content.innerHTML = businessDoc.innerHTML;
+                }
+                isPrintPreview = false;
+                console.log('Print preview disabled');
+            }
+        }
+        
+        function printDocument() {
+            // Apply print-specific styling
+            const printCSS = formatter.generatePrintCSS();
+            const style = document.createElement('style');
+            style.textContent = printCSS;
+            document.head.appendChild(style);
+            
+            // Trigger print dialog
+            window.print();
+            
+            // Remove temporary print styles
+            setTimeout(() => {
+                document.head.removeChild(style);
+            }, 1000);
+        }
+        
+        // Initialize with default styling
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Business Document Styling Test loaded');
+            console.log('BusinessDocumentFormatter available:', typeof BusinessDocumentFormatter !== 'undefined');
+        });
+    </script>
+</body>
+</html>

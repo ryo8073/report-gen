@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced PDF Export Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-content {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            background: #f9f9f9;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .settings-panel {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: white;
+        }
+        .settings-group {
+            margin: 10px 0;
+        }
+        .settings-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .margin-inputs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
+        .margin-inputs input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Advanced PDF Export Engine Test</h1>
+    
+    <div class="controls">
+        <h3>Test Controls</h3>
+        <button onclick="testBasicExport()">Test Basic PDF Export</button>
+        <button onclick="testCustomSettings()">Test Custom Settings</button>
+        <button onclick="testWithHeaderFooter()">Test with Header/Footer</button>
+        <button onclick="showCapabilities()">Show Capabilities</button>
+        <div id="status"></div>
+    </div>
+
+    <div class="test-content" id="testContent">
+        <h2>Sample Business Document</h2>
+        <p>This is a <strong>test document</strong> to demonstrate the advanced PDF export functionality.</p>
+        
+        <h3>Features Tested</h3>
+        <ul>
+            <li>Professional document styling</li>
+            <li>Custom page sizes and margins</li>
+            <li>Header and footer positioning</li>
+            <li>Image preservation</li>
+            <li>Page break handling</li>
+        </ul>
+        
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>jsPDF Integration</td>
+                    <td>✓ Implemented</td>
+                    <td>Advanced PDF generation</td>
+                </tr>
+                <tr>
+                    <td>html2canvas Integration</td>
+                    <td>✓ Implemented</td>
+                    <td>Perfect style preservation</td>
+                </tr>
+                <tr>
+                    <td>Custom Page Settings</td>
+                    <td>✓ Implemented</td>
+                    <td>A4, Letter, Legal support</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <blockquote style="border-left: 4px solid #007bff; padding-left: 15px; margin: 20px 0; font-style: italic;">
+            "The advanced PDF export engine provides professional-quality document generation with perfect formatting preservation."
+        </blockquote>
+    </div>
+
+    <!-- Advanced PDF Export Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="lib/pdf-export-manager.js"></script>
+
+    <script>
+        let pdfExportManager;
+        
+        // Initialize PDF Export Manager
+        function initializePDFManager() {
+            try {
+                pdfExportManager = new PDFExportManager({
+                    defaultFilename: 'advanced-pdf-test',
+                    businessFormatting: true,
+                    includeHeaders: true,
+                    includeFooters: true,
+                    showPageNumbers: true
+                });
+                showStatus('PDF Export Manager initialized successfully', 'success');
+                return true;
+            } catch (error) {
+                showStatus(`Failed to initialize PDF Manager: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+            
+            // Auto-clear after 5 seconds for success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+        
+        // Test basic PDF export
+        async function testBasicExport() {
+            if (!pdfExportManager) {
+                showStatus('PDF Manager not initialized', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Generating basic PDF...', 'info');
+                const content = document.getElementById('testContent');
+                const success = await pdfExportManager.exportToPDF(content, {
+                    filename: 'basic-test.pdf',
+                    title: 'Basic PDF Test'
+                });
+                
+                if (success) {
+                    showStatus('Basic PDF export completed successfully!', 'success');
+                } else {
+                    showStatus('Basic PDF export failed', 'error');
+                }
+            } catch (error) {
+                showStatus(`Basic PDF export error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test custom settings
+        async function testCustomSettings() {
+            if (!pdfExportManager) {
+                showStatus('PDF Manager not initialized', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Generating PDF with custom settings...', 'info');
+                const content = document.getElementById('testContent');
+                
+                const customSettings = {
+                    filename: 'custom-settings-test.pdf',
+                    pageSize: 'Letter',
+                    orientation: 'portrait',
+                    margins: {
+                        top: 30,
+                        right: 25,
+                        bottom: 30,
+                        left: 25
+                    },
+                    title: 'Custom Settings Test',
+                    showDate: true
+                };
+                
+                const success = await pdfExportManager.exportWithCustomSettings(content, customSettings);
+                
+                if (success) {
+                    showStatus('Custom settings PDF export completed successfully!', 'success');
+                } else {
+                    showStatus('Custom settings PDF export failed', 'error');
+                }
+            } catch (error) {
+                showStatus(`Custom settings PDF export error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test with header and footer
+        async function testWithHeaderFooter() {
+            if (!pdfExportManager) {
+                showStatus('PDF Manager not initialized', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Generating PDF with header and footer...', 'info');
+                const content = document.getElementById('testContent');
+                
+                const headerFooterSettings = {
+                    filename: 'header-footer-test.pdf',
+                    title: 'Header Footer Test Document',
+                    header: 'Advanced PDF Export Test',
+                    footer: 'Generated by Advanced PDF Engine',
+                    showDate: true,
+                    showPageNumbers: true,
+                    headerFooterData: {
+                        header: 'Test Document Header',
+                        footer: 'Confidential - Test Document'
+                    }
+                };
+                
+                const success = await pdfExportManager.exportToPDF(content, headerFooterSettings);
+                
+                if (success) {
+                    showStatus('Header/Footer PDF export completed successfully!', 'success');
+                } else {
+                    showStatus('Header/Footer PDF export failed', 'error');
+                }
+            } catch (error) {
+                showStatus(`Header/Footer PDF export error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Show capabilities
+        function showCapabilities() {
+            if (!pdfExportManager) {
+                showStatus('PDF Manager not initialized', 'error');
+                return;
+            }
+            
+            try {
+                const capabilities = pdfExportManager.getCapabilities();
+                const capabilitiesText = `
+                    <strong>PDF Export Capabilities:</strong><br>
+                    • Formats: ${capabilities.formats.join(', ')}<br>
+                    • Page Sizes: ${capabilities.pageSizes.join(', ')}<br>
+                    • Orientations: ${capabilities.orientations.join(', ')}<br>
+                    • Features: ${Object.entries(capabilities.features)
+                        .filter(([key, value]) => value)
+                        .map(([key]) => key)
+                        .join(', ')}
+                `;
+                showStatus(capabilitiesText, 'success');
+            } catch (error) {
+                showStatus(`Error getting capabilities: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', function() {
+            // Check if required libraries are loaded
+            if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
+                showStatus('jsPDF library not loaded', 'error');
+                return;
+            }
+            
+            if (typeof window.html2canvas === 'undefined') {
+                showStatus('html2canvas library not loaded', 'error');
+                return;
+            }
+            
+            if (typeof PDFExportManager === 'undefined') {
+                showStatus('PDFExportManager not loaded', 'error');
+                return;
+            }
+            
+            // Initialize PDF manager
+            initializePDFManager();
+        });
+    </script>
+</body>
+</html>

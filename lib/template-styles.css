@@ -1,0 +1,493 @@
+/* Template-Specific Styles for Business Documents */
+
+/* ===== SIMPLE TEMPLATE ===== */
+.business-template-simple {
+  /* Simple template uses clean, minimal styling */
+}
+
+.business-template-simple .business-document {
+  font-family: var(--business-font-family-sans);
+  color: #374151;
+  line-height: 1.6;
+}
+
+.business-template-simple .business-h1,
+.business-template-simple h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 32px 0 20px 0;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 12px;
+  text-align: left;
+}
+
+.business-template-simple .business-h2,
+.business-template-simple h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #374151;
+  margin: 28px 0 16px 0;
+}
+
+.business-template-simple .business-h3,
+.business-template-simple h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #4b5563;
+  margin: 24px 0 12px 0;
+}
+
+.business-template-simple .business-paragraph,
+.business-template-simple p {
+  text-align: left;
+  text-indent: 0;
+  margin-bottom: 16px;
+}
+
+.business-template-simple .business-list,
+.business-template-simple ul,
+.business-template-simple ol {
+  margin: 16px 0;
+}
+
+.business-template-simple .business-table,
+.business-template-simple table {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.business-template-simple .business-table-header,
+.business-template-simple th {
+  background-color: #f9fafb;
+  color: #374151;
+  font-weight: 600;
+}
+
+.business-template-simple .business-quote,
+.business-template-simple blockquote {
+  border-left: 4px solid #3b82f6;
+  background-color: #eff6ff;
+  padding: 16px 20px;
+  margin: 20px 0;
+  border-radius: 0 6px 6px 0;
+}
+
+/* ===== FORMAL TEMPLATE ===== */
+.business-template-formal {
+  /* Formal template uses traditional business styling */
+}
+
+.business-template-formal .business-document {
+  font-family: var(--business-font-family);
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+
+.business-template-formal .business-h1,
+.business-template-formal h1 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1a1a1a;
+  margin: 36px 0 24px 0;
+  text-align: center;
+  border-bottom: 3px solid #1a365d;
+  padding-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.business-template-formal .business-h2,
+.business-template-formal h2 {
+  font-size: 20px;
+  font-weight: bold;
+  color: #2d3748;
+  margin: 32px 0 20px 0;
+  border-bottom: 1px solid #cbd5e0;
+  padding-bottom: 8px;
+}
+
+.business-template-formal .business-h3,
+.business-template-formal h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #2d3748;
+  margin: 28px 0 16px 0;
+}
+
+.business-template-formal .business-h4,
+.business-template-formal h4 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #4a5568;
+  margin: 24px 0 12px 0;
+  text-decoration: underline;
+}
+
+.business-template-formal .business-paragraph,
+.business-template-formal p {
+  text-align: justify;
+  text-indent: 24px;
+  margin-bottom: 18px;
+  hyphens: auto;
+}
+
+.business-template-formal .business-h1 + .business-paragraph,
+.business-template-formal .business-h2 + .business-paragraph,
+.business-template-formal .business-h3 + .business-paragraph,
+.business-template-formal h1 + p,
+.business-template-formal h2 + p,
+.business-template-formal h3 + p {
+  text-indent: 0;
+}
+
+.business-template-formal .business-list,
+.business-template-formal ul,
+.business-template-formal ol {
+  margin: 18px 0;
+  padding-left: 36px;
+}
+
+.business-template-formal .business-list-item,
+.business-template-formal li {
+  margin-bottom: 8px;
+  text-align: justify;
+}
+
+.business-template-formal .business-table,
+.business-template-formal table {
+  border: 2px solid #2d3748;
+  border-collapse: collapse;
+}
+
+.business-template-formal .business-table-header,
+.business-template-formal th {
+  background-color: #2d3748;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  padding: 12px 16px;
+  border: 1px solid #2d3748;
+}
+
+.business-template-formal .business-table-cell,
+.business-template-formal td {
+  border: 1px solid #2d3748;
+  padding: 10px 16px;
+  text-align: left;
+}
+
+.business-template-formal .business-table-row-even {
+  background-color: #f7fafc;
+}
+
+.business-template-formal .business-quote,
+.business-template-formal blockquote {
+  border-left: 6px solid #1a365d;
+  background-color: #f7fafc;
+  padding: 20px 24px;
+  margin: 24px 0;
+  font-style: italic;
+  position: relative;
+}
+
+.business-template-formal .business-quote::before,
+.business-template-formal blockquote::before {
+  content: '"';
+  font-size: 48px;
+  color: #1a365d;
+  position: absolute;
+  top: 10px;
+  left: 8px;
+  font-family: Georgia, serif;
+}
+
+.business-template-formal .business-code-block,
+.business-template-formal pre {
+  background-color: #edf2f7;
+  border: 1px solid #cbd5e0;
+  padding: 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 11pt;
+}
+
+/* ===== MODERN TEMPLATE ===== */
+.business-template-modern {
+  /* Modern template uses contemporary design elements */
+}
+
+.business-template-modern .business-document {
+  font-family: var(--business-font-family-sans);
+  color: #1f2937;
+  line-height: 1.8;
+}
+
+.business-template-modern .business-h1,
+.business-template-modern h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e40af;
+  margin: 40px 0 24px 0;
+  text-align: left;
+  position: relative;
+  padding-left: 20px;
+}
+
+.business-template-modern .business-h1::before,
+.business-template-modern h1::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  border-radius: 3px;
+}
+
+.business-template-modern .business-h2,
+.business-template-modern h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1e40af;
+  margin: 32px 0 18px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e0e7ff;
+}
+
+.business-template-modern .business-h3,
+.business-template-modern h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #3730a3;
+  margin: 28px 0 14px 0;
+}
+
+.business-template-modern .business-h4,
+.business-template-modern h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #4338ca;
+  margin: 24px 0 12px 0;
+}
+
+.business-template-modern .business-paragraph,
+.business-template-modern p {
+  text-align: left;
+  text-indent: 0;
+  margin-bottom: 20px;
+  color: #374151;
+}
+
+.business-template-modern .business-list,
+.business-template-modern ul,
+.business-template-modern ol {
+  margin: 20px 0;
+  padding-left: 28px;
+}
+
+.business-template-modern .business-list-item,
+.business-template-modern li {
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.business-template-modern ul .business-list-item::marker,
+.business-template-modern ul li::marker {
+  color: #3b82f6;
+}
+
+.business-template-modern .business-table,
+.business-template-modern table {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.business-template-modern .business-table-header,
+.business-template-modern th {
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  color: white;
+  font-weight: 600;
+  text-align: left;
+  padding: 16px 20px;
+  border: none;
+}
+
+.business-template-modern .business-table-cell,
+.business-template-modern td {
+  padding: 14px 20px;
+  border: none;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.business-template-modern .business-table-row-even {
+  background-color: #f8fafc;
+}
+
+.business-template-modern .business-quote,
+.business-template-modern blockquote {
+  border: none;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  padding: 24px 28px;
+  margin: 28px 0;
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.business-template-modern .business-quote::before,
+.business-template-modern blockquote::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 4px;
+  height: 40px;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  border-radius: 2px;
+}
+
+.business-template-modern .business-code-block,
+.business-template-modern pre {
+  background-color: #1f2937;
+  color: #f9fafb;
+  border-radius: 8px;
+  padding: 20px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+.business-template-modern .business-inline-code,
+.business-template-modern code {
+  background-color: #e0e7ff;
+  color: #3730a3;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+}
+
+/* ===== PRINT STYLES FOR TEMPLATES ===== */
+@media print {
+  .business-template-simple .business-h1,
+  .business-template-simple h1 {
+    color: #000;
+    border-bottom-color: #000;
+  }
+
+  .business-template-formal .business-h1,
+  .business-template-formal h1 {
+    color: #000;
+    border-bottom-color: #000;
+  }
+
+  .business-template-formal .business-table-header,
+  .business-template-formal th {
+    background-color: #f0f0f0 !important;
+    color: #000 !important;
+    border-color: #000;
+  }
+
+  .business-template-modern .business-h1,
+  .business-template-modern h1 {
+    color: #000;
+  }
+
+  .business-template-modern .business-h1::before,
+  .business-template-modern h1::before {
+    background: #000;
+  }
+
+  .business-template-modern .business-h2,
+  .business-template-modern h2 {
+    color: #000;
+    border-bottom-color: #ccc;
+  }
+
+  .business-template-modern .business-table-header,
+  .business-template-modern th {
+    background: #f0f0f0 !important;
+    color: #000 !important;
+  }
+
+  .business-template-modern .business-quote,
+  .business-template-modern blockquote {
+    background: #f5f5f5 !important;
+    box-shadow: none;
+  }
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS FOR TEMPLATES ===== */
+@media screen and (max-width: 768px) {
+  .business-template-simple .business-h1,
+  .business-template-simple h1 {
+    font-size: 24px;
+  }
+
+  .business-template-formal .business-h1,
+  .business-template-formal h1 {
+    font-size: 20px;
+    text-align: left;
+  }
+
+  .business-template-formal .business-paragraph,
+  .business-template-formal p {
+    text-align: left;
+    text-indent: 0;
+  }
+
+  .business-template-modern .business-h1,
+  .business-template-modern h1 {
+    font-size: 26px;
+  }
+
+  .business-template-modern .business-h1::before,
+  .business-template-modern h1::before {
+    width: 4px;
+  }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+@media (prefers-reduced-motion: reduce) {
+  .business-template-modern .business-quote,
+  .business-template-modern blockquote {
+    background: #eff6ff;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .business-template-simple .business-document {
+    color: #e5e7eb;
+  }
+
+  .business-template-formal .business-document {
+    color: #f3f4f6;
+  }
+
+  .business-template-modern .business-document {
+    color: #f9fafb;
+  }
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+@media (prefers-contrast: high) {
+  .business-template-simple .business-h1,
+  .business-template-simple h1 {
+    border-bottom-color: #000;
+  }
+
+  .business-template-formal .business-table,
+  .business-template-formal table {
+    border-color: #000;
+  }
+
+  .business-template-modern .business-h1::before,
+  .business-template-modern h1::before {
+    background: #000;
+  }
+}

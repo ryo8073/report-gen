@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Selection System Test</title>
+    <link rel="stylesheet" href="lib/business-document-styles.css">
+    <link rel="stylesheet" href="lib/template-styles.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .test-header {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .test-header h1 {
+            margin: 0 0 8px 0;
+            color: #1f2937;
+            font-size: 28px;
+        }
+
+        .test-header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .test-layout {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .template-panel {
+            position: sticky;
+            top: 20px;
+        }
+
+        .document-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .document-header {
+            background: #f9fafb;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .document-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .document-content {
+            padding: 32px;
+            min-height: 600px;
+        }
+
+        .status-bar {
+            background: #f9fafb;
+            padding: 12px 24px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #6b7280;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .current-template {
+            font-weight: 500;
+            color: #3b82f6;
+        }
+
+        @media (max-width: 1024px) {
+            .test-layout {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .template-panel {
+                position: static;
+            }
+        }
+
+        /* Loading state */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .loading::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e7eb;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>テンプレート選択システム</h1>
+            <p>ビジネス文書のテンプレートを選択して、リアルタイムでプレビューを確認できます</p>
+        </div>
+
+        <div class="test-layout">
+            <!-- Template Selection Panel -->
+            <div class="template-panel">
+                <div id="templateSelectorContainer" class="loading">
+                    テンプレートシステムを読み込み中...
+                </div>
+            </div>
+
+            <!-- Document Preview Panel -->
+            <div class="document-panel">
+                <div class="document-header">
+                    <h2 class="document-title">文書プレビュー</h2>
+                    <div class="document-actions">
+                        <button class="btn" onclick="resetTemplate()">リセット</button>
+                        <button class="btn btn-primary" onclick="exportDocument()">エクスポート</button>
+                    </div>
+                </div>
+
+                <div class="document-content">
+                    <div id="documentPreview" class="business-document">
+                        <h1>ビジネス提案書</h1>
+                        <p>この文書は、新しいプロジェクトの提案を行うためのサンプル文書です。テンプレートを選択することで、文書の外観を変更できます。</p>
+
+                        <h2>プロジェクト概要</h2>
+                        <p>私たちは、革新的なソリューションを通じて、お客様のビジネス課題を解決することを目指しています。このプロジェクトでは、最新の技術を活用して、効率性と品質の向上を実現します。</p>
+
+                        <h3>主要な特徴</h3>
+                        <ul>
+                            <li>ユーザーフレンドリーなインターフェース</li>
+                            <li>高いパフォーマンスと信頼性</li>
+                            <li>スケーラブルなアーキテクチャ</li>
+                            <li>包括的なセキュリティ機能</li>
+                        </ul>
+
+                        <h2>技術仕様</h2>
+                        <p>以下の表は、プロジェクトの主要な技術仕様を示しています：</p>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>項目</th>
+                                    <th>仕様</th>
+                                    <th>備考</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>フロントエンド</td>
+                                    <td>React.js</td>
+                                    <td>最新バージョン使用</td>
+                                </tr>
+                                <tr>
+                                    <td>バックエンド</td>
+                                    <td>Node.js</td>
+                                    <td>Express.js フレームワーク</td>
+                                </tr>
+                                <tr>
+                                    <td>データベース</td>
+                                    <td>PostgreSQL</td>
+                                    <td>高可用性構成</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h3>実装スケジュール</h3>
+                        <ol>
+                            <li>要件定義と設計（2週間）</li>
+                            <li>開発フェーズ1（4週間）</li>
+                            <li>テストと品質保証（2週間）</li>
+                            <li>デプロイメントと運用開始（1週間）</li>
+                        </ol>
+
+                        <blockquote>
+                            <p>「成功するプロジェクトは、明確な計画と優れた実行から生まれます。」</p>
+                        </blockquote>
+
+                        <h2>期待される成果</h2>
+                        <p>このプロジェクトの実施により、以下の成果が期待されます：</p>
+
+                        <ul>
+                            <li>業務効率の30%向上</li>
+                            <li>コスト削減効果：年間500万円</li>
+                            <li>顧客満足度の向上</li>
+                            <li>競合優位性の確立</li>
+                        </ul>
+
+                        <h2>まとめ</h2>
+                        <p>本提案は、お客様のビジネス目標達成に向けた重要なステップとなります。私たちの専門知識と経験を活かし、プロジェクトの成功を確実にします。</p>
+
+                        <p>ご質問やご不明な点がございましたら、お気軽にお問い合わせください。</p>
+                    </div>
+                </div>
+
+                <div class="status-bar">
+                    <div>
+                        現在のテンプレート: <span class="current-template" id="currentTemplateName">Simple</span>
+                    </div>
+                    <div id="documentStats">
+                        文字数: 約800文字 | 段落: 12個 | 見出し: 6個
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="lib/business-document-formatter.js"></script>
+    <script src="lib/template-selection-system.js"></script>
+    <script>
+        let templateSystem;
+        let documentFormatter;
+
+        // Initialize the system
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing Template Selection System Test');
+
+            // Create instances
+            templateSystem = new TemplateSelectionSystem();
+            documentFormatter = new BusinessDocumentFormatter();
+
+            // Initialize template system
+            templateSystem.initialize({
+                onTemplateChange: handleTemplateChange,
+                previewContainer: document.getElementById('documentPreview')
+            });
+
+            // Create template selector UI
+            const container = document.getElementById('templateSelectorContainer');
+            container.innerHTML = ''; // Clear loading message
+            templateSystem.createTemplateSelector(container);
+
+            // Apply initial template to document
+            const documentPreview = document.getElementById('documentPreview');
+            templateSystem.applyTemplate('simple', documentPreview);
+            documentFormatter.applyStandardStyling(documentPreview);
+
+            console.log('Template Selection System initialized successfully');
+        });
+
+        // Handle template changes
+        function handleTemplateChange(templateName, template, previousTemplate) {
+            console.log(`Template changed from ${previousTemplate} to ${templateName}`);
+
+            // Update status bar
+            const currentTemplateElement = document.getElementById('currentTemplateName');
+            if (currentTemplateElement) {
+                currentTemplateElement.textContent = template.name;
+            }
+
+            // Apply business document formatting
+            const documentPreview = document.getElementById('documentPreview');
+            documentFormatter.applyStandardStyling(documentPreview);
+
+            // Update document stats (simulate)
+            updateDocumentStats();
+        }
+
+        // Reset template to default
+        function resetTemplate() {
+            if (templateSystem) {
+                templateSystem.selectTemplate('simple');
+            }
+        }
+
+        // Export document (simulate)
+        function exportDocument() {
+            const templateConfig = templateSystem.getTemplateConfig();
+            console.log('Exporting document with template:', templateConfig);
+
+            // Simulate export process
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = 'エクスポート中...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                alert(`文書を${templateConfig.name}テンプレートでエクスポートしました！`);
+            }, 2000);
+        }
+
+        // Update document statistics
+        function updateDocumentStats() {
+            const documentPreview = document.getElementById('documentPreview');
+            const text = documentPreview.textContent || '';
+            const paragraphs = documentPreview.querySelectorAll('p').length;
+            const headings = documentPreview.querySelectorAll('h1, h2, h3, h4, h5, h6').length;
+            
+            const statsElement = document.getElementById('documentStats');
+            if (statsElement) {
+                statsElement.textContent = `文字数: 約${text.length}文字 | 段落: ${paragraphs}個 | 見出し: ${headings}個`;
+            }
+        }
+
+        // Global template system reference for template cards
+        window.templateSystem = templateSystem;
+
+        // Error handling
+        window.addEventListener('error', function(event) {
+            console.error('Template System Error:', event.error);
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (templateSystem) {
+                templateSystem.destroy();
+            }
+        });
+    </script>
+</body>
+</html>

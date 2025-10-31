@@ -1,3 +1,6 @@
+/* Import Business Document Styles */
+@import url('./lib/business-document-styles.css');
+
 /* Modern CSS Reset and Base Styles */
 *,
 *::before,
@@ -658,6 +661,30 @@ body {
   background: var(--color-gray-50);
   border-color: var(--color-gray-300);
   transform: translateY(-1px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-gray-600);
+  border: 1px solid var(--color-gray-300);
+  transition: all 0.2s ease;
+}
+
+.btn-outline:hover {
+  background: var(--color-gray-50);
+  border-color: var(--color-gray-400);
+  color: var(--color-gray-700);
+}
+
+.performance-btn {
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.performance-btn:hover {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border-color: #3b82f6;
 }
 
 /* Button with Icon */
@@ -1761,5 +1788,682 @@ body {
 
   .editor-actions {
     flex-wrap: wrap;
+  }
+}
+
+/* ===== BUSINESS DOCUMENT INTEGRATION CLASSES ===== */
+
+/* Enhanced results section with business document styling */
+.results-section.business-mode {
+  background: var(--business-color-background);
+  font-family: var(--business-font-family);
+}
+
+.results-section.business-mode .results-preview {
+  background: var(--business-color-background);
+  border: var(--business-border-thin);
+  font-family: var(--business-font-family);
+  font-size: var(--business-font-size-body);
+  line-height: var(--business-line-height-normal);
+  color: var(--business-color-text);
+  padding: var(--space-8);
+}
+
+/* Business document preview container */
+.business-document-preview {
+  background: var(--business-color-background);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  margin: var(--space-4) 0;
+  box-shadow: var(--shadow-lg);
+  max-width: var(--business-content-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Apply business styling to markdown rendered content */
+.markdown-content.business-styled {
+  font-family: var(--business-font-family);
+  font-size: var(--business-font-size-body);
+  line-height: var(--business-line-height-normal);
+  color: var(--business-color-text);
+  max-width: var(--business-content-width);
+  margin: 0 auto;
+}
+
+.markdown-content.business-styled h1 {
+  font-size: var(--business-font-size-h1);
+  font-weight: bold;
+  color: var(--business-color-heading);
+  margin: var(--business-margin-heading);
+  line-height: var(--business-line-height-tight);
+  text-align: center;
+  border-bottom: var(--business-border-accent);
+  padding-bottom: 6pt;
+}
+
+.markdown-content.business-styled h2 {
+  font-size: var(--business-font-size-h2);
+  font-weight: bold;
+  color: var(--business-color-heading);
+  margin: var(--business-margin-heading);
+  line-height: var(--business-line-height-tight);
+}
+
+.markdown-content.business-styled h3 {
+  font-size: var(--business-font-size-h3);
+  font-weight: bold;
+  color: var(--business-color-heading);
+  margin: var(--business-margin-heading);
+  line-height: var(--business-line-height-tight);
+}
+
+.markdown-content.business-styled p {
+  margin: 0 0 var(--business-margin-paragraph) 0;
+  text-align: justify;
+}
+
+.markdown-content.business-styled ul,
+.markdown-content.business-styled ol {
+  margin: var(--business-margin-list);
+  padding-left: var(--business-indent-list);
+}
+
+.markdown-content.business-styled li {
+  margin-bottom: 6pt;
+  line-height: var(--business-line-height-normal);
+}
+
+.markdown-content.business-styled table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--business-margin-table);
+  font-size: var(--business-font-size-body);
+}
+
+.markdown-content.business-styled th {
+  background-color: var(--business-color-table-header);
+  font-weight: bold;
+  text-align: left;
+  padding: var(--business-padding-cell);
+  border: var(--business-border-thin);
+}
+
+.markdown-content.business-styled td {
+  padding: var(--business-padding-cell);
+  border: var(--business-border-thin);
+  vertical-align: top;
+}
+
+.markdown-content.business-styled tbody tr:nth-child(even) {
+  background-color: var(--business-color-table-stripe);
+}
+
+.markdown-content.business-styled strong {
+  font-weight: bold;
+  color: var(--business-color-heading);
+}
+
+.markdown-content.business-styled em {
+  font-style: italic;
+}
+
+.markdown-content.business-styled code {
+  font-family: var(--business-font-family-mono);
+  font-size: 11pt;
+  background-color: #f5f5f5;
+  padding: 2pt 4pt;
+  border-radius: 2pt;
+}
+
+.markdown-content.business-styled pre {
+  font-family: var(--business-font-family-mono);
+  font-size: 10pt;
+  background-color: #f5f5f5;
+  padding: 12pt;
+  margin: var(--business-margin-paragraph) 0;
+  border: var(--business-border-thin);
+  border-radius: 4pt;
+  overflow-x: auto;
+}
+
+/* Business document formatting controls */
+.business-formatting-controls {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.business-formatting-controls label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-gray-700);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.business-formatting-controls select,
+.business-formatting-controls input[type="range"] {
+  padding: var(--space-2);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.business-formatting-controls input[type="range"] {
+  width: 100px;
+}
+
+/* Business document export controls */
+.business-export-controls {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.business-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-white);
+  color: var(--color-gray-700);
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.business-export-btn:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.business-export-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.business-export-btn .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Print preview mode */
+.business-print-preview {
+  background: #f5f5f5;
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  margin: var(--space-4) 0;
+}
+
+.business-print-preview .business-document {
+  background: white;
+  box-shadow: var(--shadow-xl);
+  padding: var(--business-margin-top) var(--business-margin-left);
+  min-height: var(--business-page-height);
+  width: var(--business-page-width);
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Page break indicators in preview */
+.business-page-break-indicator {
+  border-top: 2px dashed var(--color-gray-400);
+  margin: var(--space-4) 0;
+  position: relative;
+  text-align: center;
+}
+
+.business-page-break-indicator::before {
+  content: "Page Break";
+  background: var(--color-gray-100);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-600);
+  border-radius: var(--radius-sm);
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Responsive adjustments for business document integration */
+@media screen and (max-width: 768px) {
+  .business-formatting-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .business-formatting-controls label {
+    justify-content: space-between;
+  }
+  
+  .business-export-controls {
+    flex-direction: column;
+  }
+  
+  .business-export-btn {
+    justify-content: center;
+  }
+  
+  .business-print-preview .business-document {
+    width: 100%;
+    padding: var(--space-4);
+  }
+}
+
+/* High contrast mode support for business documents */
+@media (prefers-contrast: high) {
+  .business-document {
+    --business-color-text: #000000;
+    --business-color-heading: #000000;
+    --business-color-border: #000000;
+    --business-border-thin: 2pt solid #000000;
+    --business-border-accent: 3pt solid #000000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .business-export-btn {
+    transition: none;
+  }
+  
+  .business-export-btn:hover {
+    transform: none;
+  }
+}/*
+ ===== PRINT PREVIEW FUNCTIONALITY STYLES ===== */
+
+/* Import print preview styles */
+@import url('/lib/print-preview-styles.css');
+
+/* Integration with existing results section */
+.results-section .print-preview-view {
+  height: 100%;
+  overflow: hidden;
+}
+
+.results-section .print-preview-manager {
+  height: 100%;
+  border-radius: 0;
+}
+
+/* Print preview tab integration */
+.tab-navigation .tab-button[data-view="print-preview"] {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  color: #7c3aed;
+}
+
+.tab-navigation .tab-button[data-view="print-preview"]:hover {
+  background: #f3f4f6;
+  border-color: #7c3aed;
+}
+
+.tab-navigation .tab-button[data-view="print-preview"].active {
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: white;
+}
+
+/* Print preview responsive integration */
+@media screen and (max-width: 768px) {
+  .results-section .print-preview-manager .print-preview-header {
+    padding: 12px 16px;
+  }
+  
+  .results-section .print-preview-manager .preview-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .results-section .print-preview-manager .control-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* Business document integration with print preview */
+.business-mode .print-preview-manager {
+  font-family: var(--business-font-family);
+}
+
+.business-mode .preview-page .page-content {
+  font-family: var(--business-font-family);
+  font-size: var(--business-font-size-body);
+  line-height: var(--business-line-height-normal);
+}
+
+/* Print preview accessibility enhancements */
+.print-preview-manager [role="tabpanel"] {
+  outline: none;
+}
+
+.print-preview-manager [role="tabpanel"]:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* High contrast mode for print preview */
+@media (prefers-contrast: high) {
+  .print-preview-manager {
+    background: #ffffff;
+  }
+  
+  .preview-page {
+    border: 2px solid #000000;
+    box-shadow: none;
+  }
+  
+  .page-header,
+  .page-footer {
+    background: #f0f0f0;
+    border-color: #000000;
+    color: #000000;
+  }
+}
+
+/* Reduced motion support for print preview */
+@media (prefers-reduced-motion: reduce) {
+  .preview-pages-container {
+    transition: none;
+  }
+  
+  .print-preview-manager .btn {
+    transition: none;
+  }
+  
+  .preview-nav-btn {
+    transition: none;
+  }
+}
+
+/* Print preview loading states */
+.print-preview-initializing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.print-preview-initializing::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #7c3aed;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 12px;
+}
+
+/* Print preview error states */
+.print-preview-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #dc2626;
+  text-align: center;
+  padding: 20px;
+}
+
+.print-preview-error svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+/* Print preview fullscreen mode */
+.print-preview-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9999 !important;
+  background: #f5f5f5 !important;
+}
+
+.print-preview-fullscreen .print-preview-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Print preview page shadows and borders */
+.preview-page {
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+}
+
+.preview-page:hover {
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Print preview zoom indicators */
+.zoom-level-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Print preview page numbers overlay */
+.page-number-overlay {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Print preview keyboard navigation hints */
+.keyboard-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.print-preview-manager:hover .keyboard-hint {
+  opacity: 1;
+}
+
+/* Print preview content styling */
+.preview-page .page-content h1,
+.preview-page .page-content h2,
+.preview-page .page-content h3,
+.preview-page .page-content h4,
+.preview-page .page-content h5,
+.preview-page .page-content h6 {
+  page-break-after: avoid;
+  margin-top: 0;
+}
+
+.preview-page .page-content p {
+  margin: 0 0 12pt 0;
+  text-align: justify;
+  orphans: 2;
+  widows: 2;
+}
+
+.preview-page .page-content table {
+  page-break-inside: avoid;
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12pt 0;
+}
+
+.preview-page .page-content th,
+.preview-page .page-content td {
+  border: 1pt solid #000;
+  padding: 6pt;
+  text-align: left;
+}
+
+.preview-page .page-content th {
+  background: #f5f5f5;
+  font-weight: bold;
+}
+
+.preview-page .page-content ul,
+.preview-page .page-content ol {
+  margin: 12pt 0;
+  padding-left: 24pt;
+}
+
+.preview-page .page-content li {
+  margin: 6pt 0;
+}
+
+.preview-page .page-content blockquote {
+  margin: 12pt 24pt;
+  padding: 12pt;
+  border-left: 4pt solid #ccc;
+  background: #f9f9f9;
+  font-style: italic;
+}
+
+.preview-page .page-content code {
+  font-family: 'Courier New', monospace;
+  background: #f5f5f5;
+  padding: 2pt 4pt;
+  border-radius: 2pt;
+}
+
+.preview-page .page-content pre {
+  font-family: 'Courier New', monospace;
+  background: #f5f5f5;
+  padding: 12pt;
+  border-radius: 4pt;
+  overflow-x: auto;
+  margin: 12pt 0;
+}
+
+/* Print preview status indicators */
+.preview-status-bar {
+  position: sticky;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #e5e7eb;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #6b7280;
+  z-index: 10;
+}
+
+.preview-status-info {
+  display: flex;
+  gap: 16px;
+}
+
+.preview-status-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Animation for smooth transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.preview-page {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Print preview mobile optimizations */
+@media screen and (max-width: 480px) {
+  .print-preview-manager .preview-controls {
+    padding: 8px;
+  }
+  
+  .print-preview-manager .control-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .print-preview-manager .control-group label {
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  
+  .print-preview-manager .preview-select {
+    width: 100%;
+  }
+  
+  .print-preview-manager .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .preview-viewport {
+    padding: 8px;
+  }
+  
+  .preview-page {
+    margin-bottom: 8px;
   }
 }

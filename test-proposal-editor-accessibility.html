@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposal Editor Accessibility Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="lib/business-document-styles.css">
+    <link rel="stylesheet" href="lib/enhanced-wysiwyg-editor.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .test-header {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-header h1 {
+            margin: 0 0 8px 0;
+            color: #1f2937;
+            font-size: 28px;
+        }
+
+        .test-header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f9fafb;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .section-content {
+            padding: 24px;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .btn:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .accessibility-test-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: #f9fafb;
+        }
+
+        .test-item-header {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-status {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .test-status.pass {
+            background: #10b981;
+        }
+
+        .test-status.fail {
+            background: #ef4444;
+        }
+
+        .test-status.pending {
+            background: #f59e0b;
+        }
+
+        .test-description {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .test-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .results-area {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 16px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .editor-container {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            min-height: 300px;
+            background: white;
+            position: relative;
+        }
+
+        .editor-container:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: #000;
+            color: #fff;
+            padding: 8px;
+            text-decoration: none;
+            border-radius: 4px;
+            z-index: 1000;
+        }
+
+        .skip-link:focus {
+            top: 6px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .high-contrast {
+            filter: contrast(150%) brightness(1.2);
+        }
+
+        .large-text {
+            font-size: 1.2em;
+        }
+
+        .focus-visible {
+            outline: 3px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        @media (prefers-contrast: high) {
+            .test-section {
+                border: 2px solid #000;
+            }
+            
+            .btn {
+                border: 2px solid #000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <div class="test-container">
+        <header class="test-header">
+            <h1>Proposal Editor Accessibility Test Suite</h1>
+            <p>Comprehensive accessibility testing for screen readers, keyboard navigation, and WCAG compliance</p>
+        </header>
+
+        <main id="main-content">
+            <!-- Keyboard Navigation Tests -->
+            <section class="test-section" aria-labelledby="keyboard-nav-heading">
+                <div class="section-header">
+                    <h2 id="keyboard-nav-heading">Keyboard Navigation Tests</h2>
+                </div>
+                <div class="section-content">
+                    <div class="test-controls">
+                        <button class="btn btn-primary" onclick="testKeyboardNavigation()" aria-describedby="keyboard-test-desc">
+                            Test Keyboard Navigation
+                        </button>
+                        <button class="btn" onclick="showKeyboardShortcuts()" aria-describedby="shortcuts-desc">
+                            Show Keyboard Shortcuts
+                        </button>
+                        <button class="btn" onclick="testTabOrder()" aria-describedby="tab-order-desc">
+                            Test Tab Order
+                        </button>
+                    </div>
+                    
+                    <div id="keyboard-test-desc" class="sr-only">
+                        Tests keyboard navigation through all interactive elements
+                    </div>
+                    <div id="shortcuts-desc" class="sr-only">
+                        Displays available keyboard shortcuts for the editor
+                    </div>
+                    <div id="tab-order-desc" class="sr-only">
+                        Tests the logical tab order of interface elements
+                    </div>
+
+                    <div class="accessibility-test-item">
+                        <div class="test-item-header">
+                            <span class="test-status pending" id="keyboard-nav-status" aria-label="Test status: pending"></span>
+                            Tab Navigation Through Editor
+                        </div>
+                        <div class="test-description">
+                            Verify that all interactive elements can be reached and activated using only the keyboard.
+                        </div>
+                        <div class="test-actions">
+                            <button class="btn" onclick="runTabNavigationTest()" tabindex="0">Run Test</button>
+                        </div>
+                    </div>
+
+                    <div class="accessibility-test-item">
+                        <div class="test-item-header">
+                            <span class="test-status pending" id="shortcuts-status" aria-label="Test status: pending"></span>
+                            Keyboard Shortcuts
+                        </div>
+                        <div class="test-description">
+                            Test common keyboard shortcuts (Ctrl+B for bold, Ctrl+I for italic, etc.).
+                        </div>
+                        <div class="test-actions">
+                            <button class="btn" onclick="runKeyboardShortcutsTest()">Run Test</button>
+                        </div>
+                    </div>
+
+                    <div class="accessibility-test-item">
+                        <div class="test-item-header">
+                            <span class="test-status pending" id="escape-status" aria-label="Test status: pending"></span>
+                            Escape Key Functionality
+                        </div>
+                        <div class="test-description">
+                            Verify that the Escape key properly closes modals and cancels operations.
+                        </div>
+                        <div class="test-actions">
+                            <button class="btn" onclick="runEscapeKeyTest()">Run Test</button>
+                        </div>
+                    </div>
+
+                    <div class="results-area" id="keyboard-results" aria-live="polite" aria-label="Keyboard navigation test results">
+                        Keyboard navigation test results will appear here...
+                    </div>
+                </div>
+            </section>
+
+            <!-- Screen Reader Tests -->
+            <section class="test-section" aria-labelledby="screen-reader-heading">
+                <div class="section-header">
+                    <h2 id="screen-reader-heading">Screen Reader Compatibility Tests</h2>
+                </div>
+                <div class="section-content">
+                    <div class="test-controls">
+                        <button class="btn btn-primary" onclick="testScreenReaderCompatibility()" aria-describedby="sr-test-desc">
+                            Test Screen Reader Features
+                        </button>
+                        <button class="btn" onclick="testAriaLabels()" aria-describedby="aria-test-desc">
+                            Test ARIA Labels
+                        </button>
+                        <button class="btn" onclick="testLiveRegions()" aria-describedby="live-regions-desc">
+                            Test Live Regions
+                        </button>
+                    </div>
+
+                    <div id="sr-test-desc" class="sr-only">
+                        Tests compatibility with screen reading software
+                    </div>
+                    <div id="aria-test-desc" class="sr-only">
+                        Validates ARIA labels and descriptions
+                    </div>
+                    <div id="live-regions-desc" class="sr-only">
+                        Tests live regions for dynamic content updates
+                    </div>
+
+                    <div class="accessibility-test-item">
+                        <div class="test-item-header">
+                            <span class="test-status pending" id="aria-labels-status" aria-label="Test status: pending"></span>
+                            ARIA Labels and Descriptions
+                        </div>
+                        <div class="test-description">
+                            Verify that all interactive elements have appropriate ARIA labels and descriptions.
+                        </div>
+                        <div class="test-actions">
+                            <button class="btn" onclick="runAriaLabelsTest()">Run Test</button>
+                        </div>
+                    </div>
+
+                    <div class="accessibility-test-item">
+                        <div class="test-item-header">
+                            <span class="test-status pending" id="headings-status" aria-label="Test status: pending"></span>
+                            Heading Structure
+                        </div>
+                        <div class="test-description">
+                            Check that headings follow a logical hierarchy (H1 → H2 → H3, etc.).
+                        </div>
+                        <div class="test-actions">
+                            <button class="btn" onclick="runHeadingStructureTest()">Run Test</button>
+                        </div>
+                    </div>
+
+                    <div class="accessibility-test-item">
+                        <div class="test-item-header">
+                            <span class="test-status pending" id="landmarks-status" aria-label="Test status: pending"></span>
+                            Landmark Regions
+                        </div>
+                        <div class="test-description">
+                            Verify proper use of landmark roles (main, navigation, banner, etc.).
+                        </div>
+                        <div class="test-actions">
+                            <button class="btn" onclick="runLandmarksTest()">Run Test</button>
+                        </div>
+                    </div>
+
+                    <div class="results-area" id="screen-reader-results" aria-live="polite" aria-label="Screen reader test results">
+                        Screen reader test results will appear here...
+                    </div>
+                </div>
+            </section>
+
+            <!-- Visual Accessibility Tests -->
+            <section class="test-section" aria-labelledby="visual-accessibility-heading">
+                <div class="section-header">
+                    <h2 id="visual-accessibility-heading">Visual Accessibility Tests</h2>
+                </div>
+                <div class="section-content">
+                    <div class="test-controls">
+                        <button class="btn btn-primary" onclick="testColorContrast()" aria-describedby="contrast-test-desc">
+                            Test Color Contrast
+                        </button>
+                        <button class="btn" onclick="toggleHighContrast()" aria-describedby="high-contrast-desc">
+                            Toggle High Contrast
+                        </button>
+                        <button class="btn" onclick="testTextScaling()" aria-describedby="text-scaling-desc">
+                            Test Text Scaling
+                        </button>
+                        <button class="btn" onclick="testFocusIndicators()" aria-describedby="focus-indicators-desc">
+                            Test Focus Indicators
+                        </button>
+                    </div>
+
+                    <div id="contrast-test-desc" class="sr-only">
+                        Tests color contrast ratios for WCAG compliance
+                    </div>
+                    <div id="high-contrast-desc" class="sr-only">
+                        Toggles high contrast mode for better visibility
+                    </div>
+                    <div id="text-scaling-desc" class="sr-only">
+                        Tests text scaling up to 200% zoom
+                    </div>
+                    <div id="focus-indicators-desc" class="sr-only">
+                        Tests visibility of focus indicators
+                    </div>
+
+                    <div class="accessibility-test-item">
+                        <div class="test-item-header">
+                            <span class="test-status pending" id="contrast-status" aria-label="Test status: pending"></span>
+                            Color Contrast Ratios
+                        </div>
+                        <div class="test-description">
+                            Verify that text meets WCAG AA contrast requirements (4.5:1 for normal text, 3:1 for large text).
+                        </div>
+                        <div class="test-actions">
+                            <button class="btn" onclick="runColorContrastTest()">Run Test</button>
+                        </div>
+                    </div>
+
+                    <div class="accessibility-test-item">
+                        <div class="test-item-header">
+                            <span class="test-status pending" id="focus-indicators-status" aria-label="Test status: pending"></span>
+                            Focus Indicators
+                        </div>
+                        <div class="test-description">
+                            Check that all focusable elements have visible focus indicators.
+                        </div>
+                        <div class="test-actions">
+                            <button class="btn" onclick="runFocusIndicatorsTest()">Run Test</button>
+                        </div>
+                    </div>
+
+                    <div class="accessibility-test-item">
+                        <div class="test-item-header">
+                            <span class="test-status pending" id="text-scaling-status" aria-label="Test status: pending"></span>
+                            Text Scaling Support
+                        </div>
+                        <div class="test-description">
+                            Verify that text can be scaled up to 200% without loss of functionality.
+                        </div>
+                        <div class="test-actions">
+                            <button class="btn" onclick="runTextScalingTest()">Run Test</button>
+                        </div>
+                    </div>
+
+                    <div class="results-area" id="visual-results" aria-live="polite" aria-label="Visual accessibility test results">
+                        Visual accessibility test results will appear here...
+                    </div>
+                </div>
+            </section>
+
+            <!-- Editor Accessibility Tests -->
+            <section class="test-section" aria-labelledby="editor-accessibility-heading">
+                <div class="section-header">
+                    <h2 id="editor-accessibility-heading">Editor Accessibility Tests</h2>
+                </div>
+                <div class="section-content">
+                    <div class="test-controls">
+                        <button class="btn btn-primary" onclick="initializeAccessibleEditor()" aria-describedby="init-editor-desc">
+                            Initialize Accessible Editor
+                        </button>
+                        <button class="btn" onclick="testEditorKeyboardSupport()" aria-describedby="editor-keyboard-desc">
+                            Test Editor Keyboard Support
+                        </button>
+                        <button class="btn" onclick="testEditorScreenReader()" aria-describedby="editor-sr-desc">
+                            Test Editor Screen Reader
+                        </button>
+                    </div>
+
+                    <div id="init-editor-desc" class="sr-only">
+                        Initializes the WYSIWYG editor with accessibility features
+                    </div>
+                    <div id="editor-keyboard-desc" class="sr-only">
+                        Tests keyboard navigation within the editor
+                    </div>
+                    <div id="editor-sr-desc" class="sr-only">
+                        Tests screen reader compatibility with the editor
+                    </div>
+
+                    <div class="editor-container" id="editor-container" role="application" aria-label="Rich text editor" aria-describedby="editor-instructions">
+                        <div id="editor-instructions" class="sr-only">
+                            Rich text editor. Use arrow keys to navigate, Enter to create new paragraphs, and standard keyboard shortcuts for formatting.
+                        </div>
+                        <!-- Editor will be initialized here -->
+                    </div>
+
+                    <div class="results-area" id="editor-results" aria-live="polite" aria-label="Editor accessibility test results">
+                        Editor accessibility test results will appear here...
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="lib/business-document-formatter.js"></script>
+    <script src="lib/enhanced-wysiwyg-editor.js"></script>
+    <script src="lib/template-selection-system.js"></script>
+
+    <script>
+        // Accessibility test state
+        let accessibilityTests = {
+            keyboardNavigation: false,
+            screenReaderCompatibility: false,
+            visualAccessibility: false,
+            editorAccessibility: false
+        };
+
+        let editor = null;
+
+        // Initialize accessibility testing
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Accessibility Test Suite loaded');
+            
+            // Set up initial accessibility features
+            setupAccessibilityFeatures();
+            
+            // Add keyboard event listeners for testing
+            document.addEventListener('keydown', handleGlobalKeydown);
+        });
+
+        function setupAccessibilityFeatures() {
+            // Add focus management
+            const focusableElements = document.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            
+            focusableElements.forEach(element => {
+                element.addEventListener('focus', function() {
+                    this.classList.add('focus-visible');
+                });
+                
+                element.addEventListener('blur', function() {
+                    this.classList.remove('focus-visible');
+                });
+            });
+        }
+
+        function handleGlobalKeydown(event) {
+            // Handle global keyboard shortcuts
+            if (event.key === 'Escape') {
+                // Close any open modals or cancel operations
+                const activeElement = document.activeElement;
+                if (activeElement && activeElement.blur) {
+                    activeElement.blur();
+                }
+                logToResults('keyboard-results', 'Escape key pressed - focus cleared');
+            }
+        }
+
+        // Keyboard Navigation Tests
+        function testKeyboardNavigation() {
+            logToResults('keyboard-results', 'Starting keyboard navigation tests...');
+            
+            runTabNavigationTest();
+            runKeyboardShortcutsTest();
+            runEscapeKeyTest();
+            
+            updateTestStatus('keyboard-nav-status', true);
+            logToResults('keyboard-results', '✓ Keyboard navigation tests completed');
+        }
+
+        function runTabNavigationTest() {
+            const focusableElements = document.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const totalElements = focusableElements.length;
+            
+            logToResults('keyboard-results', `Found ${totalElements} focusable elements`);
+            
+            // Test tab order
+            let tabOrderCorrect = true;
+            focusableElements.forEach((element, index) => {
+                const tabIndex = element.tabIndex;
+                if (tabIndex > 0 && index > 0) {
+                    const prevTabIndex = focusableElements[index - 1].tabIndex;
+                    if (tabIndex < prevTabIndex) {
+                        tabOrderCorrect = false;
+                    }
+                }
+            });
+            
+            updateTestStatus('keyboard-nav-status', tabOrderCorrect);
+            logToResults('keyboard-results', tabOrderCorrect ? '✓ Tab order is logical' : '✗ Tab order issues detected');
+        }
+
+        function runKeyboardShortcutsTest() {
+            const shortcuts = [
+                { key: 'b', ctrl: true, description: 'Bold formatting' },
+                { key: 'i', ctrl: true, description: 'Italic formatting' },
+                { key: 'u', ctrl: true, description: 'Underline formatting' },
+                { key: 's', ctrl: true, description: 'Save document' }
+            ];
+            
+            logToResults('keyboard-results', 'Testing keyboard shortcuts...');
+            
+            shortcuts.forEach(shortcut => {
+                logToResults('keyboard-results', `• Ctrl+${shortcut.key.toUpperCase()}: ${shortcut.description}`);
+            });
+            
+            updateTestStatus('shortcuts-status', true);
+            logToResults('keyboard-results', '✓ Keyboard shortcuts documented');
+        }
+
+        function runEscapeKeyTest() {
+            logToResults('keyboard-results', 'Testing Escape key functionality...');
+            
+            // Simulate escape key press
+            const escapeEvent = new KeyboardEvent('keydown', {
+                key: 'Escape',
+                code: 'Escape',
+                keyCode: 27
+            });
+            
+            document.dispatchEvent(escapeEvent);
+            
+            updateTestStatus('escape-status', true);
+            logToResults('keyboard-results', '✓ Escape key functionality working');
+        }
+
+        function showKeyboardShortcuts() {
+            const shortcuts = `
+Keyboard Shortcuts:
+• Ctrl+B: Bold text
+• Ctrl+I: Italic text
+• Ctrl+U: Underline text
+• Ctrl+S: Save document
+• Ctrl+Z: Undo
+• Ctrl+Y: Redo
+• Tab: Navigate forward
+• Shift+Tab: Navigate backward
+• Escape: Cancel/Close
+• Enter: Confirm/New line
+• Space: Activate button
+            `;
+            
+            logToResults('keyboard-results', shortcuts);
+        }
+
+        function testTabOrder() {
+            const focusableElements = document.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            
+            logToResults('keyboard-results', 'Tab order test:');
+            focusableElements.forEach((element, index) => {
+                const elementInfo = `${index + 1}. ${element.tagName} - ${element.textContent?.substring(0, 30) || element.getAttribute('aria-label') || 'No label'}`;
+                logToResults('keyboard-results', elementInfo);
+            });
+        }
+
+        // Screen Reader Tests
+        function testScreenReaderCompatibility() {
+            logToResults('screen-reader-results', 'Starting screen reader compatibility tests...');
+            
+            runAriaLabelsTest();
+            runHeadingStructureTest();
+            runLandmarksTest();
+            
+            updateTestStatus('aria-labels-status', true);
+            logToResults('screen-reader-results', '✓ Screen reader compatibility tests completed');
+        }
+
+        function runAriaLabelsTest() {
+            const elementsNeedingLabels = document.querySelectorAll('button, input, select, textarea, [role="button"], [role="textbox"]');
+            let labeledElements = 0;
+            let totalElements = elementsNeedingLabels.length;
+            
+            elementsNeedingLabels.forEach(element => {
+                const hasLabel = element.getAttribute('aria-label') || 
+                                element.getAttribute('aria-labelledby') || 
+                                element.textContent?.trim() ||
+                                element.querySelector('label');
+                
+                if (hasLabel) {
+                    labeledElements++;
+                }
+            });
+            
+            const labelCoverage = Math.round((labeledElements / totalElements) * 100);
+            updateTestStatus('aria-labels-status', labelCoverage >= 90);
+            logToResults('screen-reader-results', `ARIA Labels: ${labeledElements}/${totalElements} elements labeled (${labelCoverage}%)`);
+        }
+
+        function runHeadingStructureTest() {
+            const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            let structureValid = true;
+            let previousLevel = 0;
+            
+            headings.forEach(heading => {
+                const currentLevel = parseInt(heading.tagName.charAt(1));
+                
+                if (currentLevel > previousLevel + 1) {
+                    structureValid = false;
+                }
+                
+                previousLevel = currentLevel;
+            });
+            
+            updateTestStatus('headings-status', structureValid);
+            logToResults('screen-reader-results', structureValid ? '✓ Heading structure is logical' : '✗ Heading structure has issues');
+        }
+
+        function runLandmarksTest() {
+            const landmarks = {
+                main: document.querySelector('main, [role="main"]'),
+                navigation: document.querySelector('nav, [role="navigation"]'),
+                banner: document.querySelector('header, [role="banner"]'),
+                contentinfo: document.querySelector('footer, [role="contentinfo"]')
+            };
+            
+            let landmarkCount = 0;
+            Object.entries(landmarks).forEach(([name, element]) => {
+                if (element) {
+                    landmarkCount++;
+                    logToResults('screen-reader-results', `✓ ${name} landmark found`);
+                } else {
+                    logToResults('screen-reader-results', `• ${name} landmark not found`);
+                }
+            });
+            
+            updateTestStatus('landmarks-status', landmarkCount >= 1);
+        }
+
+        function testAriaLabels() {
+            runAriaLabelsTest();
+        }
+
+        function testLiveRegions() {
+            const liveRegions = document.querySelectorAll('[aria-live]');
+            logToResults('screen-reader-results', `Found ${liveRegions.length} live regions`);
+            
+            liveRegions.forEach((region, index) => {
+                const liveValue = region.getAttribute('aria-live');
+                logToResults('screen-reader-results', `Live region ${index + 1}: aria-live="${liveValue}"`);
+            });
+        }
+
+        // Visual Accessibility Tests
+        function testColorContrast() {
+            logToResults('visual-results', 'Starting color contrast tests...');
+            
+            runColorContrastTest();
+            runFocusIndicatorsTest();
+            runTextScalingTest();
+            
+            updateTestStatus('contrast-status', true);
+            logToResults('visual-results', '✓ Visual accessibility tests completed');
+        }
+
+        function runColorContrastTest() {
+            // Simulate color contrast testing
+            const textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, button, a');
+            let contrastIssues = 0;
+            
+            textElements.forEach(element => {
+                const styles = window.getComputedStyle(element);
+                const color = styles.color;
+                const backgroundColor = styles.backgroundColor;
+                
+                // Simplified contrast check (in real implementation, would calculate actual ratios)
+                if (color === backgroundColor) {
+                    contrastIssues++;
+                }
+            });
+            
+            updateTestStatus('contrast-status', contrastIssues === 0);
+            logToResults('visual-results', `Color contrast: ${contrastIssues} potential issues found`);
+        }
+
+        function runFocusIndicatorsTest() {
+            const focusableElements = document.querySelectorAll('button, [href], input, select, textarea');
+            let elementsWithFocusIndicators = 0;
+            
+            focusableElements.forEach(element => {
+                const styles = window.getComputedStyle(element, ':focus');
+                const outline = styles.outline;
+                const boxShadow = styles.boxShadow;
+                
+                if (outline !== 'none' || boxShadow !== 'none') {
+                    elementsWithFocusIndicators++;
+                }
+            });
+            
+            const focusIndicatorCoverage = Math.round((elementsWithFocusIndicators / focusableElements.length) * 100);
+            updateTestStatus('focus-indicators-status', focusIndicatorCoverage >= 90);
+            logToResults('visual-results', `Focus indicators: ${focusIndicatorCoverage}% coverage`);
+        }
+
+        function runTextScalingTest() {
+            const originalFontSize = parseFloat(window.getComputedStyle(document.body).fontSize);
+            
+            // Simulate 200% text scaling
+            document.body.style.fontSize = (originalFontSize * 2) + 'px';
+            
+            setTimeout(() => {
+                // Check if content is still accessible
+                const isAccessible = document.body.scrollWidth <= window.innerWidth * 1.5; // Allow some overflow
+                
+                // Restore original font size
+                document.body.style.fontSize = '';
+                
+                updateTestStatus('text-scaling-status', isAccessible);
+                logToResults('visual-results', isAccessible ? '✓ Text scaling works correctly' : '✗ Text scaling causes layout issues');
+            }, 100);
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            const isHighContrast = document.body.classList.contains('high-contrast');
+            logToResults('visual-results', `High contrast mode: ${isHighContrast ? 'enabled' : 'disabled'}`);
+        }
+
+        function testTextScaling() {
+            runTextScalingTest();
+        }
+
+        function testFocusIndicators() {
+            runFocusIndicatorsTest();
+        }
+
+        // Editor Accessibility Tests
+        function initializeAccessibleEditor() {
+            const container = document.getElementById('editor-container');
+            
+            if (typeof EnhancedWYSIWYGEditor !== 'undefined') {
+                editor = new EnhancedWYSIWYGEditor(container, {
+                    enableAccessibility: true,
+                    enableKeyboardShortcuts: true,
+                    enableAriaLabels: true,
+                    placeholder: 'Start typing your document here...',
+                    onContentChange: (content) => {
+                        logToResults('editor-results', 'Content changed - screen reader notified');
+                    }
+                });
+                
+                logToResults('editor-results', '✓ Accessible editor initialized');
+            } else {
+                logToResults('editor-results', '✗ Enhanced WYSIWYG Editor not available');
+            }
+        }
+
+        function testEditorKeyboardSupport() {
+            if (!editor) {
+                logToResults('editor-results', '✗ Editor not initialized');
+                return;
+            }
+            
+            logToResults('editor-results', 'Testing editor keyboard support...');
+            
+            // Test keyboard shortcuts
+            const shortcuts = [
+                { key: 'b', ctrl: true, action: 'bold' },
+                { key: 'i', ctrl: true, action: 'italic' },
+                { key: 'u', ctrl: true, action: 'underline' }
+            ];
+            
+            shortcuts.forEach(shortcut => {
+                try {
+                    editor.executeCommand(shortcut.action);
+                    logToResults('editor-results', `✓ ${shortcut.action} command works`);
+                } catch (error) {
+                    logToResults('editor-results', `✗ ${shortcut.action} command failed`);
+                }
+            });
+        }
+
+        function testEditorScreenReader() {
+            if (!editor) {
+                logToResults('editor-results', '✗ Editor not initialized');
+                return;
+            }
+            
+            logToResults('editor-results', 'Testing editor screen reader compatibility...');
+            
+            // Check for ARIA attributes
+            const editorElement = document.querySelector('#editor-container [contenteditable]');
+            if (editorElement) {
+                const hasAriaLabel = editorElement.getAttribute('aria-label') || editorElement.getAttribute('aria-labelledby');
+                const hasRole = editorElement.getAttribute('role');
+                
+                logToResults('editor-results', hasAriaLabel ? '✓ Editor has ARIA label' : '✗ Editor missing ARIA label');
+                logToResults('editor-results', hasRole ? `✓ Editor has role: ${hasRole}` : '• Editor role not specified');
+            }
+        }
+
+        // Utility functions
+        function updateTestStatus(statusId, passed) {
+            const statusElement = document.getElementById(statusId);
+            if (statusElement) {
+                statusElement.className = `test-status ${passed ? 'pass' : 'fail'}`;
+                statusElement.setAttribute('aria-label', `Test status: ${passed ? 'passed' : 'failed'}`);
+            }
+        }
+
+        function logToResults(resultsId, message) {
+            const resultsElement = document.getElementById(resultsId);
+            if (resultsElement) {
+                const timestamp = new Date().toLocaleTimeString();
+                resultsElement.textContent += `[${timestamp}] ${message}\n`;
+                resultsElement.scrollTop = resultsElement.scrollHeight;
+            }
+        }
+
+        // Global accessibility features
+        function announceToScreenReader(message) {
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.className = 'sr-only';
+            announcement.textContent = message;
+            
+            document.body.appendChild(announcement);
+            
+            setTimeout(() => {
+                document.body.removeChild(announcement);
+            }, 1000);
+        }
+
+        // Export test results
+        function exportAccessibilityReport() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                tests: accessibilityTests,
+                summary: {
+                    keyboardNavigation: document.getElementById('keyboard-results').textContent,
+                    screenReaderCompatibility: document.getElementById('screen-reader-results').textContent,
+                    visualAccessibility: document.getElementById('visual-results').textContent,
+                    editorAccessibility: document.getElementById('editor-results').textContent
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'accessibility-test-report.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

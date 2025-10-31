@@ -140,12 +140,22 @@
   - [x] 6.1 Test prompt system integration
 
 
+
+
+
+
+
+
+
+
     - Verify correct prompt loading from PROMPTS folder
     - Test prompt selection for each report type
     - Validate fallback behavior for missing prompts
     - _Requirements: 1.1, 1.2, 1.3, 5.1, 5.2_
 
+
   - [x] 6.2 Test comparison analysis functionality
+
 
 
     - Test dual property upload and processing
@@ -154,6 +164,8 @@
     - _Requirements: 3.1, 3.2, 3.3, 4.1, 4.2_
 
   - [x] 6.3 Test custom report enhancement
+
+
 
 
     - Verify custom requirements integration with investment framework

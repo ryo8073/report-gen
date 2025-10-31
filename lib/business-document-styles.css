@@ -1,0 +1,637 @@
+/* Business Document Professional Styling Foundation */
+
+/* ===== BUSINESS DOCUMENT CSS VARIABLES ===== */
+:root {
+  /* Business Document Typography Scale */
+  --business-font-family: 'Times New Roman', 'Georgia', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+  --business-font-family-sans: 'Arial', 'Helvetica', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+  --business-font-family-mono: 'Courier New', 'Monaco', 'Menlo', monospace;
+  
+  /* Professional Typography Scale */
+  --business-font-size-body: 12pt;
+  --business-font-size-small: 10pt;
+  --business-font-size-large: 14pt;
+  --business-font-size-h1: 18pt;
+  --business-font-size-h2: 16pt;
+  --business-font-size-h3: 14pt;
+  --business-font-size-h4: 12pt;
+  --business-font-size-h5: 11pt;
+  --business-font-size-h6: 10pt;
+  
+  /* Business Document Line Heights */
+  --business-line-height-tight: 1.2;
+  --business-line-height-normal: 1.5;
+  --business-line-height-relaxed: 1.8;
+  
+  /* Business Document Spacing */
+  --business-margin-paragraph: 12pt;
+  --business-margin-heading: 18pt 0 12pt 0;
+  --business-margin-list: 12pt 0;
+  --business-margin-table: 12pt 0;
+  --business-padding-cell: 8pt 12pt;
+  --business-indent-paragraph: 0;
+  --business-indent-list: 24pt;
+  
+  /* Business Document Colors */
+  --business-color-text: #000000;
+  --business-color-heading: #1a1a1a;
+  --business-color-secondary: #4a4a4a;
+  --business-color-border: #cccccc;
+  --business-color-background: #ffffff;
+  --business-color-table-header: #f5f5f5;
+  --business-color-table-stripe: #fafafa;
+  --business-color-accent: #2563eb;
+  
+  /* Business Document Borders */
+  --business-border-thin: 1pt solid var(--business-color-border);
+  --business-border-thick: 2pt solid var(--business-color-border);
+  --business-border-accent: 2pt solid var(--business-color-accent);
+  
+  /* Page Layout Variables */
+  --business-page-width: 8.5in;
+  --business-page-height: 11in;
+  --business-margin-top: 1in;
+  --business-margin-bottom: 1in;
+  --business-margin-left: 1in;
+  --business-margin-right: 1in;
+  --business-content-width: 6.5in;
+  
+  /* Header/Footer Heights */
+  --business-header-height: 0.75in;
+  --business-footer-height: 0.5in;
+}
+
+/* ===== BUSINESS DOCUMENT BASE CLASSES ===== */
+
+/* Main business document container */
+.business-document {
+  font-family: var(--business-font-family);
+  font-size: var(--business-font-size-body);
+  line-height: var(--business-line-height-normal);
+  color: var(--business-color-text);
+  background: var(--business-color-background);
+  max-width: var(--business-content-width);
+  margin: 0 auto;
+  padding: var(--business-margin-top) 0;
+  text-align: left;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Alternative sans-serif document style */
+.business-document-sans {
+  font-family: var(--business-font-family-sans);
+}
+
+/* ===== BUSINESS DOCUMENT TYPOGRAPHY ===== */
+
+/* Professional heading hierarchy */
+.business-document h1,
+.business-h1 {
+  font-size: var(--business-font-size-h1);
+  font-weight: bold;
+  color: var(--business-color-heading);
+  margin: var(--business-margin-heading);
+  line-height: var(--business-line-height-tight);
+  text-align: center;
+  border-bottom: var(--business-border-accent);
+  padding-bottom: 6pt;
+  page-break-after: avoid;
+}
+
+.business-document h2,
+.business-h2 {
+  font-size: var(--business-font-size-h2);
+  font-weight: bold;
+  color: var(--business-color-heading);
+  margin: var(--business-margin-heading);
+  line-height: var(--business-line-height-tight);
+  page-break-after: avoid;
+}
+
+.business-document h3,
+.business-h3 {
+  font-size: var(--business-font-size-h3);
+  font-weight: bold;
+  color: var(--business-color-heading);
+  margin: var(--business-margin-heading);
+  line-height: var(--business-line-height-tight);
+  page-break-after: avoid;
+}
+
+.business-document h4,
+.business-h4 {
+  font-size: var(--business-font-size-h4);
+  font-weight: bold;
+  color: var(--business-color-heading);
+  margin: var(--business-margin-heading);
+  line-height: var(--business-line-height-tight);
+  page-break-after: avoid;
+}
+
+.business-document h5,
+.business-h5 {
+  font-size: var(--business-font-size-h5);
+  font-weight: bold;
+  color: var(--business-color-heading);
+  margin: var(--business-margin-heading);
+  line-height: var(--business-line-height-tight);
+  page-break-after: avoid;
+}
+
+.business-document h6,
+.business-h6 {
+  font-size: var(--business-font-size-h6);
+  font-weight: bold;
+  color: var(--business-color-heading);
+  margin: var(--business-margin-heading);
+  line-height: var(--business-line-height-tight);
+  page-break-after: avoid;
+}
+
+/* Professional paragraph styling */
+.business-document p,
+.business-paragraph {
+  margin: 0 0 var(--business-margin-paragraph) 0;
+  text-indent: var(--business-indent-paragraph);
+  text-align: justify;
+  orphans: 2;
+  widows: 2;
+}
+
+/* First paragraph after heading - no indent */
+.business-document h1 + p,
+.business-document h2 + p,
+.business-document h3 + p,
+.business-document h4 + p,
+.business-document h5 + p,
+.business-document h6 + p {
+  text-indent: 0;
+}
+
+/* Professional text formatting */
+.business-document strong,
+.business-bold {
+  font-weight: bold;
+  color: var(--business-color-heading);
+}
+
+.business-document em,
+.business-italic {
+  font-style: italic;
+}
+
+.business-document u,
+.business-underline {
+  text-decoration: underline;
+}
+
+/* ===== BUSINESS DOCUMENT LISTS ===== */
+
+.business-document ul,
+.business-document ol,
+.business-list {
+  margin: var(--business-margin-list);
+  padding-left: var(--business-indent-list);
+  page-break-inside: avoid;
+}
+
+.business-document li,
+.business-list-item {
+  margin-bottom: 6pt;
+  line-height: var(--business-line-height-normal);
+}
+
+/* Nested lists */
+.business-document ul ul,
+.business-document ol ol,
+.business-document ul ol,
+.business-document ol ul {
+  margin: 6pt 0;
+}
+
+/* Professional bullet styles */
+.business-document ul {
+  list-style-type: disc;
+}
+
+.business-document ul ul {
+  list-style-type: circle;
+}
+
+.business-document ul ul ul {
+  list-style-type: square;
+}
+
+/* Professional numbering */
+.business-document ol {
+  list-style-type: decimal;
+}
+
+.business-document ol ol {
+  list-style-type: lower-alpha;
+}
+
+.business-document ol ol ol {
+  list-style-type: lower-roman;
+}
+
+/* ===== BUSINESS DOCUMENT TABLES ===== */
+
+.business-document table,
+.business-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--business-margin-table);
+  font-size: var(--business-font-size-body);
+  page-break-inside: avoid;
+}
+
+.business-document th,
+.business-table-header {
+  background-color: var(--business-color-table-header);
+  font-weight: bold;
+  text-align: left;
+  padding: var(--business-padding-cell);
+  border: var(--business-border-thin);
+  page-break-after: avoid;
+}
+
+.business-document td,
+.business-table-cell {
+  padding: var(--business-padding-cell);
+  border: var(--business-border-thin);
+  vertical-align: top;
+}
+
+/* Alternating row colors */
+.business-document tbody tr:nth-child(even),
+.business-table-row-even {
+  background-color: var(--business-color-table-stripe);
+}
+
+/* ===== BUSINESS DOCUMENT CODE AND QUOTES ===== */
+
+.business-document code,
+.business-inline-code {
+  font-family: var(--business-font-family-mono);
+  font-size: 11pt;
+  background-color: #f5f5f5;
+  padding: 2pt 4pt;
+  border-radius: 2pt;
+}
+
+.business-document pre,
+.business-code-block {
+  font-family: var(--business-font-family-mono);
+  font-size: 10pt;
+  background-color: #f5f5f5;
+  padding: 12pt;
+  margin: var(--business-margin-paragraph) 0;
+  border: var(--business-border-thin);
+  border-radius: 4pt;
+  overflow-x: auto;
+  page-break-inside: avoid;
+}
+
+.business-document blockquote,
+.business-quote {
+  margin: var(--business-margin-paragraph) var(--business-indent-list);
+  padding-left: 12pt;
+  border-left: 3pt solid var(--business-color-border);
+  font-style: italic;
+  color: var(--business-color-secondary);
+}
+
+/* ===== BUSINESS DOCUMENT HEADER/FOOTER SYSTEM ===== */
+
+.business-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--business-header-height);
+  padding: 12pt var(--business-margin-left);
+  background: var(--business-color-background);
+  border-bottom: var(--business-border-thin);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--business-font-size-small);
+  z-index: 1000;
+}
+
+.business-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--business-footer-height);
+  padding: 8pt var(--business-margin-left);
+  background: var(--business-color-background);
+  border-top: var(--business-border-thin);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--business-font-size-small);
+  z-index: 1000;
+}
+
+.business-header-left,
+.business-footer-left {
+  flex: 1;
+  text-align: left;
+}
+
+.business-header-center,
+.business-footer-center {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+}
+
+.business-header-right,
+.business-footer-right {
+  flex: 1;
+  text-align: right;
+}
+
+.business-logo {
+  max-height: 36pt;
+  width: auto;
+}
+
+.business-page-number::before {
+  content: "Page ";
+}
+
+.business-page-number::after {
+  content: counter(page);
+}
+
+/* ===== RESPONSIVE TYPOGRAPHY SCALE ===== */
+
+/* Large screens - maintain print sizing */
+@media screen and (min-width: 1200px) {
+  .business-document {
+    font-size: 16px; /* Equivalent to 12pt for screen */
+  }
+  
+  .business-h1 { font-size: 24px; } /* 18pt */
+  .business-h2 { font-size: 21px; } /* 16pt */
+  .business-h3 { font-size: 19px; } /* 14pt */
+  .business-h4 { font-size: 16px; } /* 12pt */
+  .business-h5 { font-size: 15px; } /* 11pt */
+  .business-h6 { font-size: 13px; } /* 10pt */
+}
+
+/* Medium screens - slightly smaller */
+@media screen and (max-width: 1199px) and (min-width: 768px) {
+  .business-document {
+    font-size: 15px;
+    max-width: 90%;
+    padding: 2rem 1rem;
+  }
+  
+  .business-h1 { font-size: 22px; }
+  .business-h2 { font-size: 20px; }
+  .business-h3 { font-size: 18px; }
+  .business-h4 { font-size: 15px; }
+  .business-h5 { font-size: 14px; }
+  .business-h6 { font-size: 13px; }
+  
+  .business-margin-paragraph { margin-bottom: 1rem; }
+  .business-indent-list { padding-left: 1.5rem; }
+}
+
+/* Small screens - mobile optimized */
+@media screen and (max-width: 767px) {
+  .business-document {
+    font-size: 14px;
+    max-width: 100%;
+    padding: 1rem 0.75rem;
+    line-height: 1.6;
+  }
+  
+  .business-h1 { 
+    font-size: 20px;
+    text-align: left;
+    border-bottom: 2px solid var(--business-color-accent);
+  }
+  .business-h2 { font-size: 18px; }
+  .business-h3 { font-size: 16px; }
+  .business-h4 { font-size: 14px; }
+  .business-h5 { font-size: 13px; }
+  .business-h6 { font-size: 12px; }
+  
+  .business-paragraph {
+    text-align: left;
+    text-indent: 0;
+    margin-bottom: 0.75rem;
+  }
+  
+  .business-list {
+    padding-left: 1.25rem;
+    margin: 0.75rem 0;
+  }
+  
+  .business-table {
+    font-size: 12px;
+    overflow-x: auto;
+    display: block;
+    white-space: nowrap;
+  }
+  
+  .business-table-cell,
+  .business-table-header {
+    padding: 6px 8px;
+  }
+  
+  /* Hide header/footer on mobile */
+  .business-header,
+  .business-footer {
+    display: none;
+  }
+}
+
+/* ===== PRINT-SPECIFIC STYLES ===== */
+
+@media print {
+  /* Reset screen styles for print */
+  .business-document {
+    font-size: var(--business-font-size-body);
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: white;
+    color: black;
+  }
+  
+  /* Page setup */
+  @page {
+    size: var(--business-page-width) var(--business-page-height);
+    margin: var(--business-margin-top) var(--business-margin-right) var(--business-margin-bottom) var(--business-margin-left);
+    
+    /* Header */
+    @top-left {
+      content: element(business-header-left);
+    }
+    @top-center {
+      content: element(business-header-center);
+    }
+    @top-right {
+      content: element(business-header-right);
+    }
+    
+    /* Footer */
+    @bottom-left {
+      content: element(business-footer-left);
+    }
+    @bottom-center {
+      content: element(business-footer-center);
+    }
+    @bottom-right {
+      content: element(business-footer-right);
+    }
+  }
+  
+  /* Page break controls */
+  .business-document h1,
+  .business-document h2,
+  .business-document h3,
+  .business-document h4,
+  .business-document h5,
+  .business-document h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+  
+  .business-document p {
+    orphans: 2;
+    widows: 2;
+  }
+  
+  .business-document table,
+  .business-document ul,
+  .business-document ol,
+  .business-document pre,
+  .business-document blockquote {
+    page-break-inside: avoid;
+  }
+  
+  /* Force page breaks */
+  .business-page-break {
+    page-break-before: always;
+  }
+  
+  .business-page-break-after {
+    page-break-after: always;
+  }
+  
+  /* Avoid page breaks */
+  .business-no-break {
+    page-break-inside: avoid;
+  }
+  
+  /* Print-specific visibility */
+  .business-print-only {
+    display: block !important;
+  }
+  
+  .business-screen-only {
+    display: none !important;
+  }
+  
+  /* Header/Footer positioning for print */
+  .business-header {
+    position: running(business-header);
+    display: block;
+  }
+  
+  .business-footer {
+    position: running(business-footer);
+    display: block;
+  }
+  
+  /* Ensure proper print colors */
+  .business-document * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  /* Remove shadows and effects for print */
+  .business-document *,
+  .business-document *::before,
+  .business-document *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  /* Optimize table printing */
+  .business-table {
+    border-collapse: collapse;
+  }
+  
+  .business-table th,
+  .business-table td {
+    border: 1pt solid black;
+  }
+  
+  /* Page numbering */
+  .business-page-counter::after {
+    content: counter(page);
+  }
+  
+  .business-total-pages::after {
+    content: counter(pages);
+  }
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Text alignment */
+.business-text-left { text-align: left; }
+.business-text-center { text-align: center; }
+.business-text-right { text-align: right; }
+.business-text-justify { text-align: justify; }
+
+/* Font weights */
+.business-font-normal { font-weight: normal; }
+.business-font-bold { font-weight: bold; }
+
+/* Font styles */
+.business-font-italic { font-style: italic; }
+.business-font-normal-style { font-style: normal; }
+
+/* Spacing utilities */
+.business-margin-none { margin: 0; }
+.business-margin-small { margin: 6pt 0; }
+.business-margin-normal { margin: var(--business-margin-paragraph) 0; }
+.business-margin-large { margin: 18pt 0; }
+
+.business-padding-none { padding: 0; }
+.business-padding-small { padding: 6pt; }
+.business-padding-normal { padding: 12pt; }
+.business-padding-large { padding: 18pt; }
+
+/* Border utilities */
+.business-border-top { border-top: var(--business-border-thin); }
+.business-border-bottom { border-bottom: var(--business-border-thin); }
+.business-border-left { border-left: var(--business-border-thin); }
+.business-border-right { border-right: var(--business-border-thin); }
+.business-border-all { border: var(--business-border-thin); }
+
+/* Background utilities */
+.business-bg-white { background-color: var(--business-color-background); }
+.business-bg-gray { background-color: var(--business-color-table-header); }
+.business-bg-stripe { background-color: var(--business-color-table-stripe); }
+
+/* Display utilities for print/screen */
+.business-print-only { display: none; }
+.business-screen-only { display: block; }
+
+@media print {
+  .business-print-only { display: block; }
+  .business-screen-only { display: none; }
+}

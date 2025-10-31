@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Validation and Error Handling Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-results {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            margin-top: 20px;
+        }
+        .test-log {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Content Validation and Error Handling Test</h1>
+        <p>This page tests the implementation of Task 12: Add content validation and error handling</p>
+        
+        <div class="test-controls">
+            <button id="runAllTests" class="btn">Run All Tests</button>
+            <button id="runValidationTests" class="btn">Run Validation Tests</button>
+            <button id="runErrorHandlingTests" class="btn">Run Error Handling Tests</button>
+            <button id="runIntegrationTests" class="btn">Run Integration Tests</button>
+            <button id="clearLog" class="btn">Clear Log</button>
+        </div>
+
+        <div id="testStatus" class="status" style="display: none;"></div>
+        
+        <div class="test-results">
+            <h3>Test Results</h3>
+            <div id="testLog" class="test-log">Ready to run tests...\n</div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Test Export Buttons</h2>
+        <p>These buttons test the integrated validation and error handling:</p>
+        <div id="exportButtons"></div>
+        
+        <div class="test-content" style="display: none;">
+            <h3>Sample Content for Testing</h3>
+            <div id="testContent">
+                <h1>Test Business Document</h1>
+                <p>This is a sample business document with <strong>formatted text</strong> and <em>emphasis</em>.</p>
+                <ul>
+                    <li>First bullet point</li>
+                    <li>Second bullet point with <a href="#test">a link</a></li>
+                </ul>
+                <table>
+                    <thead>
+                        <tr><th>Column 1</th><th>Column 2</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Data 1</td><td>Data 2</td></tr>
+                        <tr><td>Data 3</td><td>Data 4</td></tr>
+                    </tbody>
+                </table>
+                <blockquote>
+                    This is a sample blockquote for testing purposes.
+                </blockquote>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load required libraries -->
+    <script src="lib/enhanced-error-handler.js"></script>
+    <script src="lib/content-validator.js"></script>
+    <script src="lib/export-error-handler.js"></script>
+    <script src="lib/export-validation-integration.js"></script>
+    <script src="test-content-validation-error-handling.js"></script>
+
+    <script>
+        // Override console.log to capture test output
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+        
+        const testLog = document.getElementById('testLog');
+        const testStatus = document.getElementById('testStatus');
+        
+        function logToTestArea(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}\n`;
+            testLog.textContent += logMessage;
+            testLog.scrollTop = testLog.scrollHeight;
+            
+            // Also log to original console
+            if (type === 'error') {
+                originalConsoleError(message);
+            } else if (type === 'warn') {
+                originalConsoleWarn(message);
+            } else {
+                originalConsoleLog(message);
+            }
+        }
+        
+        console.log = (message, ...args) => {
+            logToTestArea(message + (args.length ? ' ' + args.join(' ') : ''), 'log');
+        };
+        
+        console.error = (message, ...args) => {
+            logToTestArea('ERROR: ' + message + (args.length ? ' ' + args.join(' ') : ''), 'error');
+        };
+        
+        console.warn = (message, ...args) => {
+            logToTestArea('WARN: ' + message + (args.length ? ' ' + args.join(' ') : ''), 'warn');
+        };
+
+        // Test runner functions
+        let testRunner = null;
+
+        function showStatus(message, type = 'success') {
+            testStatus.textContent = message;
+            testStatus.className = `status ${type}`;
+            testStatus.style.display = 'block';
+        }
+
+        function hideStatus() {
+            testStatus.style.display = 'none';
+        }
+
+        async function initializeTestRunner() {
+            if (!testRunner) {
+                testRunner = new ContentValidationErrorHandlingTest();
+            }
+            return testRunner;
+        }
+
+        async function runAllTests() {
+            try {
+                showStatus('Running all tests...', 'warning');
+                const runner = await initializeTestRunner();
+                await runner.runAllTests();
+                showStatus('All tests completed! Check the log for results.', 'success');
+            } catch (error) {
+                showStatus(`Test execution failed: ${error.message}`, 'error');
+                console.error('Test execution error:', error);
+            }
+        }
+
+        async function runValidationTests() {
+            try {
+                showStatus('Running validation tests...', 'warning');
+                const runner = await initializeTestRunner();
+                await runner.runValidationTests();
+                showStatus('Validation tests completed!', 'success');
+            } catch (error) {
+                showStatus(`Validation tests failed: ${error.message}`, 'error');
+                console.error('Validation test error:', error);
+            }
+        }
+
+        async function runErrorHandlingTests() {
+            try {
+                showStatus('Running error handling tests...', 'warning');
+                const runner = await initializeTestRunner();
+                await runner.runErrorHandlingTests();
+                showStatus('Error handling tests completed!', 'success');
+            } catch (error) {
+                showStatus(`Error handling tests failed: ${error.message}`, 'error');
+                console.error('Error handling test error:', error);
+            }
+        }
+
+        async function runIntegrationTests() {
+            try {
+                showStatus('Running integration tests...', 'warning');
+                const runner = await initializeTestRunner();
+                await runner.runIntegrationTests();
+                showStatus('Integration tests completed!', 'success');
+            } catch (error) {
+                showStatus(`Integration tests failed: ${error.message}`, 'error');
+                console.error('Integration test error:', error);
+            }
+        }
+
+        function clearLog() {
+            testLog.textContent = 'Log cleared...\n';
+            hideStatus();
+        }
+
+        // Set up event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('runAllTests').addEventListener('click', runAllTests);
+            document.getElementById('runValidationTests').addEventListener('click', runValidationTests);
+            document.getElementById('runErrorHandlingTests').addEventListener('click', runErrorHandlingTests);
+            document.getElementById('runIntegrationTests').addEventListener('click', runIntegrationTests);
+            document.getElementById('clearLog').addEventListener('click', clearLog);
+
+            // Create test export buttons
+            createTestExportButtons();
+            
+            console.log('Content Validation and Error Handling Test Page Ready');
+            console.log('Click "Run All Tests" to start testing the implementation');
+        });
+
+        function createTestExportButtons() {
+            const exportButtonsContainer = document.getElementById('exportButtons');
+            
+            if (window.ExportValidationIntegration) {
+                const integration = new ExportValidationIntegration();
+                
+                // Create PDF export button
+                const pdfButton = integration.createValidatedExportButton('pdf', {
+                    getContent: () => document.getElementById('testContent'),
+                    className: 'btn'
+                });
+                
+                // Create Word export button
+                const wordButton = integration.createValidatedExportButton('word', {
+                    getContent: () => document.getElementById('testContent'),
+                    className: 'btn'
+                });
+                
+                exportButtonsContainer.appendChild(pdfButton);
+                exportButtonsContainer.appendChild(wordButton);
+                
+                console.log('Test export buttons created with validation integration');
+            } else {
+                exportButtonsContainer.innerHTML = '<p>ExportValidationIntegration not available</p>';
+            }
+        }
+    </script>
+</body>
+</html>

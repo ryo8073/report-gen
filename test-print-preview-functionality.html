@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Preview Functionality Test</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/lib/enhanced-results-layout.css">
+    <link rel="stylesheet" href="/lib/print-preview-styles.css">
+    <link rel="stylesheet" href="/lib/business-document-styles.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: #f9fafb;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: #3b82f6;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .test-controls {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .test-content {
+            height: 600px;
+            position: relative;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .status-display {
+            margin-top: 20px;
+            padding: 12px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Print Preview Functionality Test</h1>
+            <p>印刷プレビュー機能のテスト - ページレイアウト、改ページ、ヘッダー・フッター表示</p>
+        </div>
+        
+        <div class="test-controls">
+            <button class="btn btn-primary" onclick="initializeTest()">テスト初期化</button>
+            <button class="btn btn-secondary" onclick="loadSampleContent()">サンプルコンテンツ読込</button>
+            <button class="btn btn-primary" onclick="showPrintPreview()">印刷プレビュー表示</button>
+            <button class="btn btn-secondary" onclick="testPageBreaks()">改ページテスト</button>
+            <button class="btn btn-secondary" onclick="testHeaderFooter()">ヘッダー・フッター テスト</button>
+            <button class="btn btn-secondary" onclick="testZoomFunctionality()">ズーム機能テスト</button>
+            <button class="btn btn-secondary" onclick="testNavigationControls()">ナビゲーションテスト</button>
+            <button class="btn btn-secondary" onclick="runAllTests()">全テスト実行</button>
+        </div>
+        
+        <div class="test-content" id="test-content">
+            <!-- Enhanced Results Layout will be initialized here -->
+        </div>
+        
+        <div class="status-display" id="status-display">
+テスト準備完了
+「テスト初期化」ボタンをクリックして開始してください。
+        </div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="/lib/frontend-error-handler.js"></script>
+    <script src="/lib/business-document-formatter.js"></script>
+    <script src="/lib/markdown-renderer.js"></script>
+    <script src="/lib/header-footer-manager.js"></script>
+    <script src="/lib/print-preview-manager.js"></script>
+    <script src="/lib/enhanced-results-layout.js"></script>
+
+    <script>
+        let enhancedLayout = null;
+        let testResults = [];
+        
+        // Sample content for testing
+        const sampleContent = `# ビジネスレポート サンプル
+
+## 1. エグゼクティブサマリー
+
+このレポートは、印刷プレビュー機能のテストを目的として作成されました。以下の要素が正しく表示されることを確認します：
+
+- **ページレイアウト**: A4サイズでの正確な表示
+- **改ページ**: 自動的な改ページ処理
+- **ヘッダー・フッター**: 会社情報とページ番号の表示
+- **ズーム機能**: 表示倍率の調整
+- **ナビゲーション**: ページ間の移動
+
+## 2. 詳細分析
+
+### 2.1 市場概況
+
+現在の市場環境は以下の特徴を示しています：
+
+1. **成長率**: 前年同期比15%増
+2. **競合状況**: 主要3社による寡占状態
+3. **技術動向**: AI・機械学習の導入が加速
+
+### 2.2 財務分析
+
+| 項目 | 前年 | 今年 | 増減率 |
+|------|------|------|--------|
+| 売上高 | 1,000万円 | 1,150万円 | +15% |
+| 営業利益 | 200万円 | 250万円 | +25% |
+| 純利益 | 150万円 | 200万円 | +33% |
+
+### 2.3 リスク要因
+
+以下のリスク要因に注意が必要です：
+
+- 原材料価格の上昇
+- 為替変動の影響
+- 競合他社の新製品投入
+- 規制環境の変化
+
+## 3. 戦略提案
+
+### 3.1 短期戦略（1年以内）
+
+1. **製品ラインの拡充**
+   - 新製品の開発・投入
+   - 既存製品の改良
+
+2. **マーケティング強化**
+   - デジタルマーケティングの推進
+   - ブランド認知度の向上
+
+3. **オペレーション効率化**
+   - 業務プロセスの見直し
+   - システム導入による自動化
+
+### 3.2 中長期戦略（2-5年）
+
+1. **海外展開**
+   - アジア市場への参入
+   - 現地パートナーとの提携
+
+2. **技術革新**
+   - R&D投資の拡大
+   - 特許取得の推進
+
+3. **人材育成**
+   - 専門スキルの向上
+   - リーダーシップ開発
+
+## 4. 実行計画
+
+### 4.1 タイムライン
+
+**第1四半期**
+- 市場調査の実施
+- 製品開発チームの編成
+- 予算配分の決定
+
+**第2四半期**
+- プロトタイプの開発
+- テストマーケティングの実施
+- パートナー候補の選定
+
+**第3四半期**
+- 製品の最終調整
+- マーケティング戦略の策定
+- 販売チャネルの構築
+
+**第4四半期**
+- 製品の正式リリース
+- 販売活動の本格化
+- 成果の評価・分析
+
+### 4.2 予算計画
+
+総予算: 5,000万円
+
+- 製品開発: 2,000万円 (40%)
+- マーケティング: 1,500万円 (30%)
+- 人材・システム: 1,000万円 (20%)
+- 予備費: 500万円 (10%)
+
+## 5. 期待効果
+
+この戦略の実行により、以下の効果が期待されます：
+
+1. **売上高**: 現在の1.5倍（1,750万円）
+2. **市場シェア**: 現在の8%から12%へ拡大
+3. **ブランド認知度**: 現在の25%から40%へ向上
+4. **従業員満足度**: 現在の70%から85%へ改善
+
+## 6. 結論
+
+本戦略は、当社の持続的成長を実現するための包括的なアプローチです。短期的な収益向上と中長期的な競争力強化を両立させることで、業界リーダーとしての地位を確立できると考えます。
+
+実行にあたっては、定期的な進捗確認と柔軟な戦略調整が重要です。市場環境の変化に迅速に対応し、継続的な改善を図ることで、目標達成を目指します。
+
+---
+
+**付録A: 市場データ詳細**
+
+詳細な市場データと分析結果については、別途資料を参照してください。
+
+**付録B: 競合分析**
+
+主要競合他社の詳細分析と比較表を掲載しています。
+
+**付録C: 財務予測**
+
+5年間の詳細な財務予測とシナリオ分析を含みます。`;
+
+        function updateStatus(message) {
+            const statusDisplay = document.getElementById('status-display');
+            const timestamp = new Date().toLocaleTimeString();
+            statusDisplay.textContent += `\n[${timestamp}] ${message}`;
+            statusDisplay.scrollTop = statusDisplay.scrollHeight;
+            console.log(`[Test] ${message}`);
+        }
+
+        function initializeTest() {
+            try {
+                updateStatus('テスト初期化を開始...');
+                
+                const testContent = document.getElementById('test-content');
+                
+                // Initialize Enhanced Results Layout
+                enhancedLayout = new EnhancedResultsLayout(testContent, {
+                    enableBusinessFormatting: true,
+                    enablePDFExport: true,
+                    enableFormatControls: true,
+                    enableResponsiveDesign: true,
+                    enableAccessibility: true,
+                    defaultView: 'preview'
+                });
+                
+                // Set up event listeners
+                enhancedLayout.on('viewChange', (data) => {
+                    updateStatus(`ビュー変更: ${data.from} -> ${data.to}`);
+                });
+                
+                enhancedLayout.on('formatChange', (data) => {
+                    updateStatus(`フォーマット変更: ${data.type} = ${data.value}`);
+                });
+                
+                updateStatus('Enhanced Results Layout 初期化完了');
+                updateStatus('印刷プレビュー機能が利用可能です');
+                
+            } catch (error) {
+                updateStatus(`初期化エラー: ${error.message}`);
+                console.error('Initialization error:', error);
+            }
+        }
+
+        function loadSampleContent() {
+            if (!enhancedLayout) {
+                updateStatus('エラー: 先にテスト初期化を実行してください');
+                return;
+            }
+            
+            try {
+                updateStatus('サンプルコンテンツを読み込み中...');
+                
+                enhancedLayout.setContent(sampleContent, {
+                    title: 'ビジネスレポート サンプル',
+                    author: 'テストユーザー',
+                    createdAt: new Date().toISOString()
+                });
+                
+                updateStatus(`コンテンツ読み込み完了 (${sampleContent.length} 文字)`);
+                
+            } catch (error) {
+                updateStatus(`コンテンツ読み込みエラー: ${error.message}`);
+                console.error('Content loading error:', error);
+            }
+        }
+
+        function showPrintPreview() {
+            if (!enhancedLayout) {
+                updateStatus('エラー: 先にテスト初期化を実行してください');
+                return;
+            }
+            
+            try {
+                updateStatus('印刷プレビューを表示中...');
+                
+                // Switch to print preview view
+                enhancedLayout.switchView('print-preview');
+                
+                updateStatus('印刷プレビュー表示完了');
+                updateStatus('ページレイアウト、ヘッダー・フッター、ページ番号を確認してください');
+                
+            } catch (error) {
+                updateStatus(`印刷プレビューエラー: ${error.message}`);
+                console.error('Print preview error:', error);
+            }
+        }
+
+        function testPageBreaks() {
+            if (!enhancedLayout || !enhancedLayout.printPreviewManager) {
+                updateStatus('エラー: 印刷プレビューが初期化されていません');
+                return;
+            }
+            
+            try {
+                updateStatus('改ページ機能をテスト中...');
+                
+                const printManager = enhancedLayout.printPreviewManager;
+                const state = printManager.getState();
+                
+                updateStatus(`総ページ数: ${state.totalPages}`);
+                updateStatus(`現在のページ: ${state.currentPage}`);
+                updateStatus(`ページサイズ: ${state.options.pageSize}`);
+                updateStatus(`向き: ${state.options.orientation}`);
+                
+                if (state.totalPages > 1) {
+                    updateStatus('✓ 改ページが正しく動作しています');
+                } else {
+                    updateStatus('⚠ コンテンツが1ページに収まっています');
+                }
+                
+            } catch (error) {
+                updateStatus(`改ページテストエラー: ${error.message}`);
+                console.error('Page break test error:', error);
+            }
+        }
+
+        function testHeaderFooter() {
+            if (!enhancedLayout || !enhancedLayout.printPreviewManager) {
+                updateStatus('エラー: 印刷プレビューが初期化されていません');
+                return;
+            }
+            
+            try {
+                updateStatus('ヘッダー・フッター機能をテスト中...');
+                
+                const printManager = enhancedLayout.printPreviewManager;
+                
+                // Update header and footer
+                printManager.headerContent = 'テスト会社 - 機密文書';
+                printManager.footerContent = '© 2024 Test Company. All rights reserved.';
+                
+                // Regenerate pages with new header/footer
+                printManager.generatePages();
+                
+                updateStatus('✓ ヘッダー・フッターが更新されました');
+                updateStatus('ヘッダー: テスト会社 - 機密文書');
+                updateStatus('フッター: © 2024 Test Company. All rights reserved.');
+                
+            } catch (error) {
+                updateStatus(`ヘッダー・フッターテストエラー: ${error.message}`);
+                console.error('Header/Footer test error:', error);
+            }
+        }
+
+        function testZoomFunctionality() {
+            if (!enhancedLayout || !enhancedLayout.printPreviewManager) {
+                updateStatus('エラー: 印刷プレビューが初期化されていません');
+                return;
+            }
+            
+            try {
+                updateStatus('ズーム機能をテスト中...');
+                
+                const printManager = enhancedLayout.printPreviewManager;
+                const zoomLevels = [50, 75, 100, 125, 150];
+                
+                let testIndex = 0;
+                const testZoom = () => {
+                    if (testIndex < zoomLevels.length) {
+                        const zoom = zoomLevels[testIndex];
+                        printManager.setZoom(zoom.toString());
+                        updateStatus(`ズーム ${zoom}% に設定`);
+                        testIndex++;
+                        setTimeout(testZoom, 1000);
+                    } else {
+                        printManager.setZoom('100');
+                        updateStatus('✓ ズーム機能テスト完了 (100%に戻しました)');
+                    }
+                };
+                
+                testZoom();
+                
+            } catch (error) {
+                updateStatus(`ズーム機能テストエラー: ${error.message}`);
+                console.error('Zoom test error:', error);
+            }
+        }
+
+        function testNavigationControls() {
+            if (!enhancedLayout || !enhancedLayout.printPreviewManager) {
+                updateStatus('エラー: 印刷プレビューが初期化されていません');
+                return;
+            }
+            
+            try {
+                updateStatus('ナビゲーション機能をテスト中...');
+                
+                const printManager = enhancedLayout.printPreviewManager;
+                const state = printManager.getState();
+                
+                if (state.totalPages > 1) {
+                    updateStatus('複数ページが検出されました - ナビゲーションをテスト');
+                    
+                    // Test navigation
+                    setTimeout(() => {
+                        printManager.nextPage();
+                        updateStatus(`次のページに移動: ${printManager.currentPage}/${state.totalPages}`);
+                        
+                        setTimeout(() => {
+                            printManager.previousPage();
+                            updateStatus(`前のページに戻る: ${printManager.currentPage}/${state.totalPages}`);
+                            updateStatus('✓ ナビゲーション機能テスト完了');
+                        }, 1000);
+                    }, 1000);
+                } else {
+                    updateStatus('⚠ 単一ページのためナビゲーションテストをスキップ');
+                }
+                
+            } catch (error) {
+                updateStatus(`ナビゲーションテストエラー: ${error.message}`);
+                console.error('Navigation test error:', error);
+            }
+        }
+
+        function runAllTests() {
+            updateStatus('=== 全テスト実行開始 ===');
+            
+            const tests = [
+                { name: 'テスト初期化', func: initializeTest, delay: 1000 },
+                { name: 'サンプルコンテンツ読込', func: loadSampleContent, delay: 1000 },
+                { name: '印刷プレビュー表示', func: showPrintPreview, delay: 2000 },
+                { name: '改ページテスト', func: testPageBreaks, delay: 1000 },
+                { name: 'ヘッダー・フッターテスト', func: testHeaderFooter, delay: 1000 },
+                { name: 'ズーム機能テスト', func: testZoomFunctionality, delay: 6000 },
+                { name: 'ナビゲーションテスト', func: testNavigationControls, delay: 3000 }
+            ];
+            
+            let currentTest = 0;
+            
+            const runNextTest = () => {
+                if (currentTest < tests.length) {
+                    const test = tests[currentTest];
+                    updateStatus(`--- ${test.name} 実行中 ---`);
+                    
+                    try {
+                        test.func();
+                        currentTest++;
+                        setTimeout(runNextTest, test.delay);
+                    } catch (error) {
+                        updateStatus(`${test.name} でエラー: ${error.message}`);
+                        currentTest++;
+                        setTimeout(runNextTest, 1000);
+                    }
+                } else {
+                    updateStatus('=== 全テスト実行完了 ===');
+                    updateStatus('印刷プレビュー機能の動作を確認してください');
+                }
+            };
+            
+            runNextTest();
+        }
+
+        // Initialize error handler fallback
+        if (typeof window.errorHandler === 'undefined') {
+            window.errorHandler = {
+                handleError: (error, context) => {
+                    console.error(`Error in ${context}:`, error);
+                    updateStatus(`エラー (${context}): ${error.message}`);
+                },
+                showNotification: (message, type) => {
+                    updateStatus(`通知 (${type}): ${message}`);
+                }
+            };
+        }
+
+        // Auto-initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus('ページ読み込み完了');
+            updateStatus('印刷プレビュー機能テストの準備ができました');
+        });
+    </script>
+</body>
+</html>

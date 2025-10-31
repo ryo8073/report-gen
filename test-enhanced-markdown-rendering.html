@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Markdown Rendering Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        
+        .test-section {
+            background: white;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: #2563eb;
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .test-content {
+            padding: 1.5rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .comparison-panel {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            background: #f3f4f6;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .panel-content {
+            padding: 1rem;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .markdown-source {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-section">
+            <div class="test-header">
+                Enhanced Markdown Rendering Test
+            </div>
+            <div class="test-content">
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="renderStandard()">Render Standard</button>
+                    <button class="btn btn-primary" onclick="renderBusiness()">Render Business</button>
+                    <button class="btn btn-secondary" onclick="clearOutput()">Clear Output</button>
+                    <button class="btn btn-secondary" onclick="toggleComparison()">Toggle Comparison</button>
+                </div>
+                
+                <div class="markdown-source" id="markdown-source">
+# Executive Summary
+
+This document demonstrates the **enhanced markdown rendering** capabilities with business document formatting. The system now supports both *standard web styling* and professional business document presentation.
+
+## Key Features
+
+### Typography Enhancement
+- Professional heading hierarchy with consistent margins
+- Business-appropriate font families (Times New Roman for formal documents)
+- Proper line spacing and paragraph formatting
+- Print-optimized sizing and layout
+
+### Table Rendering
+The following table shows the comparison between standard and business formatting:
+
+| Feature | Standard | Business | Notes |
+|---------|----------|----------|-------|
+| Font Family | Sans-serif | Serif | Times New Roman for business |
+| Font Size | 16px | 12pt | Print-appropriate sizing |
+| Line Height | 1.7 | 1.5 | Professional spacing |
+| Text Alignment | Left | Justified | Business document standard |
+
+### List Formatting
+1. **Ordered lists** maintain proper numbering
+2. **Unordered lists** use appropriate bullets
+3. **Nested lists** preserve hierarchy
+   - Sub-item level 1
+   - Sub-item level 2
+     - Sub-item level 3
+
+### Code Block Support
+```javascript
+// Enhanced code block rendering
+class BusinessDocumentRenderer {
+    constructor() {
+        this.formatting = 'business';
+    }
+    
+    render(markdown) {
+        return this.applyBusinessStyling(markdown);
+    }
+}
+```
+
+### Inline Formatting
+- **Bold text** for emphasis
+- *Italic text* for subtle emphasis  
+- `Inline code` for technical terms
+- ~~Strikethrough~~ for corrections
+
+## Implementation Details
+
+The enhanced renderer provides:
+
+> Professional document formatting that meets business standards while maintaining web accessibility and responsive design principles.
+
+### Technical Specifications
+- CSS custom properties for consistent theming
+- Print media queries for PDF export
+- Responsive breakpoints for mobile devices
+- Performance optimizations with caching
+
+## Conclusion
+
+This enhanced markdown rendering system bridges the gap between web content and professional business documents, providing the flexibility needed for modern document workflows.
+                </div>
+                
+                <div id="output-container">
+                    <div class="comparison-container" id="comparison-view" style="display: none;">
+                        <div class="comparison-panel">
+                            <div class="panel-header">Standard Rendering</div>
+                            <div class="panel-content" id="standard-output"></div>
+                        </div>
+                        <div class="comparison-panel">
+                            <div class="panel-header">Business Rendering</div>
+                            <div class="panel-content" id="business-output"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison-panel" id="single-view">
+                        <div class="panel-header" id="single-header">Rendered Output</div>
+                        <div class="panel-content" id="single-output"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="lib/business-document-formatter.js"></script>
+    <script src="lib/markdown-renderer.js"></script>
+    <script>
+        let renderer = new MarkdownRenderer();
+        let isComparisonMode = false;
+        
+        function getMarkdownSource() {
+            return document.getElementById('markdown-source').textContent.trim();
+        }
+        
+        function renderStandard() {
+            const markdown = getMarkdownSource();
+            const html = renderer.render(markdown, false);
+            
+            if (isComparisonMode) {
+                document.getElementById('standard-output').innerHTML = html;
+            } else {
+                document.getElementById('single-output').innerHTML = html;
+                document.getElementById('single-header').textContent = 'Standard Rendering';
+            }
+            
+            console.log('Standard rendering completed');
+        }
+        
+        function renderBusiness() {
+            const markdown = getMarkdownSource();
+            const html = renderer.render(markdown, true);
+            
+            if (isComparisonMode) {
+                document.getElementById('business-output').innerHTML = html;
+            } else {
+                document.getElementById('single-output').innerHTML = html;
+                document.getElementById('single-header').textContent = 'Business Rendering';
+            }
+            
+            console.log('Business rendering completed');
+        }
+        
+        function clearOutput() {
+            document.getElementById('standard-output').innerHTML = '';
+            document.getElementById('business-output').innerHTML = '';
+            document.getElementById('single-output').innerHTML = '';
+            console.log('Output cleared');
+        }
+        
+        function toggleComparison() {
+            isComparisonMode = !isComparisonMode;
+            
+            const comparisonView = document.getElementById('comparison-view');
+            const singleView = document.getElementById('single-view');
+            
+            if (isComparisonMode) {
+                comparisonView.style.display = 'grid';
+                singleView.style.display = 'none';
+                
+                // Render both versions for comparison
+                const markdown = getMarkdownSource();
+                document.getElementById('standard-output').innerHTML = renderer.render(markdown, false);
+                document.getElementById('business-output').innerHTML = renderer.render(markdown, true);
+                
+                console.log('Comparison mode enabled');
+            } else {
+                comparisonView.style.display = 'none';
+                singleView.style.display = 'block';
+                console.log('Single view mode enabled');
+            }
+        }
+        
+        function testPerformance() {
+            const markdown = getMarkdownSource();
+            const iterations = 100;
+            
+            console.log(`Running performance test with ${iterations} iterations...`);
+            
+            // Test standard rendering
+            const startStandard = performance.now();
+            for (let i = 0; i < iterations; i++) {
+                renderer.render(markdown, false);
+            }
+            const endStandard = performance.now();
+            
+            // Test business rendering
+            const startBusiness = performance.now();
+            for (let i = 0; i < iterations; i++) {
+                renderer.render(markdown, true);
+            }
+            const endBusiness = performance.now();
+            
+            console.log('Performance Results:');
+            console.log(`Standard: ${(endStandard - startStandard).toFixed(2)}ms total, ${((endStandard - startStandard) / iterations).toFixed(2)}ms avg`);
+            console.log(`Business: ${(endBusiness - startBusiness).toFixed(2)}ms total, ${((endBusiness - startBusiness) / iterations).toFixed(2)}ms avg`);
+            console.log('Performance stats:', renderer.getPerformanceStats());
+        }
+        
+        // Initialize with standard rendering
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Enhanced Markdown Rendering Test loaded');
+            console.log('MarkdownRenderer available:', typeof MarkdownRenderer !== 'undefined');
+            console.log('BusinessDocumentFormatter available:', typeof BusinessDocumentFormatter !== 'undefined');
+            
+            // Add performance test button
+            const controls = document.querySelector('.controls');
+            const perfButton = document.createElement('button');
+            perfButton.className = 'btn btn-secondary';
+            perfButton.textContent = 'Performance Test';
+            perfButton.onclick = testPerformance;
+            controls.appendChild(perfButton);
+            
+            // Render initial content
+            renderStandard();
+        });
+    </script>
+</body>
+</html>

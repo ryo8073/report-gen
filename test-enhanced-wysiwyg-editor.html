@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced WYSIWYG Editor Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="lib/enhanced-wysiwyg-editor.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+        
+        .test-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-header p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .test-controls {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .control-item label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .control-item select,
+        .control-item input {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .control-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .test-btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .test-btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        
+        .test-btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .test-btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+        
+        .editor-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            min-height: 500px;
+        }
+        
+        .output-section {
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .output-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .output-tab {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: none;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .output-tab.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+        
+        .output-content {
+            display: none;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            background: #f9fafb;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .output-content.active {
+            display: block;
+        }
+        
+        .output-content pre {
+            margin: 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .test-header h1 {
+                font-size: 2rem;
+            }
+            
+            .control-actions {
+                flex-direction: column;
+            }
+            
+            .test-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Enhanced WYSIWYG Editor</h1>
+            <p>Rich text editing with markdown integration and business formatting</p>
+        </div>
+        
+        <div class="test-controls">
+            <div class="controls-grid">
+                <div class="control-item">
+                    <label for="sample-content">Sample Content:</label>
+                    <select id="sample-content">
+                        <option value="markdown">Markdown Sample</option>
+                        <option value="html">HTML Sample</option>
+                        <option value="business">Business Document</option>
+                        <option value="simple">Simple Text</option>
+                    </select>
+                </div>
+                
+                <div class="control-item">
+                    <label for="markdown-parsing">Markdown Parsing:</label>
+                    <select id="markdown-parsing">
+                        <option value="true" selected>Enabled</option>
+                        <option value="false">Disabled</option>
+                    </select>
+                </div>
+                
+                <div class="control-item">
+                    <label for="business-formatting">Business Formatting:</label>
+                    <select id="business-formatting">
+                        <option value="false" selected>Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </div>
+                
+                <div class="control-item">
+                    <label for="auto-save">Auto Save:</label>
+                    <select id="auto-save">
+                        <option value="true" selected>Enabled</option>
+                        <option value="false">Disabled</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="control-actions">
+                <button class="test-btn test-btn-primary" onclick="initializeEditor()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10M3.51 9a9 9 0 1 1 2.13 9.36L1 14"></path>
+                    </svg>
+                    Initialize Editor
+                </button>
+                <button class="test-btn test-btn-secondary" onclick="loadSampleContent()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14,2 14,8 20,8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                    Load Content
+                </button>
+                <button class="test-btn test-btn-secondary" onclick="testFormatting()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                        <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                    </svg>
+                    Test Formatting
+                </button>
+                <button class="test-btn test-btn-secondary" onclick="getOutput()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    Get Output
+                </button>
+                <button class="test-btn test-btn-secondary" onclick="clearEditor()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3,6 5,6 21,6"></polyline>
+                        <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                    </svg>
+                    Clear
+                </button>
+            </div>
+        </div>
+        
+        <div class="editor-container" id="editor-container">
+            <!-- Enhanced WYSIWYG Editor will be inserted here -->
+        </div>
+        
+        <div class="output-section" id="output-section" style="display: none;">
+            <h3>Output</h3>
+            <div class="output-tabs">
+                <button class="output-tab active" onclick="showOutput('html')">HTML</button>
+                <button class="output-tab" onclick="showOutput('markdown')">Markdown</button>
+                <button class="output-tab" onclick="showOutput('text')">Text</button>
+            </div>
+            <div class="output-content active" id="html-output">
+                <pre id="html-content"></pre>
+            </div>
+            <div class="output-content" id="markdown-output">
+                <pre id="markdown-content"></pre>
+            </div>
+            <div class="output-content" id="text-output">
+                <pre id="text-content"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="lib/business-document-formatter.js"></script>
+    <script src="lib/markdown-renderer.js"></script>
+    <script src="lib/rich-text-editor.js"></script>
+    <script src="lib/enhanced-wysiwyg-editor.js"></script>
+    <script>
+        let editor = null;
+        
+        // Sample content for testing
+        const sampleContents = {
+            markdown: `# Enhanced WYSIWYG Editor Test
+
+This is a **comprehensive test** of the enhanced WYSIWYG editor with *markdown integration* and business formatting capabilities.
+
+## Key Features
+
+### Rich Text Editing
+- **Bold**, *italic*, and <u>underlined</u> text formatting
+- Multiple heading levels (H1-H6)
+- Bulleted and numbered lists
+- Real-time content synchronization
+
+### Markdown Integration
+The editor supports bidirectional conversion between HTML and Markdown:
+
+1. **HTML to Markdown**: Automatically converts rich text to markdown
+2. **Markdown to HTML**: Parses markdown syntax for display
+3. **Real-time sync**: Maintains consistency between formats
+
+### Business Formatting
+- Professional typography with Times New Roman
+- Proper spacing and margins for business documents
+- Print-optimized layout and styling
+- Integration with business document formatter
+
+## Code Example
+
+\`\`\`javascript
+const editor = new EnhancedWYSIWYGEditor(container, {
+    enableMarkdownParsing: true,
+    enableBusinessFormatting: true,
+    enableAutoSave: true
+});
+\`\`\`
+
+> **Note**: This editor provides a seamless experience for creating professional documents with modern web technologies.`,
+
+            html: `<h1>HTML Content Sample</h1>
+<p>This is a sample of <strong>HTML content</strong> that demonstrates the editor's ability to handle rich text formatting.</p>
+<h2>Features</h2>
+<ul>
+<li><strong>Bold text</strong> formatting</li>
+<li><em>Italic text</em> styling</li>
+<li><u>Underlined text</u> decoration</li>
+</ul>
+<h3>Lists</h3>
+<ol>
+<li>Ordered list item 1</li>
+<li>Ordered list item 2</li>
+<li>Ordered list item 3</li>
+</ol>
+<blockquote>
+<p>This is a blockquote that demonstrates how the editor handles quoted content with proper styling and indentation.</p>
+</blockquote>
+<p>The editor also supports <code>inline code</code> and code blocks:</p>
+<pre><code>function example() {
+    return "Hello, World!";
+}</code></pre>`,
+
+            business: `BUSINESS PROPOSAL
+
+Executive Summary
+
+This document demonstrates the enhanced WYSIWYG editor's capability to handle professional business document formatting with proper typography and layout.
+
+Project Overview
+
+The enhanced editor provides seamless integration between rich text editing and markdown parsing, enabling users to create professional documents efficiently.
+
+Key Benefits
+
+1. Professional Typography
+   - Times New Roman font family for formal documents
+   - Proper spacing and margins
+   - Print-optimized layout
+
+2. Enhanced Productivity
+   - Real-time formatting preview
+   - Automatic markdown conversion
+   - Keyboard shortcuts for common actions
+
+3. Business Integration
+   - Compatible with existing document workflows
+   - Export capabilities for various formats
+   - Accessibility compliance
+
+Technical Specifications
+
+The editor is built using modern web technologies and provides comprehensive formatting capabilities while maintaining compatibility with standard markdown syntax.
+
+Conclusion
+
+This enhanced WYSIWYG editor represents a significant advancement in web-based document editing, providing the professional capabilities required for business communications.`,
+
+            simple: `Simple Text Sample
+
+This is a basic text sample for testing the enhanced WYSIWYG editor functionality.
+
+Key Points:
+- Easy to read and understand
+- Minimal formatting requirements
+- Good for testing basic functionality
+- Suitable for performance testing
+
+The editor should handle this content efficiently and provide all the standard editing capabilities.`
+        };
+        
+        function initializeEditor() {
+            const container = document.getElementById('editor-container');
+            const markdownParsing = document.getElementById('markdown-parsing').value === 'true';
+            const businessFormatting = document.getElementById('business-formatting').value === 'true';
+            const autoSave = document.getElementById('auto-save').value === 'true';
+            
+            // Clear existing editor
+            if (editor) {
+                editor.destroy();
+            }
+            
+            // Create new editor
+            editor = new EnhancedWYSIWYGEditor(container, {
+                enableMarkdownParsing: markdownParsing,
+                enableBusinessFormatting: businessFormatting,
+                enableRealTimePreview: true,
+                enableAutoSave: autoSave,
+                autoSaveInterval: 3000,
+                enableToolbar: true,
+                enableKeyboardShortcuts: true,
+                placeholder: 'ここでレポートを編集してください...',
+                onContentChange: (htmlContent, textContent) => {
+                    console.log('Content changed:', htmlContent.length, 'characters');
+                },
+                onMarkdownChange: (markdownContent) => {
+                    console.log('Markdown changed:', markdownContent.length, 'characters');
+                },
+                onAutoSave: (data) => {
+                    console.log('Auto-saved:', data.timestamp);
+                }
+            });
+            
+            console.log('Enhanced WYSIWYG Editor initialized');
+            
+            // Load initial content
+            setTimeout(loadSampleContent, 500);
+        }
+        
+        function loadSampleContent() {
+            if (!editor) {
+                alert('Please initialize the editor first');
+                return;
+            }
+            
+            const contentType = document.getElementById('sample-content').value;
+            const content = sampleContents[contentType] || sampleContents.simple;
+            
+            // Determine format based on content type
+            const format = contentType === 'markdown' ? 'markdown' : 'html';
+            
+            editor.setContent(content, format);
+            
+            console.log('Sample content loaded:', contentType);
+        }
+        
+        function testFormatting() {
+            if (!editor) {
+                alert('Please initialize the editor first');
+                return;
+            }
+            
+            // Test various formatting commands
+            const commands = ['bold', 'italic', 'underline'];
+            let currentIndex = 0;
+            
+            function executeNextCommand() {
+                if (currentIndex < commands.length) {
+                    const command = commands[currentIndex];
+                    editor.executeCommand(command);
+                    console.log('Executed command:', command);
+                    currentIndex++;
+                    
+                    setTimeout(executeNextCommand, 1000);
+                } else {
+                    console.log('Formatting test completed');
+                }
+            }
+            
+            // Focus editor and select some text for formatting
+            editor.focus();
+            executeNextCommand();
+        }
+        
+        function getOutput() {
+            if (!editor) {
+                alert('Please initialize the editor first');
+                return;
+            }
+            
+            const htmlContent = editor.getContent('html');
+            const markdownContent = editor.getContent('markdown');
+            const textContent = editor.getContent('text');
+            
+            // Update output displays
+            document.getElementById('html-content').textContent = htmlContent;
+            document.getElementById('markdown-content').textContent = markdownContent;
+            document.getElementById('text-content').textContent = textContent;
+            
+            // Show output section
+            document.getElementById('output-section').style.display = 'block';
+            
+            console.log('Output retrieved:');
+            console.log('HTML:', htmlContent.length, 'characters');
+            console.log('Markdown:', markdownContent.length, 'characters');
+            console.log('Text:', textContent.length, 'characters');
+        }
+        
+        function showOutput(type) {
+            // Update tab states
+            const tabs = document.querySelectorAll('.output-tab');
+            tabs.forEach(tab => {
+                tab.classList.toggle('active', tab.textContent.toLowerCase() === type);
+            });
+            
+            // Update content visibility
+            const contents = document.querySelectorAll('.output-content');
+            contents.forEach(content => {
+                content.classList.toggle('active', content.id === `${type}-output`);
+            });
+        }
+        
+        function clearEditor() {
+            if (editor) {
+                editor.clear();
+                console.log('Editor cleared');
+            }
+            
+            // Hide output section
+            document.getElementById('output-section').style.display = 'none';
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Enhanced WYSIWYG Editor Test loaded');
+            console.log('Available components:');
+            console.log('- EnhancedWYSIWYGEditor:', typeof EnhancedWYSIWYGEditor !== 'undefined');
+            console.log('- RichTextEditor:', typeof RichTextEditor !== 'undefined');
+            console.log('- MarkdownRenderer:', typeof MarkdownRenderer !== 'undefined');
+            console.log('- BusinessDocumentFormatter:', typeof BusinessDocumentFormatter !== 'undefined');
+            
+            // Auto-initialize with default settings
+            setTimeout(initializeEditor, 500);
+        });
+        
+        // Keyboard shortcuts for testing
+        document.addEventListener('keydown', (e) => {
+            if (e.altKey) {
+                switch (e.key) {
+                    case '1':
+                        e.preventDefault();
+                        initializeEditor();
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        loadSampleContent();
+                        break;
+                    case '3':
+                        e.preventDefault();
+                        testFormatting();
+                        break;
+                    case '4':
+                        e.preventDefault();
+                        getOutput();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

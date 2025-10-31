@@ -439,10 +439,24 @@ function logServiceHealthSummary() {
   console.log('[HEALTH SUMMARY]', JSON.stringify(metrics, null, 2));
 }
 
-// PromptManager class for handling prompt templates
+// PromptManager class for handling prompt templates with metadata support
 class PromptManager {
   constructor() {
     this.prompts = new Map();
+    this.promptMetadata = new Map();
+    this.promptCache = new Map(); // Cache for built prompts
+    this.fileCache = new Map(); // Cache for raw file contents
+    this.loadTimestamp = null;
+    this.maxCacheSize = 100; // Maximum number of cached prompts
+    this.maxFileCacheSize = 50; // Maximum number of cached files
+    this.cacheStats = {
+      hits: 0,
+      misses: 0,
+      builds: 0,
+      fileHits: 0,
+      fileMisses: 0,
+      evictions: 0
+    };
     this.reportTypes = {
       'jp_investment_4part': {
         label: '投資分析レポート（4部構成）',
@@ -473,8 +487,96 @@ class PromptManager {
     this.loadPrompts();
   }
   
+  // Generate cache key for built prompts
+  generateCacheKey(reportType, inputText, files, additionalInfo, comparisonData) {
+    const inputHash = this.simpleHash(JSON.stringify({
+      reportType,
+      inputText: inputText?.substring(0, 100), // First 100 chars for cache key
+      fileCount: files?.length || 0,
+      additionalInfo: additionalInfo ? Object.keys(additionalInfo).sort() : [],
+      hasComparison: !!comparisonData
+    }));
+    return `${reportType}_${inputHash}`;
+  }
+  
+  // Simple hash function for cache keys
+  simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
+  }
+  
+  // Clear cache when prompts are reloaded
+  clearCache() {
+    this.promptCache.clear();
+    this.fileCache.clear();
+    this.cacheStats = { 
+      hits: 0, 
+      misses: 0, 
+      builds: 0, 
+      fileHits: 0, 
+      fileMisses: 0, 
+      evictions: 0 
+    };
+    console.log('[PROMPT MANAGER] All caches cleared');
+  }
+
+  // Manage cache size with LRU eviction
+  manageCacheSize() {
+    // Manage prompt cache
+    if (this.promptCache.size > this.maxCacheSize) {
+      const keysToDelete = Array.from(this.promptCache.keys()).slice(0, this.promptCache.size - this.maxCacheSize);
+      keysToDelete.forEach(key => this.promptCache.delete(key));
+      this.cacheStats.evictions += keysToDelete.length;
+      console.log(`[PROMPT MANAGER] Evicted ${keysToDelete.length} items from prompt cache`);
+    }
+
+    // Manage file cache
+    if (this.fileCache.size > this.maxFileCacheSize) {
+      const keysToDelete = Array.from(this.fileCache.keys()).slice(0, this.fileCache.size - this.maxFileCacheSize);
+      keysToDelete.forEach(key => this.fileCache.delete(key));
+      console.log(`[PROMPT MANAGER] Evicted ${keysToDelete.length} items from file cache`);
+    }
+  }
+
+  // Get cache statistics
+  getCacheStats() {
+    const promptCacheHitRate = this.cacheStats.hits + this.cacheStats.misses > 0 
+      ? (this.cacheStats.hits / (this.cacheStats.hits + this.cacheStats.misses) * 100).toFixed(2)
+      : '0.00';
+    
+    const fileCacheHitRate = this.cacheStats.fileHits + this.cacheStats.fileMisses > 0
+      ? (this.cacheStats.fileHits / (this.cacheStats.fileHits + this.cacheStats.fileMisses) * 100).toFixed(2)
+      : '0.00';
+
+    return {
+      promptCache: {
+        size: this.promptCache.size,
+        maxSize: this.maxCacheSize,
+        hits: this.cacheStats.hits,
+        misses: this.cacheStats.misses,
+        hitRate: `${promptCacheHitRate}%`
+      },
+      fileCache: {
+        size: this.fileCache.size,
+        maxSize: this.maxFileCacheSize,
+        hits: this.cacheStats.fileHits,
+        misses: this.cacheStats.fileMisses,
+        hitRate: `${fileCacheHitRate}%`
+      },
+      builds: this.cacheStats.builds,
+      evictions: this.cacheStats.evictions,
+      loadTimestamp: this.loadTimestamp
+    };
+  }
+  
   async loadPrompts() {
     const promptsDir = './PROMPTS';
+    const loadStartTime = Date.now();
     
     try {
       // Get all .md files from PROMPTS folder
@@ -483,30 +585,209 @@ class PromptManager {
       
       console.log(`[PROMPT MANAGER] Loading ${promptFiles.length} prompt files from ${promptsDir}`);
       
-      for (const file of promptFiles) {
+      // Load files in parallel for better performance
+      const loadPromises = promptFiles.map(async (file) => {
         try {
           const filePath = path.join(promptsDir, file);
-          const content = await fs.readFile(filePath, 'utf8');
-          this.prompts.set(file, content);
-          console.log(`[PROMPT MANAGER] Loaded prompt: ${file} (${content.length} chars)`);
+          
+          // Check file cache first
+          const cacheKey = `${file}_${await this.getFileModTime(filePath)}`;
+          let content = this.fileCache.get(cacheKey);
+          
+          if (content) {
+            this.cacheStats.fileHits++;
+            console.log(`[PROMPT MANAGER] File cache hit for ${file}`);
+          } else {
+            this.cacheStats.fileMisses++;
+            content = await fs.readFile(filePath, 'utf8');
+            
+            // Cache the file content with modification time
+            this.fileCache.set(cacheKey, content);
+            console.log(`[PROMPT MANAGER] File cached: ${file} (${content.length} chars)`);
+          }
+          
+          // Parse metadata and content
+          const { metadata, promptContent } = this.parsePromptFile(content, file);
+          
+          // Store both metadata and content
+          this.prompts.set(file, promptContent);
+          this.promptMetadata.set(file, metadata);
+          
+          return { file, success: true, size: promptContent.length, metadata: metadata.title || 'No title' };
         } catch (error) {
           console.error(`[PROMPT MANAGER] Failed to load prompt ${file}:`, error.message);
+          // Store error information for debugging
+          this.promptMetadata.set(file, { error: error.message, loadFailed: true });
+          return { file, success: false, error: error.message };
         }
+      });
+      
+      // Wait for all files to load
+      const results = await Promise.all(loadPromises);
+      const successful = results.filter(r => r.success);
+      const failed = results.filter(r => !r.success);
+      
+      const loadTime = Date.now() - loadStartTime;
+      console.log(`[PROMPT MANAGER] Loaded ${successful.length}/${promptFiles.length} prompts in ${loadTime}ms`);
+      
+      if (successful.length > 0) {
+        successful.forEach(result => {
+          console.log(`[PROMPT MANAGER] ✓ ${result.file} (${result.size} chars) - ${result.metadata}`);
+        });
       }
       
-      console.log(`[PROMPT MANAGER] Successfully loaded ${this.prompts.size} prompts from files`);
+      if (failed.length > 0) {
+        console.warn(`[PROMPT MANAGER] Failed to load ${failed.length} files:`);
+        failed.forEach(result => {
+          console.warn(`[PROMPT MANAGER] ✗ ${result.file}: ${result.error}`);
+        });
+      }
+      
+      // Update load timestamp and clear prompt cache (keep file cache)
+      this.loadTimestamp = new Date().toISOString();
+      this.promptCache.clear();
+      this.manageCacheSize();
       
       // If no prompts were loaded from files, use fallback
       if (this.prompts.size === 0) {
         console.log('[PROMPT MANAGER] No prompts loaded from files, using fallback prompts');
         this.loadFallbackPrompts();
       }
+      
+      // Log cache statistics
+      const stats = this.getCacheStats();
+      console.log(`[PROMPT MANAGER] Cache stats - File cache: ${stats.fileCache.size}/${stats.fileCache.maxSize} (${stats.fileCache.hitRate} hit rate)`);
+      
     } catch (error) {
       console.error('[PROMPT MANAGER] Failed to read PROMPTS directory:', error.message);
       console.log('[PROMPT MANAGER] Using fallback prompts due to directory read failure');
       // Load fallback prompts if directory read fails
       this.loadFallbackPrompts();
     }
+  }
+
+  // Get file modification time for cache invalidation
+  async getFileModTime(filePath) {
+    try {
+      const stats = await fs.stat(filePath);
+      return stats.mtime.getTime();
+    } catch (error) {
+      // If we can't get mod time, use current time to force reload
+      return Date.now();
+    }
+  }
+  
+  // Parse prompt file with YAML frontmatter metadata
+  parsePromptFile(content, filename) {
+    try {
+      // Check if file has YAML frontmatter
+      if (content.startsWith('---')) {
+        // Find the end of YAML frontmatter by looking for --- on its own line
+        const lines = content.split('\n');
+        let endOfFrontmatterLine = -1;
+        
+        // Start from line 1 (skip the opening ---)
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i].trim() === '---') {
+            endOfFrontmatterLine = i;
+            break;
+          }
+        }
+        
+        if (endOfFrontmatterLine !== -1) {
+          // Extract YAML frontmatter (skip first and last --- lines)
+          const yamlLines = lines.slice(1, endOfFrontmatterLine);
+          const yamlContent = yamlLines.join('\n');
+          
+          // Extract prompt content (everything after the closing ---)
+          const promptLines = lines.slice(endOfFrontmatterLine + 1);
+          const promptContent = promptLines.join('\n').trim();
+          
+          // Parse YAML metadata (simple key-value parsing)
+          const metadata = this.parseYamlMetadata(yamlContent);
+          metadata.hasMetadata = true;
+          metadata.filename = filename;
+          metadata.lastUpdated = new Date().toISOString();
+          
+          console.log(`[PROMPT MANAGER] Parsed metadata for ${filename}:`, {
+            title: metadata.title,
+            version: metadata.version,
+            aiOptimized: metadata.aiOptimized
+          });
+          
+          return { metadata, promptContent };
+        }
+      }
+      
+      // No metadata found, return content as-is with default metadata
+      const defaultMetadata = {
+        title: filename.replace('.md', ''),
+        description: 'Legacy prompt without metadata',
+        aiOptimized: false,
+        version: '0.9',
+        language: 'ja',
+        hasMetadata: false,
+        filename: filename,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      console.log(`[PROMPT MANAGER] No metadata found for ${filename}, using defaults`);
+      return { metadata: defaultMetadata, promptContent: content };
+      
+    } catch (error) {
+      console.error(`[PROMPT MANAGER] Error parsing prompt file ${filename}:`, error.message);
+      
+      // Return error metadata and original content
+      const errorMetadata = {
+        title: filename.replace('.md', ''),
+        description: 'Error parsing prompt file',
+        aiOptimized: false,
+        version: '0.0',
+        language: 'ja',
+        hasMetadata: false,
+        filename: filename,
+        parseError: error.message,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      return { metadata: errorMetadata, promptContent: content };
+    }
+  }
+  
+  // Simple YAML metadata parser (key: value format)
+  parseYamlMetadata(yamlContent) {
+    const metadata = {};
+    const lines = yamlContent.split('\n');
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      if (trimmedLine && !trimmedLine.startsWith('#')) {
+        const colonIndex = trimmedLine.indexOf(':');
+        if (colonIndex !== -1) {
+          const key = trimmedLine.substring(0, colonIndex).trim();
+          let value = trimmedLine.substring(colonIndex + 1).trim();
+          
+          // Remove quotes if present
+          if ((value.startsWith('"') && value.endsWith('"')) || 
+              (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.slice(1, -1);
+          }
+          
+          // Convert boolean strings
+          if (value === 'true') value = true;
+          if (value === 'false') value = false;
+          
+          // Handle arrays (simple comma-separated format)
+          if (value.startsWith('[') && value.endsWith(']')) {
+            value = value.slice(1, -1).split(',').map(item => item.trim().replace(/['"]/g, ''));
+          }
+          
+          metadata[key] = value;
+        }
+      }
+    }
+    
+    return metadata;
   }
   
   loadFallbackPrompts() {
@@ -516,12 +797,34 @@ class PromptManager {
     this.prompts.set('jp_tax_strategy.md', REPORT_PROMPTS.jp_tax_strategy);
     this.prompts.set('jp_inheritance_strategy.md', REPORT_PROMPTS.jp_inheritance_strategy);
     this.prompts.set('custom.md', REPORT_PROMPTS.custom);
+    
+    // Add default metadata for fallback prompts
+    const fallbackFiles = ['jp_investment_4part.md', 'jp_tax_strategy.md', 'jp_inheritance_strategy.md', 'custom.md'];
+    fallbackFiles.forEach(file => {
+      this.promptMetadata.set(file, {
+        title: file.replace('.md', ''),
+        description: 'Fallback prompt',
+        aiOptimized: false,
+        version: '0.9',
+        language: 'ja',
+        hasMetadata: false,
+        filename: file,
+        isFallback: true,
+        lastUpdated: new Date().toISOString()
+      });
+    });
+    
     console.log(`[PROMPT MANAGER] Fallback prompts loaded: ${this.prompts.size} prompts`);
+    
+    // Update load timestamp and clear cache
+    this.loadTimestamp = new Date().toISOString();
+    this.clearCache();
   }
   
   getPrompt(reportType) {
     const promptFile = this.reportTypes[reportType]?.promptFile || 'jp_investment_4part.md';
     const prompt = this.prompts.get(promptFile);
+    const metadata = this.promptMetadata.get(promptFile);
     
     if (!prompt) {
       console.error(`[PROMPT MANAGER] Prompt not found: ${promptFile}, falling back to default`);
@@ -531,22 +834,548 @@ class PromptManager {
       return fallbackPrompt;
     }
     
-    console.log(`[PROMPT MANAGER] Using prompt: ${promptFile} for report type: ${reportType} (length: ${prompt.length} chars)`);
+    // Log metadata information if available
+    if (metadata) {
+      console.log(`[PROMPT MANAGER] Using prompt: ${promptFile} for report type: ${reportType}`);
+      console.log(`[PROMPT MANAGER] Metadata: ${metadata.title} v${metadata.version} (AI optimized: ${metadata.aiOptimized})`);
+      console.log(`[PROMPT MANAGER] Content length: ${prompt.length} chars`);
+      
+      // Validate prompt quality
+      if (metadata.aiOptimized && metadata.version && parseFloat(metadata.version) >= 1.0) {
+        console.log(`[PROMPT MANAGER] Using optimized prompt with metadata validation passed`);
+      } else {
+        console.log(`[PROMPT MANAGER] Warning: Prompt may not be fully optimized (version: ${metadata.version}, optimized: ${metadata.aiOptimized})`);
+      }
+    } else {
+      console.log(`[PROMPT MANAGER] Using prompt: ${promptFile} for report type: ${reportType} (length: ${prompt.length} chars, no metadata)`);
+    }
+    
     return prompt;
+  }
+  
+  // Get prompt metadata
+  getPromptMetadata(reportType) {
+    const promptFile = this.reportTypes[reportType]?.promptFile || 'jp_investment_4part.md';
+    return this.promptMetadata.get(promptFile) || null;
+  }
+  
+  // Validate prompt integrity
+  validatePrompt(reportType) {
+    const promptFile = this.reportTypes[reportType]?.promptFile || 'jp_investment_4part.md';
+    const prompt = this.prompts.get(promptFile);
+    const metadata = this.promptMetadata.get(promptFile);
+    
+    const validation = {
+      exists: !!prompt,
+      hasMetadata: !!(metadata && metadata.hasMetadata),
+      isOptimized: !!(metadata && metadata.aiOptimized),
+      version: metadata?.version || '0.0',
+      hasError: !!(metadata && metadata.parseError),
+      contentLength: prompt?.length || 0,
+      filename: promptFile
+    };
+    
+    // Additional validation checks
+    if (prompt) {
+      validation.hasStructuredSections = prompt.includes('##') && prompt.includes('###');
+      validation.hasQualityRequirements = prompt.includes('品質要件') || prompt.includes('Quality Requirements');
+      validation.hasOutputFormat = prompt.includes('出力') || prompt.includes('Output');
+    }
+    
+    return validation;
+  }
+
+  // Determine if cache should be used based on request characteristics
+  shouldUseCache(files, additionalInfo) {
+    // Don't cache requests with files (they may have unique content)
+    if (files && files.length > 0) {
+      return false;
+    }
+    
+    // Don't cache if additional info contains dynamic content
+    if (additionalInfo) {
+      // Check for dynamic content indicators
+      const dynamicKeys = ['timestamp', 'sessionId', 'requestId', 'userId'];
+      const hasDynamicContent = dynamicKeys.some(key => 
+        additionalInfo.hasOwnProperty(key) || 
+        JSON.stringify(additionalInfo).includes(key)
+      );
+      
+      if (hasDynamicContent) {
+        return false;
+      }
+    }
+    
+    // Cache for simple text-only requests
+    return true;
   }
   
   buildFullPrompt(reportType, inputText, files, additionalInfo, comparisonData = null) {
     console.log(`[PROMPT MANAGER] Building full prompt for report type: ${reportType}`);
     
-    const basePrompt = this.getPrompt(reportType);
-    
-    if (reportType === 'comparison_analysis') {
-      return this.buildComparisonPrompt(basePrompt, comparisonData);
-    } else if (reportType === 'custom') {
-      return this.buildCustomPrompt(basePrompt, inputText, files, additionalInfo);
-    } else {
-      return this.buildStandardPrompt(basePrompt, inputText, files, additionalInfo);
+    try {
+      // Generate cache key
+      const cacheKey = this.generateCacheKey(reportType, inputText, files, additionalInfo, comparisonData);
+      
+      // Check cache first (with intelligent caching strategy)
+      const shouldUseCache = this.shouldUseCache(files, additionalInfo);
+      if (shouldUseCache) {
+        const cachedPrompt = this.promptCache.get(cacheKey);
+        if (cachedPrompt) {
+          this.cacheStats.hits++;
+          // Move to end for LRU (re-insert)
+          this.promptCache.delete(cacheKey);
+          this.promptCache.set(cacheKey, cachedPrompt);
+          console.log(`[PROMPT MANAGER] Cache hit for ${reportType} (${cachedPrompt.length} chars)`);
+          return cachedPrompt;
+        }
+      }
+      
+      this.cacheStats.misses++;
+      this.cacheStats.builds++;
+      
+      // Validate prompt before building
+      const validation = this.validatePrompt(reportType);
+      if (!validation.exists) {
+        console.error(`[PROMPT MANAGER] Prompt validation failed for ${reportType}:`, validation);
+        throw new Error(`Prompt not available for report type: ${reportType}`);
+      }
+      
+      if (validation.hasError) {
+        console.warn(`[PROMPT MANAGER] Prompt has parsing errors for ${reportType}, proceeding with caution`);
+      }
+      
+      const basePrompt = this.getPrompt(reportType);
+      const metadata = this.getPromptMetadata(reportType);
+      
+      // Log prompt quality information
+      if (metadata) {
+        console.log(`[PROMPT MANAGER] Building prompt with metadata: ${metadata.title} (optimized: ${metadata.aiOptimized})`);
+      }
+      
+      // Build prompt based on type
+      let fullPrompt;
+      if (reportType === 'comparison_analysis') {
+        fullPrompt = this.buildComparisonPrompt(basePrompt, comparisonData);
+      } else if (reportType === 'custom') {
+        fullPrompt = this.buildCustomPrompt(basePrompt, inputText, files, additionalInfo);
+      } else {
+        fullPrompt = this.buildStandardPrompt(basePrompt, inputText, files, additionalInfo);
+      }
+      
+      // Validate final prompt
+      if (!fullPrompt || fullPrompt.length < 100) {
+        throw new Error(`Generated prompt is too short or empty for report type: ${reportType}`);
+      }
+      
+      // Cache the result if appropriate
+      if (shouldUseCache) {
+        this.promptCache.set(cacheKey, fullPrompt);
+        this.manageCacheSize(); // Use the new cache management system
+        console.log(`[PROMPT MANAGER] Cached prompt for ${reportType} (cache size: ${this.promptCache.size}/${this.maxCacheSize})`);
+      }
+      
+      console.log(`[PROMPT MANAGER] Successfully built prompt for ${reportType} (${fullPrompt.length} chars)`);
+      return fullPrompt;
+      
+    } catch (error) {
+      console.error(`[PROMPT MANAGER] Error building prompt for ${reportType}:`, error.message);
+      
+      // Attempt fallback to default prompt
+      try {
+        console.log(`[PROMPT MANAGER] Attempting fallback prompt for ${reportType}`);
+        const fallbackPrompt = this.prompts.get('jp_investment_4part.md') || REPORT_PROMPTS.jp_investment_4part;
+        
+        if (reportType === 'custom') {
+          return this.buildCustomPrompt(fallbackPrompt, inputText, files, additionalInfo);
+        } else {
+          return this.buildStandardPrompt(fallbackPrompt, inputText, files, additionalInfo);
+        }
+      } catch (fallbackError) {
+        console.error(`[PROMPT MANAGER] Fallback prompt also failed:`, fallbackError.message);
+        throw new Error(`Failed to build prompt for ${reportType}: ${error.message}`);
+      }
     }
+  }
+  
+  // OpenAI-specific prompt optimization
+  optimizePromptForOpenAI(prompt, reportType, metadata) {
+    console.log(`[PROMPT MANAGER] Optimizing prompt for OpenAI (${reportType})`);
+    
+    // OpenAI-specific optimizations
+    let optimizedPrompt = prompt;
+    
+    // 1. Add clear role definition at the start
+    if (!optimizedPrompt.includes('あなたは') && !optimizedPrompt.includes('You are')) {
+      const rolePrefix = this.getOpenAIRolePrefix(reportType);
+      optimizedPrompt = `${rolePrefix}\n\n${optimizedPrompt}`;
+    }
+    
+    // 2. Structure for system/user message separation
+    const sections = this.extractPromptSections(optimizedPrompt);
+    
+    // 3. Optimize for token efficiency
+    optimizedPrompt = this.optimizeTokenUsage(optimizedPrompt, 'openai');
+    
+    // 4. Add output format instructions
+    if (!optimizedPrompt.includes('出力形式') && !optimizedPrompt.includes('Output Format')) {
+      optimizedPrompt += '\n\n## 出力形式\n- 日本語で回答してください\n- マークダウン形式で構造化してください\n- 具体的な数値と根拠を含めてください';
+    }
+    
+    console.log(`[PROMPT MANAGER] OpenAI optimization complete (${optimizedPrompt.length} chars)`);
+    return optimizedPrompt;
+  }
+
+  // Gemini-specific prompt optimization
+  optimizePromptForGemini(prompt, reportType, metadata) {
+    console.log(`[PROMPT MANAGER] Optimizing prompt for Gemini (${reportType})`);
+    
+    // Gemini-specific optimizations
+    let optimizedPrompt = prompt;
+    
+    // 1. Gemini prefers role-based instructions
+    if (!optimizedPrompt.includes('Role:') && !optimizedPrompt.includes('役割:')) {
+      const rolePrefix = this.getGeminiRolePrefix(reportType);
+      optimizedPrompt = `${rolePrefix}\n\n${optimizedPrompt}`;
+    }
+    
+    // 2. Structure for Gemini's processing style
+    optimizedPrompt = this.restructureForGemini(optimizedPrompt);
+    
+    // 3. Optimize for Gemini's context handling
+    optimizedPrompt = this.optimizeTokenUsage(optimizedPrompt, 'gemini');
+    
+    // 4. Add Gemini-specific safety and quality instructions
+    if (!optimizedPrompt.includes('安全性') && !optimizedPrompt.includes('Safety')) {
+      optimizedPrompt += '\n\n## 品質・安全性要件\n- 正確で信頼性の高い情報のみを提供\n- 投資判断は個人の責任であることを明記\n- 専門家への相談を推奨';
+    }
+    
+    console.log(`[PROMPT MANAGER] Gemini optimization complete (${optimizedPrompt.length} chars)`);
+    return optimizedPrompt;
+  }
+
+  // Get OpenAI-specific role prefix
+  getOpenAIRolePrefix(reportType) {
+    const rolePrefixes = {
+      'jp_investment_4part': 'あなたは25年以上の経験を持つ不動産投資の専門コンサルタント兼ポートフォリオマネージャー（CPM/CCIM資格保有者）です。',
+      'jp_tax_strategy': 'あなたは、日本の税制に精通した最高レベルのタックスストラテジスト兼ウェルスマネージャーです。',
+      'jp_inheritance_strategy': 'あなたは30年以上の経験を持つエステートプランニング専門のコンサルタント（CPM/CCIM資格保有者）です。',
+      'comparison_analysis': 'あなたは30年以上の経験を持つ不動産コンサルタント（CPM/CCIM資格保有者）です。',
+      'custom': 'あなたは経験豊富な投資分析の専門家です。'
+    };
+    
+    return rolePrefixes[reportType] || rolePrefixes['custom'];
+  }
+
+  // Get Gemini-specific role prefix
+  getGeminiRolePrefix(reportType) {
+    const rolePrefixes = {
+      'jp_investment_4part': 'Role: 不動産投資専門コンサルタント（CPM/CCIM資格保有、25年以上の経験）',
+      'jp_tax_strategy': 'Role: 税務戦略専門家（Big4税理士法人パートナーレベル、日本税制精通）',
+      'jp_inheritance_strategy': 'Role: エステートプランニング専門コンサルタント（CPM/CCIM資格保有、30年以上の経験）',
+      'comparison_analysis': 'Role: 不動産投資比較分析専門家（CPM/CCIM資格保有、30年以上の経験）',
+      'custom': 'Role: 投資分析専門家（経験豊富な金融・不動産分野のコンサルタント）'
+    };
+    
+    return rolePrefixes[reportType] || rolePrefixes['custom'];
+  }
+
+  // Extract prompt sections for better structure
+  extractPromptSections(prompt) {
+    const sections = {
+      role: '',
+      instructions: '',
+      format: '',
+      examples: ''
+    };
+    
+    // Simple section extraction based on common patterns
+    const lines = prompt.split('\n');
+    let currentSection = 'instructions';
+    
+    for (const line of lines) {
+      if (line.includes('あなたは') || line.includes('You are') || line.includes('Role:')) {
+        currentSection = 'role';
+      } else if (line.includes('出力') || line.includes('Output') || line.includes('Format')) {
+        currentSection = 'format';
+      } else if (line.includes('例') || line.includes('Example')) {
+        currentSection = 'examples';
+      }
+      
+      sections[currentSection] += line + '\n';
+    }
+    
+    return sections;
+  }
+
+  // Restructure prompt for Gemini's processing style
+  restructureForGemini(prompt) {
+    // Gemini prefers clear section headers and structured content
+    let restructured = prompt;
+    
+    // Add clear section markers if not present
+    if (!restructured.includes('## ') && !restructured.includes('# ')) {
+      // Add basic structure
+      restructured = `# 分析指示書\n\n${restructured}`;
+    }
+    
+    // Ensure clear task definition
+    if (!restructured.includes('Task:') && !restructured.includes('タスク:')) {
+      const taskIndex = restructured.indexOf('分析');
+      if (taskIndex > -1) {
+        restructured = restructured.substring(0, taskIndex) + 
+                     '\n## Task (タスク)\n' + 
+                     restructured.substring(taskIndex);
+      }
+    }
+    
+    return restructured;
+  }
+
+  // Optimize token usage for specific AI service
+  optimizeTokenUsage(prompt, service) {
+    let optimized = prompt;
+    
+    // Remove excessive whitespace
+    optimized = optimized.replace(/\n\s*\n\s*\n/g, '\n\n');
+    optimized = optimized.replace(/\s+/g, ' ');
+    
+    // Service-specific optimizations
+    if (service === 'openai') {
+      // OpenAI handles longer prompts well, focus on clarity
+      // Remove redundant phrases but keep detail
+      optimized = optimized.replace(/詳細に分析し、/g, '分析し、');
+      optimized = optimized.replace(/必ず/g, '');
+    } else if (service === 'gemini') {
+      // Gemini prefers more concise instructions
+      // Compress verbose instructions while maintaining meaning
+      optimized = optimized.replace(/詳細に分析してください/g, '分析してください');
+      optimized = optimized.replace(/以下の.*?について、/g, '');
+    }
+    
+    return optimized.trim();
+  }
+
+  // Build service-optimized prompt
+  buildServiceOptimizedPrompt(reportType, inputText, files, additionalInfo, service, comparisonData = null) {
+    console.log(`[PROMPT MANAGER] Building ${service}-optimized prompt for ${reportType}`);
+    
+    // Get base prompt
+    const basePrompt = this.buildFullPrompt(reportType, inputText, files, additionalInfo, comparisonData);
+    const metadata = this.getPromptMetadata(reportType);
+    
+    // Apply service-specific optimizations
+    let optimizedPrompt;
+    if (service === 'openai') {
+      optimizedPrompt = this.optimizePromptForOpenAI(basePrompt, reportType, metadata);
+    } else if (service === 'gemini') {
+      optimizedPrompt = this.optimizePromptForGemini(basePrompt, reportType, metadata);
+    } else {
+      // Auto-detect service or use adaptive processing
+      optimizedPrompt = this.adaptivePromptProcessing(basePrompt, reportType, metadata, service);
+    }
+    
+    console.log(`[PROMPT MANAGER] Service-optimized prompt ready for ${service} (${optimizedPrompt.length} chars)`);
+    return optimizedPrompt;
+  }
+
+  // Adaptive prompt processing for unknown or multiple services
+  adaptivePromptProcessing(prompt, reportType, metadata, service) {
+    console.log(`[PROMPT MANAGER] Applying adaptive processing for service: ${service}`);
+    
+    // If service is unknown, apply general optimizations
+    let adaptedPrompt = prompt;
+    
+    // General optimizations that work well across services
+    adaptedPrompt = this.applyGeneralOptimizations(adaptedPrompt);
+    
+    // Add service-agnostic quality improvements
+    adaptedPrompt = this.addQualityEnhancements(adaptedPrompt, reportType);
+    
+    // Add fallback handling instructions
+    adaptedPrompt = this.addFallbackInstructions(adaptedPrompt, reportType);
+    
+    return adaptedPrompt;
+  }
+
+  // Apply general optimizations that work across AI services
+  applyGeneralOptimizations(prompt) {
+    let optimized = prompt;
+    
+    // Remove excessive whitespace and normalize formatting
+    optimized = optimized.replace(/\n\s*\n\s*\n/g, '\n\n');
+    optimized = optimized.replace(/\s+/g, ' ');
+    optimized = optimized.trim();
+    
+    // Ensure clear section structure
+    if (!optimized.includes('##') && !optimized.includes('#')) {
+      optimized = `# 分析指示書\n\n${optimized}`;
+    }
+    
+    // Add clear task definition if missing
+    if (!optimized.includes('Task:') && !optimized.includes('タスク:') && !optimized.includes('指示:')) {
+      const taskIndex = optimized.indexOf('分析');
+      if (taskIndex > -1) {
+        optimized = optimized.substring(0, taskIndex) + 
+                   '\n## 分析タスク\n' + 
+                   optimized.substring(taskIndex);
+      }
+    }
+    
+    return optimized;
+  }
+
+  // Add quality enhancements for better output
+  addQualityEnhancements(prompt, reportType) {
+    let enhanced = prompt;
+    
+    // Add output quality requirements
+    if (!enhanced.includes('品質要件') && !enhanced.includes('Quality Requirements')) {
+      enhanced += '\n\n## 品質要件\n- 正確で信頼性の高い分析を提供\n- 具体的な数値と根拠を含める\n- 実行可能な推奨事項を提示\n- 専門用語は適切に説明';
+    }
+    
+    // Add format requirements
+    if (!enhanced.includes('出力形式') && !enhanced.includes('Output Format')) {
+      enhanced += '\n\n## 出力形式\n- 日本語で回答\n- マークダウン形式で構造化\n- 見出しと箇条書きを適切に使用\n- 重要な数値は太字で強調';
+    }
+    
+    // Add disclaimer for financial advice
+    if (reportType.includes('investment') || reportType.includes('tax') || reportType.includes('inheritance')) {
+      if (!enhanced.includes('免責') && !enhanced.includes('Disclaimer')) {
+        enhanced += '\n\n## 重要事項\n- 本分析は情報提供目的のみ\n- 投資判断は自己責任で行う\n- 専門家への相談を推奨';
+      }
+    }
+    
+    return enhanced;
+  }
+
+  // Add fallback handling instructions
+  addFallbackInstructions(prompt, reportType) {
+    let withFallback = prompt;
+    
+    // Add instructions for handling incomplete data
+    if (!withFallback.includes('データ不足') && !withFallback.includes('incomplete data')) {
+      withFallback += '\n\n## データ処理指示\n- データが不足している場合は明記\n- 推定値を使用する場合は根拠を示す\n- 不明な項目は「要確認」として記載';
+    }
+    
+    return withFallback;
+  }
+
+  // Detect optimal service based on request characteristics
+  detectOptimalService(reportType, inputText, files, additionalInfo) {
+    const serviceScores = {
+      openai: 0,
+      gemini: 0
+    };
+    
+    // Score based on report type
+    const reportTypePreferences = {
+      'jp_investment_4part': { openai: 8, gemini: 7 }, // OpenAI slightly better for complex financial analysis
+      'jp_tax_strategy': { openai: 9, gemini: 6 }, // OpenAI better for tax law precision
+      'jp_inheritance_strategy': { openai: 8, gemini: 7 }, // OpenAI better for legal precision
+      'comparison_analysis': { openai: 7, gemini: 8 }, // Gemini good for comparative analysis
+      'custom': { openai: 7, gemini: 7 } // Equal for custom requests
+    };
+    
+    const preferences = reportTypePreferences[reportType] || reportTypePreferences.custom;
+    serviceScores.openai += preferences.openai;
+    serviceScores.gemini += preferences.gemini;
+    
+    // Score based on file types
+    if (files && files.length > 0) {
+      const hasImages = files.some(f => f.type.startsWith('image/'));
+      const hasPDFs = files.some(f => f.type === 'application/pdf');
+      
+      if (hasImages) {
+        serviceScores.gemini += 3; // Gemini better for native image processing
+      }
+      
+      if (hasPDFs) {
+        serviceScores.openai += 2; // OpenAI good for PDF processing
+        serviceScores.gemini += 3; // Gemini also good for PDF processing
+      }
+      
+      // Multiple files favor Gemini's multimodal capabilities
+      if (files.length > 2) {
+        serviceScores.gemini += 2;
+      }
+    }
+    
+    // Score based on input complexity
+    const inputLength = (inputText || '').length;
+    if (inputLength > 1000) {
+      serviceScores.openai += 2; // OpenAI better for long context
+    }
+    
+    // Return recommended service
+    const recommendedService = serviceScores.openai >= serviceScores.gemini ? 'openai' : 'gemini';
+    
+    console.log(`[PROMPT MANAGER] Service detection scores:`, serviceScores);
+    console.log(`[PROMPT MANAGER] Recommended service: ${recommendedService}`);
+    
+    return {
+      recommended: recommendedService,
+      scores: serviceScores,
+      confidence: Math.abs(serviceScores.openai - serviceScores.gemini) / Math.max(serviceScores.openai, serviceScores.gemini)
+    };
+  }
+
+  // Health check for prompt system
+  getSystemHealth() {
+    const health = {
+      totalPrompts: this.prompts.size,
+      optimizedPrompts: 0,
+      promptsWithMetadata: 0,
+      promptsWithErrors: 0,
+      promptDetails: []
+    };
+    
+    for (const [filename, metadata] of this.promptMetadata.entries()) {
+      const promptExists = this.prompts.has(filename);
+      
+      const detail = {
+        filename,
+        exists: promptExists,
+        hasMetadata: metadata.hasMetadata,
+        isOptimized: metadata.aiOptimized,
+        version: metadata.version,
+        hasError: !!metadata.parseError || !!metadata.error,
+        title: metadata.title
+      };
+      
+      if (metadata.aiOptimized) health.optimizedPrompts++;
+      if (metadata.hasMetadata) health.promptsWithMetadata++;
+      if (metadata.parseError || metadata.error) health.promptsWithErrors++;
+      
+      health.promptDetails.push(detail);
+    }
+    
+    health.healthScore = health.totalPrompts > 0 ? 
+      ((health.optimizedPrompts / health.totalPrompts) * 100).toFixed(1) : 0;
+    
+    // Add cache performance metrics
+    health.cacheStats = {
+      ...this.cacheStats,
+      hitRate: this.cacheStats.hits + this.cacheStats.misses > 0 ? 
+        ((this.cacheStats.hits / (this.cacheStats.hits + this.cacheStats.misses)) * 100).toFixed(1) : 0,
+      cacheSize: this.promptCache.size
+    };
+    
+    health.loadTimestamp = this.loadTimestamp;
+    
+    return health;
+  }
+  
+  // Get performance statistics
+  getPerformanceStats() {
+    return {
+      cacheStats: this.cacheStats,
+      cacheSize: this.promptCache.size,
+      hitRate: this.cacheStats.hits + this.cacheStats.misses > 0 ? 
+        ((this.cacheStats.hits / (this.cacheStats.hits + this.cacheStats.misses)) * 100).toFixed(1) : 0,
+      totalPrompts: this.prompts.size,
+      loadTimestamp: this.loadTimestamp
+    };
   }
   
   buildStandardPrompt(basePrompt, inputText, files, additionalInfo) {
@@ -1106,8 +1935,8 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
   const startTime = Date.now();
   
   try {
-    // Get the appropriate prompt using PromptManager
-    let fullPrompt = promptManager.buildFullPrompt(reportType, inputText, files, additionalInfo);
+    // Get the OpenAI-optimized prompt using PromptManager
+    let fullPrompt = promptManager.buildServiceOptimizedPrompt(reportType, inputText, files, additionalInfo, 'openai');
   
     // Process files with enhanced multimodal capabilities
     let fileContent = '';
@@ -1132,8 +1961,8 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
       }
     }
 
-  // Get appropriate system message for report type
-  const systemMessage = getSystemMessage(reportType);
+  // Get OpenAI-optimized system message for report type
+  const systemMessage = getOptimizedSystemMessage(reportType, 'openai');
 
   // Call OpenAI API with optimized settings
   const completion = await openai.chat.completions.create({
@@ -1148,8 +1977,11 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
         content: fullPrompt
       }
     ],
-    max_tokens: 2500, // Reduced to fit within context limits
+    max_tokens: 3000, // Increased for better report quality
     temperature: 0.7,
+    top_p: 0.9, // Add top_p for better quality control
+    frequency_penalty: 0.1, // Reduce repetition
+    presence_penalty: 0.1 // Encourage diverse content
   });
 
   const content = completion.choices[0].message.content;
@@ -1188,9 +2020,8 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
       throw new Error('Gemini API is not available');
     }
 
-    // Get the appropriate prompt using PromptManager and adapt for Gemini
-    const basePrompt = promptManager.buildFullPrompt(reportType, inputText, files, additionalInfo);
-    let fullPrompt = formatPromptForGemini(reportType, basePrompt);
+    // Get the Gemini-optimized prompt using PromptManager
+    let fullPrompt = promptManager.buildServiceOptimizedPrompt(reportType, inputText, files, additionalInfo, 'gemini');
     
     // Gemini 2.0 Flash supports direct multimodal input - re-enabling carefully
     let parts = [{ text: fullPrompt }];
@@ -1237,9 +2068,17 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
       console.log(`[GEMINI] Prepared ${parts.length} parts for multimodal generation`);
     }
 
-  // Call Gemini API with multimodal parts
-  console.log(`[GEMINI] Calling Gemini 2.0 Flash with ${parts.length} parts`);
-  const result = await geminiModel.generateContent(parts);
+  // Call Gemini API with optimized settings for report generation
+  console.log(`[GEMINI] Calling Gemini 2.0 Flash with ${parts.length} parts and optimized settings`);
+  
+  // Create optimized generation config for report type
+  const optimizedConfig = getGeminiOptimizedConfig(reportType);
+  
+  const result = await geminiModel.generateContent({
+    contents: [{ parts }],
+    generationConfig: optimizedConfig
+  });
+  
   const response = await result.response;
   const content = response.text();
 
@@ -2502,6 +3341,39 @@ function getSystemMessage(reportType) {
   return systemMessages[reportType] || systemMessages.jp_investment_4part;
 }
 
+// Service-optimized system message function
+function getOptimizedSystemMessage(reportType, service) {
+  const baseMessage = getSystemMessage(reportType);
+  
+  if (service === 'openai') {
+    // OpenAI-specific optimizations
+    const openaiOptimizations = {
+      jp_investment_4part: baseMessage + '\n\n【OpenAI最適化指示】\n- 段階的思考プロセスを明示してください\n- 数値計算の検証ステップを含めてください\n- 結論に至る論理的根拠を明確に示してください',
+      jp_tax_strategy: baseMessage + '\n\n【OpenAI最適化指示】\n- 税法の根拠条文を明示してください\n- 計算プロセスを段階的に説明してください\n- リスクと対策を具体的に提示してください',
+      jp_inheritance_strategy: baseMessage + '\n\n【OpenAI最適化指示】\n- 相続税法の適用条文を明記してください\n- 評価減の計算根拠を詳細に説明してください\n- 実行可能な対策を優先順位付きで提示してください',
+      comparison_analysis: baseMessage + '\n\n【OpenAI最適化指示】\n- 比較項目を体系的に整理してください\n- 定量的比較と定性的比較を明確に分けてください\n- 投資判断の決定要因を明確に示してください',
+      custom: baseMessage + '\n\n【OpenAI最適化指示】\n- 分析の前提条件を明確にしてください\n- 結論に至る論理的プロセスを示してください\n- 実行可能な推奨事項を提示してください'
+    };
+    
+    return openaiOptimizations[reportType] || openaiOptimizations.custom;
+    
+  } else if (service === 'gemini') {
+    // Gemini-specific optimizations
+    const geminiOptimizations = {
+      jp_investment_4part: `Role: 機関投資家レベル不動産投資専門コンサルタント（CPM/CCIM資格、20年以上経験）\n\nTask: 添付ファイルから投資指標を抽出し、4部構成の投資分析レポートを作成\n\nQuality Requirements:\n- 数値精度の絶対性（FCR、K%、DCR、BER、IRR、NPV）\n- イールドギャップ計算の正確性（FCR - K%）\n- レバレッジ効果の定量化\n- 実務的投資判断の提供\n- 適切なリスク評価\n\nOutput: 機関投資家が実際の投資判断に使用できる高品質分析レポート`,
+      jp_tax_strategy: `Role: 日本税制精通タックスストラテジスト（Big4税理士法人パートナーレベル）\n\nTask: 不動産投資による税務最適化戦略の分析\n\nFocus: 減価償却費活用による所得税・住民税の合法的軽減\n\nOutput: 定量的根拠に基づく税務戦略レポート`,
+      jp_inheritance_strategy: `Role: エステートプランニング専門コンサルタント（CPM/CCIM資格、30年以上経験）\n\nTask: 収益不動産レバレッジを核とした相続対策戦略分析\n\nFocus: 相続税評価額圧縮と債務控除最適化\n\nOutput: 次世代資産承継最適化レポート`,
+      comparison_analysis: `Role: 不動産投資比較分析専門家（CPM/CCIM資格、30年以上経験）\n\nTask: 複数投資物件の多角的比較分析\n\nFocus: レバレッジの質・強度・持続可能性\n\nOutput: データ基づく客観的投資推奨レポート`,
+      custom: `Role: 投資分析専門家（金融・不動産分野経験豊富）\n\nTask: 提供要件に基づく専門的分析\n\nFocus: 実践的で具体的な分析結果\n\nOutput: 実行可能な推奨事項を含む専門レポート`
+    };
+    
+    return geminiOptimizations[reportType] || geminiOptimizations.custom;
+  }
+  
+  // Default to base message for unknown services
+  return baseMessage;
+}
+
 function getReportTitle(reportType) {
   const titles = {
     jp_investment_4part: '投資分析レポート（4部構成）',
@@ -2512,4 +3384,59 @@ function getReportTitle(reportType) {
   };
   
   return titles[reportType] || 'レポート';
+}
+
+// Get Gemini-optimized generation config for specific report types
+function getGeminiOptimizedConfig(reportType) {
+  const baseConfig = {
+    temperature: 0.7,
+    topK: 40,
+    topP: 0.95,
+    maxOutputTokens: 4000,
+    candidateCount: 1
+  };
+
+  // Report-type specific optimizations
+  const optimizations = {
+    jp_investment_4part: {
+      ...baseConfig,
+      temperature: 0.6, // More consistent for financial analysis
+      topP: 0.9, // More focused responses
+      maxOutputTokens: 4500 // Longer for comprehensive 4-part analysis
+    },
+    jp_tax_strategy: {
+      ...baseConfig,
+      temperature: 0.5, // Very consistent for tax advice
+      topP: 0.85, // Highly focused for accuracy
+      maxOutputTokens: 4000 // Standard length for tax strategy
+    },
+    jp_inheritance_strategy: {
+      ...baseConfig,
+      temperature: 0.6, // Consistent for legal/financial advice
+      topP: 0.9, // Focused but allowing some creativity
+      maxOutputTokens: 4200 // Slightly longer for comprehensive strategy
+    },
+    comparison_analysis: {
+      ...baseConfig,
+      temperature: 0.65, // Balanced for comparative analysis
+      topP: 0.92, // Good balance of focus and variety
+      maxOutputTokens: 4800 // Longer for detailed comparisons
+    },
+    custom: {
+      ...baseConfig,
+      temperature: 0.7, // Standard creativity
+      topP: 0.95, // Allow more variety for custom requests
+      maxOutputTokens: 4000 // Standard length
+    }
+  };
+
+  const config = optimizations[reportType] || optimizations.custom;
+  
+  console.log(`[GEMINI] Using optimized config for ${reportType}:`, {
+    temperature: config.temperature,
+    topP: config.topP,
+    maxOutputTokens: config.maxOutputTokens
+  });
+  
+  return config;
 }

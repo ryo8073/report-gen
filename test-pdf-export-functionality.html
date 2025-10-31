@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Export Functionality Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        
+        .test-section {
+            background: white;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: #2563eb;
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .test-content {
+            padding: 1.5rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .control-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .control-group select,
+        .control-group input {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .sample-content {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            background: #f9fafb;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .preview-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            background: white;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .status-message {
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            font-size: 0.875rem;
+        }
+        
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .status-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-section">
+            <div class="test-header">
+                PDF Export Functionality Test
+            </div>
+            <div class="test-content">
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="content-type">Content Type:</label>
+                        <select id="content-type">
+                            <option value="markdown">Markdown</option>
+                            <option value="business">Business Document</option>
+                            <option value="simple">Simple Text</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="page-size">Page Size:</label>
+                        <select id="page-size">
+                            <option value="A4" selected>A4</option>
+                            <option value="Letter">Letter</option>
+                            <option value="Legal">Legal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="orientation">Orientation:</label>
+                        <select id="orientation">
+                            <option value="portrait" selected>Portrait</option>
+                            <option value="landscape">Landscape</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="margins">Margins:</label>
+                        <select id="margins">
+                            <option value="narrow">Narrow</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="wide">Wide</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="header-text">Header Text:</label>
+                        <input type="text" id="header-text" placeholder="Document Header" value="Business Report">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="footer-text">Footer Text:</label>
+                        <input type="text" id="footer-text" placeholder="Document Footer" value="Confidential">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="show-page-numbers" checked>
+                            Show Page Numbers
+                        </label>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="show-date" checked>
+                            Show Date
+                        </label>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="business-formatting">
+                            Business Formatting
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="loadSampleContent()">Load Sample Content</button>
+                    <button class="btn btn-primary" onclick="previewContent()">Preview Content</button>
+                    <button class="btn btn-primary" onclick="exportToPDF()" id="export-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14,2 14,8 20,8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                        Export PDF
+                    </button>
+                    <button class="btn btn-secondary" onclick="testBrowserSupport()">Test Browser Support</button>
+                    <button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
+                </div>
+                
+                <div id="status-messages"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">
+                Sample Content
+            </div>
+            <div class="test-content">
+                <div class="sample-content" id="sample-content">
+                    <p>Click "Load Sample Content" to see sample document content here.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">
+                Content Preview
+            </div>
+            <div class="test-content">
+                <div class="preview-container" id="preview-container">
+                    <p>Click "Preview Content" to see how the content will appear in the PDF.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="lib/business-document-formatter.js"></script>
+    <script src="lib/markdown-renderer.js"></script>
+    <!-- Advanced PDF Export Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="lib/pdf-export-manager.js"></script>
+    <script>
+        let pdfExportManager;
+        let markdownRenderer;
+        let businessFormatter;
+        
+        // Sample content for different types
+        const sampleContents = {
+            markdown: `# Executive Summary
+
+This document demonstrates the **PDF export functionality** with comprehensive business document formatting capabilities.
+
+## Key Features
+
+### Professional Document Styling
+- Business-appropriate typography and spacing
+- Print-optimized layouts and page breaks
+- Header and footer support with company branding
+- Responsive design for various screen sizes
+
+### Export Capabilities
+The system provides multiple export options:
+
+1. **Standard PDF Export** - Basic print-to-PDF functionality
+2. **Business Document Export** - Professional formatting with business styling
+3. **Custom Layout Options** - Configurable page size, orientation, and margins
+
+### Technical Implementation
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| PDF Export Manager | Browser Print API | Core export functionality |
+| Business Formatter | CSS Custom Properties | Professional styling |
+| Markdown Renderer | Custom Parser | Content processing |
+
+### Code Example
+
+\`\`\`javascript
+const pdfExportManager = new PDFExportManager({
+    defaultFilename: 'business-report',
+    businessFormatting: true,
+    pageSize: 'A4',
+    orientation: 'portrait'
+});
+
+await pdfExportManager.exportToPDF(content, options);
+\`\`\`
+
+## Implementation Details
+
+The PDF export system uses modern browser APIs to provide:
+
+> Professional document export capabilities that meet business standards while maintaining web accessibility and responsive design principles.
+
+### Browser Compatibility
+- Chrome 60+ (Full support)
+- Firefox 55+ (Full support)  
+- Safari 11+ (Full support)
+- Edge 79+ (Full support)
+
+## Conclusion
+
+This enhanced PDF export system provides the professional document output needed for business communications while maintaining ease of use and broad browser compatibility.`,
+
+            business: `BUSINESS PROPOSAL
+
+Executive Summary
+
+This proposal outlines the implementation of advanced document management capabilities for our organization. The proposed solution will enhance productivity and ensure professional document presentation standards.
+
+Project Overview
+
+Our current document workflow requires manual formatting and lacks consistent professional presentation. This proposal addresses these limitations through automated formatting and export capabilities.
+
+Key Objectives
+
+1. Implement professional document styling with consistent typography
+2. Provide automated PDF export functionality  
+3. Ensure responsive design for various devices
+4. Maintain accessibility compliance throughout the system
+
+Technical Specifications
+
+The solution will utilize modern web technologies with focus on performance and user experience.
+
+Component Requirements:
+- CSS Framework: Custom business document styling
+- Export Engine: Browser-based PDF generation
+- Typography: Professional font selection and sizing
+- Layout: Print-optimized page structure
+
+Implementation Timeline
+
+Phase 1: Foundation Setup (2 weeks)
+- Core styling system implementation
+- Basic export functionality
+
+Phase 2: Enhancement (2 weeks)  
+- Advanced formatting options
+- User interface improvements
+
+Phase 3: Testing and Deployment (1 week)
+- Comprehensive testing across browsers
+- Production deployment and monitoring
+
+Budget Considerations
+
+The implementation will require minimal additional resources as it leverages existing browser capabilities and open-source technologies.
+
+Conclusion
+
+This proposal represents a strategic investment in document presentation quality that will improve our professional image and operational efficiency.`,
+
+            simple: `Simple Document Test
+
+This is a simple text document to test basic PDF export functionality.
+
+Key Points:
+- Basic text formatting
+- Simple paragraph structure
+- Minimal styling requirements
+
+The export should handle this content with standard formatting and produce a clean, readable PDF output.
+
+Additional test content to verify page breaks and layout handling in longer documents.`
+        };
+        
+        // Initialize components
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('PDF Export Test loaded');
+            
+            // Initialize PDF Export Manager
+            if (typeof PDFExportManager !== 'undefined') {
+                pdfExportManager = new PDFExportManager({
+                    defaultFilename: 'test-document',
+                    businessFormatting: false
+                });
+                showStatus('PDF Export Manager initialized', 'success');
+            } else {
+                showStatus('PDF Export Manager not available', 'error');
+            }
+            
+            // Initialize Markdown Renderer
+            if (typeof MarkdownRenderer !== 'undefined') {
+                markdownRenderer = new MarkdownRenderer();
+                showStatus('Markdown Renderer initialized', 'success');
+            } else {
+                showStatus('Markdown Renderer not available', 'error');
+            }
+            
+            // Initialize Business Formatter
+            if (typeof BusinessDocumentFormatter !== 'undefined') {
+                businessFormatter = new BusinessDocumentFormatter();
+                showStatus('Business Document Formatter initialized', 'success');
+            } else {
+                showStatus('Business Document Formatter not available', 'error');
+            }
+            
+            // Load initial content
+            loadSampleContent();
+        });
+        
+        function loadSampleContent() {
+            const contentType = document.getElementById('content-type').value;
+            const sampleContainer = document.getElementById('sample-content');
+            
+            const content = sampleContents[contentType] || sampleContents.simple;
+            sampleContainer.innerHTML = `<pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.875rem;">${content}</pre>`;
+            
+            showStatus(`Loaded ${contentType} sample content`, 'info');
+        }
+        
+        function previewContent() {
+            const contentType = document.getElementById('content-type').value;
+            const businessFormatting = document.getElementById('business-formatting').checked;
+            const previewContainer = document.getElementById('preview-container');
+            
+            const content = sampleContents[contentType] || sampleContents.simple;
+            
+            try {
+                let html;
+                
+                if (contentType === 'markdown' && markdownRenderer) {
+                    html = markdownRenderer.render(content, businessFormatting);
+                } else {
+                    // Simple HTML conversion
+                    const className = businessFormatting ? 'business-document' : '';
+                    html = `<div class="${className}">${content.replace(/\\n/g, '<br>')}</div>`;
+                }
+                
+                previewContainer.innerHTML = html;
+                showStatus('Content preview updated', 'success');
+                
+            } catch (error) {
+                console.error('Preview error:', error);
+                showStatus(`Preview error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function exportToPDF() {
+            if (!pdfExportManager) {
+                showStatus('PDF Export Manager not available', 'error');
+                return;
+            }
+            
+            const exportBtn = document.getElementById('export-btn');
+            const originalHTML = exportBtn.innerHTML;
+            
+            try {
+                // Show loading state
+                exportBtn.innerHTML = `
+                    <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                    </svg>
+                    Exporting...
+                `;
+                exportBtn.disabled = true;
+                
+                // Get settings
+                const contentType = document.getElementById('content-type').value;
+                const pageSize = document.getElementById('page-size').value;
+                const orientation = document.getElementById('orientation').value;
+                const margins = document.getElementById('margins').value;
+                const headerText = document.getElementById('header-text').value;
+                const footerText = document.getElementById('footer-text').value;
+                const showPageNumbers = document.getElementById('show-page-numbers').checked;
+                const showDate = document.getElementById('show-date').checked;
+                const businessFormatting = document.getElementById('business-formatting').checked;
+                
+                // Get content
+                const content = sampleContents[contentType] || sampleContents.simple;
+                
+                // Prepare content
+                let htmlContent;
+                if (contentType === 'markdown' && markdownRenderer) {
+                    htmlContent = markdownRenderer.render(content, businessFormatting);
+                } else {
+                    const className = businessFormatting ? 'business-document' : '';
+                    htmlContent = `<div class="${className}">${content.replace(/\\n/g, '<br>')}</div>`;
+                }
+                
+                // Export options
+                const exportOptions = {
+                    title: `Test Document - ${contentType}`,
+                    pageSize: pageSize,
+                    orientation: orientation,
+                    margins: margins,
+                    header: headerText,
+                    footer: footerText,
+                    showPageNumbers: showPageNumbers,
+                    showDate: showDate,
+                    businessFormatting: businessFormatting,
+                    includeHeaders: headerText || showDate,
+                    includeFooters: footerText || showPageNumbers
+                };
+                
+                showStatus('Starting PDF export...', 'info');
+                
+                // Export to PDF
+                const success = await pdfExportManager.exportToPDF(htmlContent, exportOptions);
+                
+                if (success) {
+                    showStatus('PDF export completed successfully', 'success');
+                } else {
+                    showStatus('PDF export failed', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                showStatus(`Export error: ${error.message}`, 'error');
+            } finally {
+                // Restore button state
+                exportBtn.innerHTML = originalHTML;
+                exportBtn.disabled = false;
+            }
+        }
+        
+        function testBrowserSupport() {
+            const results = [];
+            
+            // Test print API
+            if (typeof window.print === 'function') {
+                results.push('✓ Print API supported');
+            } else {
+                results.push('✗ Print API not supported');
+            }
+            
+            // Test matchMedia
+            if ('matchMedia' in window) {
+                results.push('✓ Media queries supported');
+            } else {
+                results.push('✗ Media queries not supported');
+            }
+            
+            // Test PDF Export Manager
+            if (pdfExportManager && pdfExportManager.supportsPrintAPI) {
+                results.push('✓ PDF Export Manager ready');
+            } else {
+                results.push('✗ PDF Export Manager not ready');
+            }
+            
+            // Test popup blocker
+            try {
+                const testWindow = window.open('', '_blank', 'width=1,height=1');
+                if (testWindow) {
+                    testWindow.close();
+                    results.push('✓ Popup windows allowed');
+                } else {
+                    results.push('✗ Popup blocker detected');
+                }
+            } catch (error) {
+                results.push('✗ Popup test failed');
+            }
+            
+            showStatus(`Browser Support Test:\\n${results.join('\\n')}`, 'info');
+        }
+        
+        function clearAll() {
+            document.getElementById('sample-content').innerHTML = '<p>Content cleared. Click "Load Sample Content" to reload.</p>';
+            document.getElementById('preview-container').innerHTML = '<p>Preview cleared. Click "Preview Content" to reload.</p>';
+            document.getElementById('status-messages').innerHTML = '';
+            showStatus('All content cleared', 'info');
+        }
+        
+        function showStatus(message, type = 'info') {
+            const statusContainer = document.getElementById('status-messages');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            
+            statusContainer.appendChild(statusDiv);
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                if (statusDiv.parentNode) {
+                    statusDiv.parentNode.removeChild(statusDiv);
+                }
+            }, 10000);
+            
+            // Scroll to bottom
+            statusContainer.scrollTop = statusContainer.scrollHeight;
+        }
+        
+        // Event listeners for real-time updates
+        document.getElementById('content-type').addEventListener('change', loadSampleContent);
+        document.getElementById('business-formatting').addEventListener('change', previewContent);
+    </script>
+</body>
+</html>

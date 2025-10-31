@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Header/Footer System Test</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/lib/frontend-error-handler.js"></script>
+    <script src="/lib/header-footer-manager.js"></script>
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .test-section h2 {
+            margin-top: 0;
+            color: #1f2937;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 8px;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .control-group label {
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .control-group input,
+        .control-group select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .control-group button {
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .control-group button:hover {
+            background: #2563eb;
+        }
+        
+        .preview-area {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            min-height: 400px;
+            background: #f9fafb;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .sample-content {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-display {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .test-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-primary:hover { background: #2563eb; }
+        .btn-secondary:hover { background: #4b5563; }
+        .btn-success:hover { background: #059669; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Header/Footer System Test</h1>
+        
+        <!-- Header/Footer Controls -->
+        <div class="test-section">
+            <h2>Header/Footer Controls</h2>
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="headerText">Header Text:</label>
+                    <input type="text" id="headerText" placeholder="Company Name or Title" value="Sample Business Report">
+                </div>
+                
+                <div class="control-group">
+                    <label for="footerText">Footer Text:</label>
+                    <input type="text" id="footerText" placeholder="Contact Info or Copyright" value="© 2024 Sample Company">
+                </div>
+                
+                <div class="control-group">
+                    <label>Logo Upload:</label>
+                    <button type="button" id="headerLogoBtn">📷 Upload Logo</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="showPageNumbers" checked> Show Page Numbers
+                    </label>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="showDate" checked> Show Date
+                    </label>
+                </div>
+            </div>
+            
+            <div class="test-buttons">
+                <button class="btn-primary" onclick="updatePreview()">Update Preview</button>
+                <button class="btn-secondary" onclick="resetSettings()">Reset Settings</button>
+                <button class="btn-success" onclick="testExport()">Test PDF Export</button>
+            </div>
+        </div>
+        
+        <!-- Preview Area -->
+        <div class="test-section">
+            <h2>Preview</h2>
+            <div class="preview-area" id="previewArea">
+                <div class="sample-content" id="sampleContent">
+                    <h1>Sample Business Report</h1>
+                    <h2>Executive Summary</h2>
+                    <p>This is a sample business report to demonstrate the header and footer functionality. The header and footer will be displayed above and below this content when exported to PDF.</p>
+                    
+                    <h2>Key Findings</h2>
+                    <ul>
+                        <li>Header displays company logo, title, and date</li>
+                        <li>Footer shows contact information and page numbers</li>
+                        <li>Professional formatting is maintained across pages</li>
+                    </ul>
+                    
+                    <h2>Recommendations</h2>
+                    <p>The header/footer system provides a professional appearance for business documents and ensures consistent branding across all exported reports.</p>
+                    
+                    <h2>Conclusion</h2>
+                    <p>This system successfully implements requirements 2.3, 3.2, and 3.3 for professional document formatting with header/footer functionality.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status Display -->
+        <div class="test-section">
+            <h2>System Status</h2>
+            <div class="status-display" id="statusDisplay">
+                Initializing header/footer system...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let headerFooterManager = null;
+        
+        // Initialize the header/footer manager
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                if (typeof HeaderFooterManager !== 'undefined') {
+                    headerFooterManager = new HeaderFooterManager({
+                        enableLogo: true,
+                        enablePageNumbers: true,
+                        enableDateInsertion: true,
+                        defaultHeaderText: 'Sample Business Report',
+                        defaultFooterText: '© 2024 Sample Company'
+                    });
+                    
+                    updateStatus('Header/Footer Manager initialized successfully');
+                    
+                    // Set up event listeners
+                    headerFooterManager.on('headerChange', (data) => {
+                        updateStatus(`Header changed: ${data.text}`);
+                        updatePreview();
+                    });
+                    
+                    headerFooterManager.on('footerChange', (data) => {
+                        updateStatus(`Footer changed: ${data.text}`);
+                        updatePreview();
+                    });
+                    
+                    headerFooterManager.on('logoChange', (data) => {
+                        updateStatus(`Logo uploaded: ${data.file.name}`);
+                        updatePreview();
+                    });
+                    
+                    // Initial preview update
+                    setTimeout(updatePreview, 500);
+                    
+                } else {
+                    updateStatus('ERROR: HeaderFooterManager not available');
+                }
+            } catch (error) {
+                updateStatus(`ERROR: Failed to initialize HeaderFooterManager - ${error.message}`);
+                console.error('HeaderFooterManager initialization error:', error);
+            }
+        });
+        
+        function updateStatus(message) {
+            const statusDisplay = document.getElementById('statusDisplay');
+            const timestamp = new Date().toLocaleTimeString();
+            statusDisplay.textContent = `[${timestamp}] ${message}`;
+        }
+        
+        function updatePreview() {
+            if (!headerFooterManager) {
+                updateStatus('ERROR: HeaderFooterManager not available');
+                return;
+            }
+            
+            try {
+                const previewArea = document.getElementById('previewArea');
+                const sampleContent = document.getElementById('sampleContent');
+                
+                // Remove existing headers/footers
+                const existingHeaders = previewArea.querySelectorAll('.document-header');
+                const existingFooters = previewArea.querySelectorAll('.document-footer');
+                existingHeaders.forEach(el => el.remove());
+                existingFooters.forEach(el => el.remove());
+                
+                // Generate new header and footer
+                const headerHTML = headerFooterManager.generateHeaderHTML({ 
+                    includeInPreview: true,
+                    pageNumber: 1,
+                    totalPages: 1
+                });
+                
+                const footerHTML = headerFooterManager.generateFooterHTML({ 
+                    includeInPreview: true,
+                    pageNumber: 1,
+                    totalPages: 1
+                });
+                
+                // Add header
+                if (headerHTML) {
+                    previewArea.insertAdjacentHTML('afterbegin', headerHTML);
+                }
+                
+                // Add footer
+                if (footerHTML) {
+                    previewArea.insertAdjacentHTML('beforeend', footerHTML);
+                }
+                
+                // Inject CSS
+                headerFooterManager.injectHeaderFooterCSS();
+                
+                updateStatus('Preview updated successfully');
+                
+            } catch (error) {
+                updateStatus(`ERROR: Failed to update preview - ${error.message}`);
+                console.error('Preview update error:', error);
+            }
+        }
+        
+        function resetSettings() {
+            if (!headerFooterManager) {
+                updateStatus('ERROR: HeaderFooterManager not available');
+                return;
+            }
+            
+            try {
+                headerFooterManager.reset();
+                
+                // Reset UI elements
+                document.getElementById('headerText').value = '';
+                document.getElementById('footerText').value = '';
+                document.getElementById('showPageNumbers').checked = true;
+                document.getElementById('showDate').checked = true;
+                
+                updatePreview();
+                updateStatus('Settings reset to defaults');
+                
+            } catch (error) {
+                updateStatus(`ERROR: Failed to reset settings - ${error.message}`);
+                console.error('Reset error:', error);
+            }
+        }
+        
+        function testExport() {
+            if (!headerFooterManager) {
+                updateStatus('ERROR: HeaderFooterManager not available');
+                return;
+            }
+            
+            try {
+                const exportData = headerFooterManager.getExportData();
+                
+                updateStatus('Export data generated successfully');
+                console.log('Export data:', exportData);
+                
+                // Show export data in console for testing
+                console.log('Header HTML:', exportData.headerHTML);
+                console.log('Footer HTML:', exportData.footerHTML);
+                console.log('CSS:', exportData.css);
+                console.log('Settings:', exportData.settings);
+                
+                // Simulate PDF export
+                const sampleContent = document.getElementById('sampleContent').innerHTML;
+                const printWindow = window.open('', '_blank');
+                
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Header/Footer Test Export</title>
+                        <meta charset="utf-8">
+                        <style>
+                            body {
+                                font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+                                line-height: 1.6;
+                                margin: 0;
+                                padding: 20px;
+                                color: #333;
+                            }
+                            ${exportData.css}
+                        </style>
+                    </head>
+                    <body>
+                        ${exportData.headerHTML.replace('preview-header', 'print-header')}
+                        <main class="document-content">
+                            ${sampleContent}
+                        </main>
+                        ${exportData.footerHTML.replace('preview-footer', 'print-footer')}
+                    </body>
+                    </html>
+                `);
+                
+                printWindow.document.close();
+                
+                // Auto-print after a short delay
+                setTimeout(() => {
+                    printWindow.print();
+                }, 1000);
+                
+                updateStatus('Test export completed - check print preview');
+                
+            } catch (error) {
+                updateStatus(`ERROR: Failed to test export - ${error.message}`);
+                console.error('Export test error:', error);
+            }
+        }
+        
+        // Make functions globally accessible for testing
+        window.updatePreview = updatePreview;
+        window.resetSettings = resetSettings;
+        window.testExport = testExport;
+        window.headerFooterManager = headerFooterManager;
+    </script>
+</body>
+</html>

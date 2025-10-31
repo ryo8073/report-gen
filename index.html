@@ -1305,6 +1305,129 @@
             margin-top: var(--space-6);
         }
 
+        /* Enhanced Basic Results Display */
+        .results-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .info-badge {
+            background: var(--color-blue-100);
+            color: var(--color-blue-800);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+        }
+
+        .content-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--color-gray-200);
+            background: var(--color-gray-50);
+        }
+
+        .content-tab {
+            flex: 1;
+            padding: var(--space-3) var(--space-4);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--color-gray-600);
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .content-tab:hover {
+            background: var(--color-gray-100);
+            color: var(--color-gray-800);
+        }
+
+        .content-tab.active {
+            background: white;
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-content {
+            position: relative;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .formatted-content {
+            padding: var(--space-4);
+            min-height: 400px;
+            background: white;
+            overflow-y: auto;
+            font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+            line-height: 1.8;
+        }
+
+        .formatted-content h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 24px 0 16px 0;
+            color: var(--color-gray-900);
+            border-bottom: 2px solid var(--color-gray-200);
+            padding-bottom: 8px;
+        }
+
+        .formatted-content h2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0 12px 0;
+            color: var(--color-gray-800);
+        }
+
+        .formatted-content h3 {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 16px 0 8px 0;
+            color: var(--color-gray-800);
+        }
+
+        .formatted-content p {
+            margin: 12px 0;
+            color: var(--color-gray-700);
+        }
+
+        .formatted-content ul, .formatted-content ol {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+
+        .formatted-content li {
+            margin: 4px 0;
+            color: var(--color-gray-700);
+        }
+
+        .formatted-content strong {
+            font-weight: bold;
+            color: var(--color-gray-900);
+        }
+
+        .formatted-content em {
+            font-style: italic;
+        }
+
+        .simple-results-display {
+            padding: var(--space-4);
+        }
+
+        .simple-results-display h3 {
+            margin: 0 0 var(--space-4) 0;
+            color: var(--color-gray-800);
+        }
+
         .report-preview {
             padding: var(--space-4);
             min-height: 400px;
@@ -2395,82 +2518,156 @@ ${inputText || ''}`;
                     return;
                 }
 
-                // Initialize the enhanced results layout if not already done
-                if (!enhancedResultsLayout) {
-                    if (typeof EnhancedResultsLayout !== 'undefined') {
-                        enhancedResultsLayout = new EnhancedResultsLayout(container, {
-                            enableBusinessFormatting: true,
-                            enablePDFExport: true,
-                            enableFormatControls: true,
-                            enableAccessibility: true,
-                            defaultView: 'preview'
-                        });
-                        
-                        // Initialize the layout
-                        enhancedResultsLayout.init();
-                        console.log('Enhanced results layout initialized successfully');
-                    } else {
-                        console.warn('EnhancedResultsLayout class not available, falling back to basic display');
-                        // Fallback to basic display
-                        container.innerHTML = `
-                            <div class="basic-results-display">
-                                <div class="results-header">
-                                    <h3>生成されたレポート</h3>
-                                </div>
-                                <div class="results-content">
-                                    <textarea id="reportContent" class="report-textarea" readonly>${content}</textarea>
-                                </div>
-                                <div class="results-actions">
-                                    <button id="copyBtn" class="btn btn-secondary">コピー</button>
-                                    <button id="exportPdfBtn" class="btn btn-primary">PDF出力</button>
-                                    <button id="exportWordBtn" class="btn btn-primary">Word出力</button>
-                                </div>
-                            </div>
-                        `;
-                        setupBasicResultsActions(content);
-                        return;
+                // Check if enhanced results layout is available
+                const hasEnhancedLayout = typeof EnhancedResultsLayout !== 'undefined';
+                console.log('Enhanced layout availability:', hasEnhancedLayout);
+                
+                if (hasEnhancedLayout) {
+                    // Initialize the enhanced results layout if not already done
+                    if (!enhancedResultsLayout) {
+                        try {
+                            enhancedResultsLayout = new EnhancedResultsLayout(container, {
+                                enableBusinessFormatting: true,
+                                enablePDFExport: true,
+                                enableFormatControls: true,
+                                enableAccessibility: true,
+                                defaultView: 'preview'
+                            });
+                            
+                            console.log('Enhanced results layout created successfully');
+                        } catch (initError) {
+                            console.error('Error creating enhanced results layout:', initError);
+                            enhancedResultsLayout = null;
+                        }
+                    }
+
+                    // Set the content in the enhanced layout
+                    if (enhancedResultsLayout && typeof enhancedResultsLayout.setContent === 'function') {
+                        try {
+                            enhancedResultsLayout.setContent(content);
+                            console.log('Content set in enhanced results layout');
+                            return; // Success - exit early
+                        } catch (contentError) {
+                            console.error('Error setting content in enhanced layout:', contentError);
+                        }
                     }
                 }
 
-                // Set the content in the enhanced layout
-                if (enhancedResultsLayout && enhancedResultsLayout.setContent) {
-                    enhancedResultsLayout.setContent(content);
-                } else {
-                    console.warn('Enhanced results layout not properly initialized');
-                    // Fallback
-                    const textarea = document.getElementById('reportContent');
-                    if (textarea) {
-                        textarea.value = content;
-                    }
-                }
+                // Fallback to basic display
+                console.log('Using basic results display fallback');
+                container.innerHTML = `
+                    <div class="basic-results-display">
+                        <div class="results-header">
+                            <h3>生成されたレポート</h3>
+                            <div class="results-info">
+                                <span class="info-badge">基本表示モード</span>
+                            </div>
+                        </div>
+                        <div class="results-content">
+                            <div class="content-tabs">
+                                <button class="content-tab active" data-tab="raw">テキスト</button>
+                                <button class="content-tab" data-tab="formatted">フォーマット済み</button>
+                            </div>
+                            <div class="tab-content">
+                                <div class="tab-panel active" id="raw-panel">
+                                    <textarea id="reportContent" class="report-textarea" readonly>${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                                </div>
+                                <div class="tab-panel" id="formatted-panel">
+                                    <div id="formattedContent" class="formatted-content">${markdownToHtml(content)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="results-actions">
+                            <button id="copyBtn" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                コピー
+                            </button>
+                            <button id="downloadBtn" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7,10 12,15 17,10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                ダウンロード
+                            </button>
+                            <button id="exportPdfBtn" class="btn btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14,2 14,8 20,8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                </svg>
+                                PDF出力
+                            </button>
+                            <button id="exportWordBtn" class="btn btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14,2 14,8 20,8"></polyline>
+                                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                                    <line x1="9" y1="15" x2="12" y2="12"></line>
+                                    <line x1="15" y1="15" x2="12" y2="12"></line>
+                                </svg>
+                                Word出力
+                            </button>
+                        </div>
+                    </div>
+                `;
+                setupBasicResultsActions(content);
                 
             } catch (error) {
                 console.error('Error initializing enhanced results:', error);
-                // Fallback to basic display
+                // Ultimate fallback - simple text display
                 const container = document.getElementById('enhancedResultsContainer');
                 if (container) {
                     container.innerHTML = `
-                        <div class="basic-results-display">
-                            <div class="results-content">
-                                <textarea id="reportContent" class="report-textarea" readonly>${content}</textarea>
-                            </div>
-                            <div class="results-actions">
-                                <button id="copyBtn" class="btn btn-secondary">コピー</button>
-                            </div>
+                        <div class="simple-results-display">
+                            <h3>生成されたレポート</h3>
+                            <pre style="white-space: pre-wrap; font-family: inherit; background: #f9fafb; padding: 20px; border-radius: 6px; border: 1px solid #e5e7eb;">${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+                            <button onclick="navigator.clipboard.writeText('${content.replace(/'/g, "\\'")}').then(() => alert('コピーしました'))" style="margin-top: 10px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">コピー</button>
                         </div>
                     `;
-                    setupBasicResultsActions(content);
                 }
             }
         }
 
         function setupBasicResultsActions(content) {
+            // Setup tab functionality
+            const contentTabs = document.querySelectorAll('.content-tab');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+            
+            contentTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs and panels
+                    contentTabs.forEach(t => t.classList.remove('active'));
+                    tabPanels.forEach(p => p.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+                    
+                    // Show corresponding panel
+                    const targetTab = tab.dataset.tab;
+                    const targetPanel = document.getElementById(`${targetTab}-panel`);
+                    if (targetPanel) {
+                        targetPanel.classList.add('active');
+                    }
+                });
+            });
+
             // Setup copy functionality
             const copyBtn = document.getElementById('copyBtn');
             if (copyBtn) {
                 copyBtn.onclick = () => {
                     navigator.clipboard.writeText(content).then(() => {
                         window.errorHandler.showNotification('レポートをクリップボードにコピーしました', 'success', 2000);
+                        // Visual feedback
+                        const originalText = copyBtn.innerHTML;
+                        copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"></polyline></svg> コピー完了';
+                        setTimeout(() => {
+                            copyBtn.innerHTML = originalText;
+                        }, 1500);
                     }).catch(err => {
                         console.error('Copy failed:', err);
                         window.errorHandler.showNotification('コピーに失敗しました', 'error', 2000);
@@ -2478,14 +2675,67 @@ ${inputText || ''}`;
                 };
             }
 
+            // Setup download functionality
+            const downloadBtn = document.getElementById('downloadBtn');
+            if (downloadBtn) {
+                downloadBtn.onclick = () => {
+                    try {
+                        const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                        const filename = `report_${timestamp}.md`;
+                        
+                        const blob = new Blob([content], { type: 'text/markdown; charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        
+                        window.errorHandler.showNotification('ファイルをダウンロードしました', 'success', 2000);
+                    } catch (error) {
+                        console.error('Download error:', error);
+                        window.errorHandler.showNotification('ダウンロードに失敗しました', 'error', 2000);
+                    }
+                };
+            }
+
             // Setup PDF export if available
             const exportPdfBtn = document.getElementById('exportPdfBtn');
-            if (exportPdfBtn && typeof PDFExportManager !== 'undefined') {
+            if (exportPdfBtn) {
                 exportPdfBtn.onclick = () => {
                     try {
-                        const pdfManager = new PDFExportManager();
-                        pdfManager.exportToPDF(content, 'investment-report.pdf');
-                        window.errorHandler.showNotification('PDF出力を開始しました', 'success', 2000);
+                        if (typeof PDFExportManager !== 'undefined') {
+                            const pdfManager = new PDFExportManager();
+                            pdfManager.exportToPDF(content, 'investment-report.pdf');
+                            window.errorHandler.showNotification('PDF出力を開始しました', 'success', 2000);
+                        } else {
+                            // Fallback PDF export using browser print
+                            const printWindow = window.open('', '_blank');
+                            printWindow.document.write(`
+                                <!DOCTYPE html>
+                                <html>
+                                <head>
+                                    <title>投資分析レポート</title>
+                                    <meta charset="utf-8">
+                                    <style>
+                                        body { font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif; line-height: 1.6; margin: 20px; }
+                                        h1, h2, h3 { color: #2c3e50; }
+                                        h1 { border-bottom: 2px solid #3498db; padding-bottom: 8px; }
+                                        h2 { border-bottom: 1px solid #bdc3c7; padding-bottom: 4px; }
+                                        @media print { body { margin: 0; padding: 15mm; } }
+                                    </style>
+                                </head>
+                                <body>
+                                    ${markdownToHtml(content)}
+                                </body>
+                                </html>
+                            `);
+                            printWindow.document.close();
+                            setTimeout(() => printWindow.print(), 500);
+                            window.errorHandler.showNotification('印刷ダイアログを開きました', 'info', 2000);
+                        }
                     } catch (error) {
                         console.error('PDF export error:', error);
                         window.errorHandler.showNotification('PDF出力に失敗しました', 'error', 2000);
@@ -2495,12 +2745,27 @@ ${inputText || ''}`;
 
             // Setup Word export if available
             const exportWordBtn = document.getElementById('exportWordBtn');
-            if (exportWordBtn && typeof WordExportManager !== 'undefined') {
+            if (exportWordBtn) {
                 exportWordBtn.onclick = () => {
                     try {
-                        const wordManager = new WordExportManager();
-                        wordManager.exportToWord(content, 'investment-report.docx');
-                        window.errorHandler.showNotification('Word出力を開始しました', 'success', 2000);
+                        if (typeof WordExportManager !== 'undefined') {
+                            const wordManager = new WordExportManager();
+                            wordManager.exportToWord(content, 'investment-report.docx');
+                            window.errorHandler.showNotification('Word出力を開始しました', 'success', 2000);
+                        } else {
+                            // Fallback - download as RTF
+                            const rtfContent = `{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}} \\f0\\fs24 ${content.replace(/\n/g, '\\par ')}}`;
+                            const blob = new Blob([rtfContent], { type: 'application/rtf' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'investment-report.rtf';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                            window.errorHandler.showNotification('RTFファイルをダウンロードしました', 'success', 2000);
+                        }
                     } catch (error) {
                         console.error('Word export error:', error);
                         window.errorHandler.showNotification('Word出力に失敗しました', 'error', 2000);

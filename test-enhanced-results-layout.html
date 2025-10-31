@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Results Layout Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="lib/enhanced-results-layout.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+        
+        .test-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-header p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .test-controls {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .control-item label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .control-item select,
+        .control-item input {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .control-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .test-btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .test-btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        
+        .test-btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .test-btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+        
+        .results-container {
+            min-height: 600px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .test-header h1 {
+                font-size: 2rem;
+            }
+            
+            .control-actions {
+                flex-direction: column;
+            }
+            
+            .test-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Enhanced Results Layout</h1>
+            <p>Tabbed interface with Edit/Preview/Split views and formatting controls</p>
+        </div>
+        
+        <div class="test-controls">
+            <div class="controls-grid">
+                <div class="control-item">
+                    <label for="sample-content">Sample Content:</label>
+                    <select id="sample-content">
+                        <option value="markdown">Markdown Sample</option>
+                        <option value="business">Business Report</option>
+                        <option value="technical">Technical Documentation</option>
+                        <option value="simple">Simple Text</option>
+                    </select>
+                </div>
+                
+                <div class="control-item">
+                    <label for="initial-view">Initial View:</label>
+                    <select id="initial-view">
+                        <option value="edit">Edit</option>
+                        <option value="preview" selected>Preview</option>
+                        <option value="split">Split</option>
+                    </select>
+                </div>
+                
+                <div class="control-item">
+                    <label for="business-formatting">Business Formatting:</label>
+                    <select id="business-formatting">
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </div>
+                
+                <div class="control-item">
+                    <label for="auto-save">Auto Save:</label>
+                    <select id="auto-save">
+                        <option value="true" selected>Enabled</option>
+                        <option value="false">Disabled</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="control-actions">
+                <button class="test-btn test-btn-primary" onclick="initializeLayout()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10M3.51 9a9 9 0 1 1 2.13 9.36L1 14"></path>
+                    </svg>
+                    Initialize Layout
+                </button>
+                <button class="test-btn test-btn-secondary" onclick="loadSampleContent()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14,2 14,8 20,8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                    Load Content
+                </button>
+                <button class="test-btn test-btn-secondary" onclick="testAllViews()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    Test All Views
+                </button>
+                <button class="test-btn test-btn-secondary" onclick="testResponsive()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    Test Responsive
+                </button>
+                <button class="test-btn test-btn-secondary" onclick="clearLayout()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3,6 5,6 21,6"></polyline>
+                        <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                    </svg>
+                    Clear
+                </button>
+            </div>
+        </div>
+        
+        <div class="results-container" id="results-container">
+            <!-- Enhanced Results Layout will be inserted here -->
+        </div>
+    </div>
+
+    <script src="lib/business-document-formatter.js"></script>
+    <script src="lib/markdown-renderer.js"></script>
+    <!-- Advanced PDF Export Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="lib/pdf-export-manager.js"></script>
+    <script src="lib/enhanced-results-layout.js"></script>
+    <script>
+        let enhancedLayout = null;
+        
+        // Sample content for testing
+        const sampleContents = {
+            markdown: `# Enhanced Results Layout Test
+
+This is a **comprehensive test** of the enhanced results layout system with *multiple formatting options* and advanced features.
+
+## Key Features
+
+### Tabbed Interface
+- **Edit View**: Full-featured markdown editor with toolbar
+- **Preview View**: Real-time formatted preview
+- **Split View**: Side-by-side editing and preview
+
+### Format Controls
+- Font size adjustment (small, normal, large, extra large)
+- Line height options (tight, normal, relaxed, loose)
+- Theme selection (default, dark, sepia, high contrast)
+- Business formatting toggle
+
+### Advanced Functionality
+1. **Auto-save** with configurable intervals
+2. **Keyboard shortcuts** for common actions
+3. **Responsive design** for mobile devices
+4. **Accessibility features** with ARIA support
+5. **PDF export** with business formatting
+
+## Code Example
+
+\`\`\`javascript
+const layout = new EnhancedResultsLayout(container, {
+    enableBusinessFormatting: true,
+    enablePDFExport: true,
+    defaultView: 'preview'
+});
+
+layout.setContent(markdownContent);
+\`\`\`
+
+## Table Example
+
+| Feature | Status | Priority |
+|---------|--------|----------|
+| Edit View | ✅ Complete | High |
+| Preview View | ✅ Complete | High |
+| Split View | ✅ Complete | Medium |
+| PDF Export | ✅ Complete | Medium |
+
+## List Examples
+
+### Unordered List
+- Feature-rich editing toolbar
+- Real-time preview updates
+- Responsive mobile design
+- Accessibility compliance
+
+### Ordered List
+1. Initialize the layout component
+2. Load content into the editor
+3. Switch between different views
+4. Export to PDF when ready
+
+> **Note**: This enhanced layout provides a professional document editing experience with modern web technologies and accessibility best practices.`,
+
+            business: `BUSINESS PROPOSAL
+
+Executive Summary
+
+This proposal outlines the implementation of an enhanced results layout system for our document management platform. The proposed solution will significantly improve user productivity and document presentation quality.
+
+Project Objectives
+
+Our current document interface lacks the sophisticated editing and preview capabilities required for professional document creation. This proposal addresses these limitations through a comprehensive tabbed interface system.
+
+Key Requirements
+
+1. Multi-view editing interface with seamless switching
+2. Real-time preview with business document formatting
+3. Professional PDF export capabilities
+4. Mobile-responsive design for modern workflows
+5. Accessibility compliance for inclusive usage
+
+Technical Implementation
+
+The enhanced results layout will be built using modern web technologies:
+
+Component Architecture:
+- Modular JavaScript classes for maintainability
+- CSS custom properties for consistent theming
+- Progressive enhancement for broad compatibility
+- Performance optimization for large documents
+
+User Interface Design:
+- Tabbed navigation for intuitive view switching
+- Comprehensive formatting controls
+- Professional toolbar with common actions
+- Status indicators for document state
+
+Integration Requirements:
+- Seamless integration with existing markdown renderer
+- Business document formatter compatibility
+- PDF export manager integration
+- Responsive design framework alignment
+
+Implementation Timeline
+
+Phase 1: Core Infrastructure (Week 1-2)
+- Basic tabbed interface implementation
+- Edit and preview view functionality
+- Format control integration
+
+Phase 2: Advanced Features (Week 3-4)
+- Split view development
+- Toolbar and keyboard shortcuts
+- Auto-save functionality
+
+Phase 3: Polish and Testing (Week 5-6)
+- Responsive design optimization
+- Accessibility enhancements
+- Cross-browser testing and validation
+
+Budget Considerations
+
+The implementation leverages existing infrastructure and open-source technologies, minimizing additional licensing costs while maximizing functionality and maintainability.
+
+Expected Outcomes
+
+Upon completion, users will have access to a professional-grade document editing interface that rivals commercial solutions while maintaining our platform's unique advantages.
+
+Conclusion
+
+This enhanced results layout represents a strategic investment in user experience that will differentiate our platform and improve customer satisfaction significantly.`,
+
+            technical: `# Enhanced Results Layout Technical Documentation
+
+## Architecture Overview
+
+The Enhanced Results Layout is a modular JavaScript component that provides a sophisticated document editing and preview interface.
+
+### Core Components
+
+#### EnhancedResultsLayout Class
+- **Purpose**: Main orchestrator for the tabbed interface
+- **Dependencies**: MarkdownRenderer, BusinessDocumentFormatter, PDFExportManager
+- **Key Methods**: \`switchView()\`, \`setContent()\`, \`updatePreview()\`
+
+#### View Management System
+- **Edit View**: Monaco-style editor with syntax highlighting
+- **Preview View**: Real-time rendered markdown display
+- **Split View**: Synchronized side-by-side editing
+
+### Event System
+
+\`\`\`javascript
+// Event listener registration
+layout.on('viewChange', (data) => {
+    console.log(\`Switched from \${data.from} to \${data.to}\`);
+});
+
+layout.on('contentChange', (data) => {
+    console.log(\`Content updated: \${data.content.length} characters\`);
+});
+\`\`\`
+
+### Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| enableBusinessFormatting | boolean | true | Enable business document styling |
+| enablePDFExport | boolean | true | Enable PDF export functionality |
+| defaultView | string | 'preview' | Initial view mode |
+| autoSave | boolean | true | Enable automatic content saving |
+| autoSaveInterval | number | 5000 | Auto-save interval in milliseconds |
+
+### API Reference
+
+#### Methods
+
+\`\`\`javascript
+// Initialize the layout
+const layout = new EnhancedResultsLayout(container, options);
+
+// Set content
+layout.setContent(markdownString, metadata);
+
+// Switch views programmatically
+layout.switchView('edit' | 'preview' | 'split');
+
+// Get current state
+const state = layout.getState();
+
+// Clean up resources
+layout.destroy();
+\`\`\`
+
+#### Events
+
+- \`viewChange\`: Fired when switching between views
+- \`contentChange\`: Fired when content is modified
+- \`formatChange\`: Fired when format settings change
+- \`save\`: Fired when content is saved
+- \`export\`: Fired when PDF export is triggered
+
+### Performance Considerations
+
+#### Optimization Strategies
+1. **Lazy Loading**: Views are initialized only when first accessed
+2. **Debounced Updates**: Preview updates are throttled to prevent excessive re-rendering
+3. **Virtual Scrolling**: Large documents use virtual scrolling for performance
+4. **Memory Management**: Proper cleanup prevents memory leaks
+
+#### Browser Compatibility
+- Chrome 60+
+- Firefox 55+
+- Safari 11+
+- Edge 79+
+
+### Accessibility Features
+
+#### ARIA Support
+- Proper role attributes for tab navigation
+- Live regions for status announcements
+- Keyboard navigation support
+
+#### Keyboard Shortcuts
+- \`Ctrl+1\`: Switch to Edit view
+- \`Ctrl+2\`: Switch to Preview view
+- \`Ctrl+3\`: Switch to Split view
+- \`Ctrl+S\`: Save content
+- \`Ctrl+B\`: Bold formatting
+- \`Ctrl+I\`: Italic formatting
+
+### Error Handling
+
+The component includes comprehensive error handling:
+- Graceful degradation for unsupported features
+- User-friendly error messages
+- Automatic recovery mechanisms
+- Fallback rendering options
+
+### Testing Strategy
+
+#### Unit Tests
+- Component initialization
+- View switching logic
+- Content management
+- Event handling
+
+#### Integration Tests
+- Cross-browser compatibility
+- Responsive design validation
+- Accessibility compliance
+- Performance benchmarks`,
+
+            simple: `Simple Text Content
+
+This is a basic text sample for testing the enhanced results layout functionality.
+
+Key Points:
+- Easy to read and understand
+- Minimal formatting requirements
+- Good for testing basic functionality
+- Suitable for performance testing
+
+The layout should handle this content efficiently and provide all the standard editing and preview capabilities.
+
+Additional test content to verify scrolling and layout behavior with longer text passages.`
+        };
+        
+        function initializeLayout() {
+            const container = document.getElementById('results-container');
+            const initialView = document.getElementById('initial-view').value;
+            const businessFormatting = document.getElementById('business-formatting').value === 'true';
+            const autoSave = document.getElementById('auto-save').value === 'true';
+            
+            // Clear existing layout
+            if (enhancedLayout) {
+                enhancedLayout.destroy();
+            }
+            
+            // Create new layout
+            enhancedLayout = new EnhancedResultsLayout(container, {
+                enableBusinessFormatting: businessFormatting,
+                enablePDFExport: true,
+                enableFormatControls: true,
+                enableResponsiveDesign: true,
+                enableAccessibility: true,
+                autoSave: autoSave,
+                autoSaveInterval: 3000,
+                defaultView: initialView
+            });
+            
+            // Set up event listeners
+            enhancedLayout.on('viewChange', (data) => {
+                console.log('View changed:', data);
+            });
+            
+            enhancedLayout.on('contentChange', (data) => {
+                console.log('Content changed:', data.content.length, 'characters');
+            });
+            
+            enhancedLayout.on('formatChange', (data) => {
+                console.log('Format changed:', data.type, '=', data.value);
+            });
+            
+            enhancedLayout.on('save', (data) => {
+                console.log('Content saved at:', data.timestamp);
+            });
+            
+            console.log('Enhanced Results Layout initialized');
+            
+            // Load initial content
+            loadSampleContent();
+        }
+        
+        function loadSampleContent() {
+            if (!enhancedLayout) {
+                alert('Please initialize the layout first');
+                return;
+            }
+            
+            const contentType = document.getElementById('sample-content').value;
+            const content = sampleContents[contentType] || sampleContents.simple;
+            
+            enhancedLayout.setContent(content, {
+                type: contentType,
+                timestamp: new Date().toISOString()
+            });
+            
+            console.log('Sample content loaded:', contentType);
+        }
+        
+        function testAllViews() {
+            if (!enhancedLayout) {
+                alert('Please initialize the layout first');
+                return;
+            }
+            
+            const views = ['edit', 'preview', 'split'];
+            let currentIndex = 0;
+            
+            function switchToNextView() {
+                if (currentIndex < views.length) {
+                    const view = views[currentIndex];
+                    enhancedLayout.switchView(view);
+                    console.log('Switched to:', view);
+                    currentIndex++;
+                    
+                    setTimeout(switchToNextView, 2000);
+                } else {
+                    console.log('All views tested');
+                }
+            }
+            
+            switchToNextView();
+        }
+        
+        function testResponsive() {
+            const container = document.getElementById('results-container');
+            const originalWidth = container.style.width;
+            
+            // Test mobile width
+            container.style.width = '375px';
+            container.style.margin = '0 auto';
+            
+            setTimeout(() => {
+                // Test tablet width
+                container.style.width = '768px';
+                
+                setTimeout(() => {
+                    // Restore original width
+                    container.style.width = originalWidth;
+                    console.log('Responsive test completed');
+                }, 2000);
+            }, 2000);
+            
+            console.log('Testing responsive design...');
+        }
+        
+        function clearLayout() {
+            const container = document.getElementById('results-container');
+            
+            if (enhancedLayout) {
+                enhancedLayout.destroy();
+                enhancedLayout = null;
+            }
+            
+            container.innerHTML = '';
+            console.log('Layout cleared');
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Enhanced Results Layout Test loaded');
+            console.log('Available components:');
+            console.log('- EnhancedResultsLayout:', typeof EnhancedResultsLayout !== 'undefined');
+            console.log('- MarkdownRenderer:', typeof MarkdownRenderer !== 'undefined');
+            console.log('- BusinessDocumentFormatter:', typeof BusinessDocumentFormatter !== 'undefined');
+            console.log('- PDFExportManager:', typeof PDFExportManager !== 'undefined');
+            
+            // Auto-initialize with default settings
+            setTimeout(initializeLayout, 500);
+        });
+        
+        // Keyboard shortcuts for testing
+        document.addEventListener('keydown', (e) => {
+            if (e.altKey) {
+                switch (e.key) {
+                    case '1':
+                        e.preventDefault();
+                        initializeLayout();
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        loadSampleContent();
+                        break;
+                    case '3':
+                        e.preventDefault();
+                        testAllViews();
+                        break;
+                    case '4':
+                        e.preventDefault();
+                        testResponsive();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

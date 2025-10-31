@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Optimizations Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        
+        .test-controls {
+            margin: 10px 0;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .metrics {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        
+        .test-content {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Performance Optimizations Test</h1>
+    <p>This page tests the performance optimization features implemented in Task 14.</p>
+
+    <!-- Performance Manager Test -->
+    <div class="test-section">
+        <h2>Performance Optimization Manager</h2>
+        <div class="test-controls">
+            <button class="btn" onclick="testPerformanceManager()">Test Performance Manager</button>
+            <button class="btn" onclick="testLazyLoading()">Test Lazy Loading</button>
+            <button class="btn" onclick="testCaching()">Test Caching</button>
+            <button class="btn" onclick="testChunkedProcessing()">Test Chunked Processing</button>
+        </div>
+        <div id="performance-status" class="status info">Ready to test performance optimizations</div>
+        <div id="performance-metrics" class="metrics" style="display: none;"></div>
+    </div>
+
+    <!-- Performance Monitor Dashboard Test -->
+    <div class="test-section">
+        <h2>Performance Monitor Dashboard</h2>
+        <div class="test-controls">
+            <button class="btn" onclick="testDashboard()">Initialize Dashboard</button>
+            <button class="btn" onclick="toggleDashboard()">Toggle Dashboard</button>
+            <button class="btn" onclick="recordTestExport()">Record Test Export</button>
+        </div>
+        <div id="dashboard-status" class="status info">Dashboard not initialized</div>
+    </div>
+
+    <!-- Optimized Export Managers Test -->
+    <div class="test-section">
+        <h2>Optimized Export Managers</h2>
+        <div class="test-controls">
+            <button class="btn" onclick="testOptimizedPDF()">Test Optimized PDF Export</button>
+            <button class="btn" onclick="testOptimizedWord()">Test Optimized Word Export</button>
+            <button class="btn" onclick="comparePerformance()">Compare Performance</button>
+        </div>
+        <div id="export-status" class="status info">Ready to test export optimizations</div>
+        <div id="export-metrics" class="metrics" style="display: none;"></div>
+    </div>
+
+    <!-- Test Content -->
+    <div class="test-section">
+        <h2>Test Content</h2>
+        <div id="test-content" class="test-content">
+            <h1>Sample Business Document</h1>
+            <h2>Executive Summary</h2>
+            <p>This is a sample business document with various formatting elements to test the performance optimizations.</p>
+            
+            <h3>Key Features</h3>
+            <ul>
+                <li>Lazy loading of export libraries</li>
+                <li>Content caching for improved rendering</li>
+                <li>Chunked processing for large documents</li>
+                <li>Memory optimization and monitoring</li>
+            </ul>
+            
+            <h3>Performance Metrics</h3>
+            <table border="1" style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <th>Metric</th>
+                    <th>Before Optimization</th>
+                    <th>After Optimization</th>
+                    <th>Improvement</th>
+                </tr>
+                <tr>
+                    <td>Library Load Time</td>
+                    <td>2000ms</td>
+                    <td>500ms</td>
+                    <td>75%</td>
+                </tr>
+                <tr>
+                    <td>Export Time</td>
+                    <td>5000ms</td>
+                    <td>2000ms</td>
+                    <td>60%</td>
+                </tr>
+                <tr>
+                    <td>Memory Usage</td>
+                    <td>150MB</td>
+                    <td>80MB</td>
+                    <td>47%</td>
+                </tr>
+            </table>
+            
+            <blockquote>
+                "Performance optimization is not just about speed, it's about creating a better user experience."
+            </blockquote>
+            
+            <h3>Code Example</h3>
+            <pre><code>
+const optimizedManager = new OptimizedPDFExportManager({
+    enableLazyLoading: true,
+    enableCaching: true,
+    enableChunkedProcessing: true,
+    enableMemoryOptimization: true
+});
+
+await optimizedManager.exportToPDF(content, options);
+            </code></pre>
+        </div>
+    </div>
+
+    <!-- Load Performance Optimization Scripts -->
+    <script src="lib/performance-optimization-manager.js"></script>
+    <script src="lib/performance-monitor-dashboard.js"></script>
+    <script src="lib/optimized-pdf-export-manager.js"></script>
+    <script src="lib/optimized-word-export-manager.js"></script>
+
+    <!-- Load Export Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+
+    <script>
+        let performanceManager = null;
+        let performanceDashboard = null;
+        let optimizedPDFManager = null;
+        let optimizedWordManager = null;
+
+        // Test Performance Optimization Manager
+        async function testPerformanceManager() {
+            const statusEl = document.getElementById('performance-status');
+            const metricsEl = document.getElementById('performance-metrics');
+            
+            try {
+                statusEl.textContent = 'Initializing Performance Manager...';
+                statusEl.className = 'status info';
+                
+                if (typeof PerformanceOptimizationManager === 'undefined') {
+                    throw new Error('PerformanceOptimizationManager not loaded');
+                }
+                
+                performanceManager = new PerformanceOptimizationManager({
+                    cacheEnabled: true,
+                    chunkSize: 100,
+                    memoryMonitoringEnabled: true
+                });
+                
+                // Test basic functionality
+                await performanceManager.lazyLoadLibraries('pdf');
+                
+                // Cache some test content
+                performanceManager.cacheContent('test-key', 'test-content');
+                const cached = performanceManager.getCachedContent('test-key');
+                
+                if (cached !== 'test-content') {
+                    throw new Error('Caching test failed');
+                }
+                
+                // Get metrics
+                const metrics = performanceManager.getMetrics();
+                
+                statusEl.textContent = 'Performance Manager initialized successfully';
+                statusEl.className = 'status success';
+                
+                // Display metrics
+                metricsEl.innerHTML = `
+                    <h4>Performance Metrics</h4>
+                    <div class="metric-item">
+                        <span>Cache Hit Rate:</span>
+                        <span>${metrics.cacheHitRate}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Current Memory:</span>
+                        <span>${metrics.currentMemoryUsage}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Peak Memory:</span>
+                        <span>${metrics.peakMemoryUsage}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Loaded Libraries:</span>
+                        <span>${metrics.loadedLibraries.join(', ')}</span>
+                    </div>
+                `;
+                metricsEl.style.display = 'block';
+                
+            } catch (error) {
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.className = 'status error';
+                console.error('Performance Manager test failed:', error);
+            }
+        }
+
+        // Test Lazy Loading
+        async function testLazyLoading() {
+            const statusEl = document.getElementById('performance-status');
+            
+            try {
+                statusEl.textContent = 'Testing lazy loading...';
+                statusEl.className = 'status info';
+                
+                if (!performanceManager) {
+                    await testPerformanceManager();
+                }
+                
+                const startTime = performance.now();
+                await performanceManager.lazyLoadLibraries('word');
+                const loadTime = performance.now() - startTime;
+                
+                statusEl.textContent = `Lazy loading completed in ${Math.round(loadTime)}ms`;
+                statusEl.className = 'status success';
+                
+            } catch (error) {
+                statusEl.textContent = `Lazy loading failed: ${error.message}`;
+                statusEl.className = 'status error';
+            }
+        }
+
+        // Test Caching
+        function testCaching() {
+            const statusEl = document.getElementById('performance-status');
+            
+            try {
+                if (!performanceManager) {
+                    throw new Error('Performance Manager not initialized');
+                }
+                
+                // Test multiple cache operations
+                const testData = {
+                    content1: 'Large content block 1',
+                    content2: 'Large content block 2',
+                    content3: 'Large content block 3'
+                };
+                
+                // Cache content
+                Object.entries(testData).forEach(([key, value]) => {
+                    performanceManager.cacheContent(key, value);
+                });
+                
+                // Retrieve and verify
+                let hits = 0;
+                Object.entries(testData).forEach(([key, expectedValue]) => {
+                    const cached = performanceManager.getCachedContent(key);
+                    if (cached === expectedValue) hits++;
+                });
+                
+                const hitRate = (hits / Object.keys(testData).length) * 100;
+                
+                statusEl.textContent = `Caching test completed. Hit rate: ${hitRate}%`;
+                statusEl.className = hitRate === 100 ? 'status success' : 'status error';
+                
+            } catch (error) {
+                statusEl.textContent = `Caching test failed: ${error.message}`;
+                statusEl.className = 'status error';
+            }
+        }
+
+        // Test Chunked Processing
+        async function testChunkedProcessing() {
+            const statusEl = document.getElementById('performance-status');
+            
+            try {
+                statusEl.textContent = 'Testing chunked processing...';
+                statusEl.className = 'status info';
+                
+                if (!performanceManager) {
+                    await testPerformanceManager();
+                }
+                
+                // Create large array for testing
+                const largeArray = Array.from({ length: 1000 }, (_, i) => `Item ${i}`);
+                
+                const startTime = performance.now();
+                
+                const result = await performanceManager.processInChunks(
+                    largeArray,
+                    (chunk, options) => {
+                        // Simulate processing
+                        return chunk.map(item => item.toUpperCase());
+                    },
+                    {
+                        chunkSize: 100,
+                        onProgress: (progress) => {
+                            statusEl.textContent = `Processing... ${progress.percentage}%`;
+                        }
+                    }
+                );
+                
+                const processingTime = performance.now() - startTime;
+                
+                statusEl.textContent = `Chunked processing completed in ${Math.round(processingTime)}ms. Processed ${result.length} items.`;
+                statusEl.className = 'status success';
+                
+            } catch (error) {
+                statusEl.textContent = `Chunked processing failed: ${error.message}`;
+                statusEl.className = 'status error';
+            }
+        }
+
+        // Test Performance Dashboard
+        function testDashboard() {
+            const statusEl = document.getElementById('dashboard-status');
+            
+            try {
+                if (typeof PerformanceMonitorDashboard === 'undefined') {
+                    throw new Error('PerformanceMonitorDashboard not loaded');
+                }
+                
+                performanceDashboard = new PerformanceMonitorDashboard({
+                    position: 'bottom-left',
+                    autoHide: false,
+                    showMemoryChart: true,
+                    showCacheMetrics: true,
+                    showLibraryMetrics: true
+                });
+                
+                // Register performance manager if available
+                if (performanceManager) {
+                    performanceDashboard.registerPerformanceManager(performanceManager);
+                }
+                
+                performanceDashboard.show();
+                
+                statusEl.textContent = 'Performance Dashboard initialized and visible';
+                statusEl.className = 'status success';
+                
+            } catch (error) {
+                statusEl.textContent = `Dashboard initialization failed: ${error.message}`;
+                statusEl.className = 'status error';
+            }
+        }
+
+        // Toggle Dashboard
+        function toggleDashboard() {
+            const statusEl = document.getElementById('dashboard-status');
+            
+            if (performanceDashboard) {
+                performanceDashboard.toggle();
+                statusEl.textContent = 'Dashboard visibility toggled';
+                statusEl.className = 'status info';
+            } else {
+                statusEl.textContent = 'Dashboard not initialized';
+                statusEl.className = 'status error';
+            }
+        }
+
+        // Record Test Export
+        function recordTestExport() {
+            const statusEl = document.getElementById('dashboard-status');
+            
+            if (performanceDashboard) {
+                // Simulate export times
+                const exportTime = Math.random() * 3000 + 1000; // 1-4 seconds
+                const exportType = Math.random() > 0.5 ? 'pdf' : 'word';
+                
+                performanceDashboard.recordExportTime(exportTime, exportType);
+                
+                statusEl.textContent = `Recorded ${exportType} export: ${Math.round(exportTime)}ms`;
+                statusEl.className = 'status success';
+            } else {
+                statusEl.textContent = 'Dashboard not initialized';
+                statusEl.className = 'status error';
+            }
+        }
+
+        // Test Optimized PDF Export
+        async function testOptimizedPDF() {
+            const statusEl = document.getElementById('export-status');
+            const metricsEl = document.getElementById('export-metrics');
+            
+            try {
+                statusEl.textContent = 'Testing Optimized PDF Export...';
+                statusEl.className = 'status info';
+                
+                if (typeof OptimizedPDFExportManager === 'undefined') {
+                    throw new Error('OptimizedPDFExportManager not loaded');
+                }
+                
+                optimizedPDFManager = new OptimizedPDFExportManager({
+                    enableLazyLoading: true,
+                    enableCaching: true,
+                    enableChunkedProcessing: true,
+                    enableMemoryOptimization: true
+                });
+                
+                const testContent = document.getElementById('test-content');
+                const startTime = performance.now();
+                
+                // Test export (this will trigger library loading and processing)
+                await optimizedPDFManager.exportToPDF(testContent, {
+                    filename: 'performance-test.pdf',
+                    title: 'Performance Test Document'
+                });
+                
+                const exportTime = performance.now() - startTime;
+                const metrics = optimizedPDFManager.getPerformanceMetrics();
+                
+                statusEl.textContent = `Optimized PDF export completed in ${Math.round(exportTime)}ms`;
+                statusEl.className = 'status success';
+                
+                // Display metrics
+                metricsEl.innerHTML = `
+                    <h4>PDF Export Metrics</h4>
+                    <div class="metric-item">
+                        <span>Export Time:</span>
+                        <span>${Math.round(exportTime)}ms</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Cache Hit Rate:</span>
+                        <span>${metrics.cacheHitRate || 'N/A'}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Memory Optimizations:</span>
+                        <span>${metrics.memoryOptimizations || 0}</span>
+                    </div>
+                `;
+                metricsEl.style.display = 'block';
+                
+            } catch (error) {
+                statusEl.textContent = `PDF export test failed: ${error.message}`;
+                statusEl.className = 'status error';
+                console.error('PDF export test error:', error);
+            }
+        }
+
+        // Test Optimized Word Export
+        async function testOptimizedWord() {
+            const statusEl = document.getElementById('export-status');
+            const metricsEl = document.getElementById('export-metrics');
+            
+            try {
+                statusEl.textContent = 'Testing Optimized Word Export...';
+                statusEl.className = 'status info';
+                
+                if (typeof OptimizedWordExportManager === 'undefined') {
+                    throw new Error('OptimizedWordExportManager not loaded');
+                }
+                
+                optimizedWordManager = new OptimizedWordExportManager({
+                    enableLazyLoading: true,
+                    enableCaching: true,
+                    enableChunkedProcessing: true,
+                    enableMemoryOptimization: true
+                });
+                
+                const testContent = document.getElementById('test-content');
+                const startTime = performance.now();
+                
+                // Test export
+                await optimizedWordManager.exportToWord(testContent, {
+                    filename: 'performance-test.docx',
+                    title: 'Performance Test Document'
+                });
+                
+                const exportTime = performance.now() - startTime;
+                const metrics = optimizedWordManager.getPerformanceMetrics();
+                
+                statusEl.textContent = `Optimized Word export completed in ${Math.round(exportTime)}ms`;
+                statusEl.className = 'status success';
+                
+                // Display metrics
+                metricsEl.innerHTML = `
+                    <h4>Word Export Metrics</h4>
+                    <div class="metric-item">
+                        <span>Export Time:</span>
+                        <span>${Math.round(exportTime)}ms</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Cache Hit Rate:</span>
+                        <span>${metrics.cacheHitRate || 'N/A'}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Memory Optimizations:</span>
+                        <span>${metrics.memoryOptimizations || 0}</span>
+                    </div>
+                `;
+                metricsEl.style.display = 'block';
+                
+            } catch (error) {
+                statusEl.textContent = `Word export test failed: ${error.message}`;
+                statusEl.className = 'status error';
+                console.error('Word export test error:', error);
+            }
+        }
+
+        // Compare Performance
+        async function comparePerformance() {
+            const statusEl = document.getElementById('export-status');
+            
+            try {
+                statusEl.textContent = 'Running performance comparison...';
+                statusEl.className = 'status info';
+                
+                const testContent = document.getElementById('test-content');
+                const results = [];
+                
+                // Test multiple exports to get average times
+                for (let i = 0; i < 3; i++) {
+                    if (optimizedPDFManager) {
+                        const startTime = performance.now();
+                        await optimizedPDFManager.exportToPDF(testContent, {
+                            filename: `test-${i}.pdf`
+                        });
+                        results.push({
+                            type: 'PDF',
+                            time: performance.now() - startTime,
+                            run: i + 1
+                        });
+                    }
+                    
+                    if (optimizedWordManager) {
+                        const startTime = performance.now();
+                        await optimizedWordManager.exportToWord(testContent, {
+                            filename: `test-${i}.docx`
+                        });
+                        results.push({
+                            type: 'Word',
+                            time: performance.now() - startTime,
+                            run: i + 1
+                        });
+                    }
+                }
+                
+                // Calculate averages
+                const pdfTimes = results.filter(r => r.type === 'PDF').map(r => r.time);
+                const wordTimes = results.filter(r => r.type === 'Word').map(r => r.time);
+                
+                const avgPDF = pdfTimes.length > 0 ? pdfTimes.reduce((a, b) => a + b, 0) / pdfTimes.length : 0;
+                const avgWord = wordTimes.length > 0 ? wordTimes.reduce((a, b) => a + b, 0) / wordTimes.length : 0;
+                
+                statusEl.innerHTML = `
+                    Performance Comparison Complete:<br>
+                    Average PDF Export: ${Math.round(avgPDF)}ms<br>
+                    Average Word Export: ${Math.round(avgWord)}ms
+                `;
+                statusEl.className = 'status success';
+                
+            } catch (error) {
+                statusEl.textContent = `Performance comparison failed: ${error.message}`;
+                statusEl.className = 'status error';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Performance Optimizations Test Page Loaded');
+            
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.shiftKey) {
+                    switch (e.key) {
+                        case 'P':
+                            e.preventDefault();
+                            if (performanceDashboard) {
+                                performanceDashboard.toggle();
+                            }
+                            break;
+                        case 'T':
+                            e.preventDefault();
+                            testPerformanceManager();
+                            break;
+                        case 'D':
+                            e.preventDefault();
+                            testDashboard();
+                            break;
+                    }
+                }
+            });
+            
+            console.log('Keyboard shortcuts: Ctrl+Shift+P (Dashboard), Ctrl+Shift+T (Test), Ctrl+Shift+D (Dashboard Init)');
+        });
+    </script>
+</body>
+</html>

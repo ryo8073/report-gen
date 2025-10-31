@@ -1,0 +1,180 @@
+{
+  "testName": "Advanced PDF Export Engine Test",
+  "timestamp": "2025-10-30T15:28:45.990Z",
+  "tests": [
+    {
+      "test": "PDF Export Manager File Exists",
+      "passed": true,
+      "details": "File found at lib/pdf-export-manager.js",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:45.999Z"
+    },
+    {
+      "test": "Advanced PDF Libraries Integration",
+      "passed": true,
+      "details": "jsPDF and html2canvas integration found",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:45.999Z"
+    },
+    {
+      "test": "Advanced PDF Features",
+      "passed": true,
+      "details": "Advanced PDF features implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.000Z"
+    },
+    {
+      "test": "Page Break Handling",
+      "passed": true,
+      "details": "Page break handling implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.000Z"
+    },
+    {
+      "test": "Custom Page Settings",
+      "passed": true,
+      "details": "Custom page settings implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.000Z"
+    },
+    {
+      "test": "Header/Footer Positioning",
+      "passed": true,
+      "details": "Header/footer positioning implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.000Z"
+    },
+    {
+      "test": "jsPDF CDN Integration",
+      "passed": true,
+      "details": "jsPDF CDN found in index.html",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.002Z"
+    },
+    {
+      "test": "html2canvas CDN Integration",
+      "passed": true,
+      "details": "html2canvas CDN found in index.html",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.003Z"
+    },
+    {
+      "test": "Script Loading Order",
+      "passed": true,
+      "details": "Libraries loaded before PDF manager",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.003Z"
+    },
+    {
+      "test": "CDN Integration in test-pdf-export-functionality.html",
+      "passed": true,
+      "details": "CDN libraries found",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.004Z"
+    },
+    {
+      "test": "CDN Integration in test-enhanced-results-layout.html",
+      "passed": true,
+      "details": "CDN libraries found",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.005Z"
+    },
+    {
+      "test": "API Method: exportToPDF",
+      "passed": true,
+      "details": "Method implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.006Z"
+    },
+    {
+      "test": "API Method: setPageSettings",
+      "passed": true,
+      "details": "Method implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.006Z"
+    },
+    {
+      "test": "API Method: getPageSettings",
+      "passed": true,
+      "details": "Method implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.006Z"
+    },
+    {
+      "test": "API Method: exportWithCustomSettings",
+      "passed": true,
+      "details": "Method implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.006Z"
+    },
+    {
+      "test": "API Method: validateSettings",
+      "passed": true,
+      "details": "Method implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.007Z"
+    },
+    {
+      "test": "API Method: createExportButton",
+      "passed": true,
+      "details": "Method implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.007Z"
+    },
+    {
+      "test": "API Method: createSettingsPanel",
+      "passed": true,
+      "details": "Method implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.007Z"
+    },
+    {
+      "test": "Backward Compatibility",
+      "passed": true,
+      "details": "Maintains existing API",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.007Z"
+    },
+    {
+      "test": "Requirement 3.1: Style Preservation",
+      "passed": true,
+      "details": "Style preservation implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.007Z"
+    },
+    {
+      "test": "Requirement 3.2: Header/Footer in PDF",
+      "passed": true,
+      "details": "Header/footer in PDF implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.008Z"
+    },
+    {
+      "test": "Requirement 3.3: Image Handling",
+      "passed": true,
+      "details": "Image handling implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.008Z"
+    },
+    {
+      "test": "Requirement 3.4: Custom Page Settings",
+      "passed": true,
+      "details": "Custom page settings implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.008Z"
+    },
+    {
+      "test": "Page Break Handling",
+      "passed": true,
+      "details": "Page break handling implemented",
+      "error": null,
+      "timestamp": "2025-10-30T15:28:46.008Z"
+    }
+  ],
+  "summary": {
+    "total": 24,
+    "passed": 24,
+    "failed": 0,
+    "errors": []
+  }
+}

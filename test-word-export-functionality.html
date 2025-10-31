@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Export Functionality Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: #1f2937;
+        }
+        
+        .test-content {
+            line-height: 1.6;
+        }
+        
+        .sample-content {
+            border: 2px dashed #e5e7eb;
+            padding: 20px;
+            margin: 20px 0;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .icon {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .content-preview {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            padding: 16px;
+            border-radius: 6px;
+            background: white;
+        }
+        
+        .business-document {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #374151;
+        }
+        
+        .business-document h1 {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0 0 24px 0;
+            color: #1f2937;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+        
+        .business-document h2 {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 24px 0 16px 0;
+            color: #374151;
+        }
+        
+        .business-document h3 {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0 12px 0;
+            color: #4b5563;
+        }
+        
+        .business-document p {
+            margin: 0 0 16px 0;
+        }
+        
+        .business-document ul, .business-document ol {
+            margin: 16px 0;
+            padding-left: 24px;
+        }
+        
+        .business-document li {
+            margin: 8px 0;
+        }
+        
+        .business-document table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .business-document th, .business-document td {
+            border: 1px solid #d1d5db;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .business-document th {
+            background: #f3f4f6;
+            font-weight: bold;
+        }
+        
+        .business-document blockquote {
+            border-left: 4px solid #3b82f6;
+            padding-left: 16px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #6b7280;
+        }
+        
+        .business-document code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .business-document pre {
+            background: #f3f4f6;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        
+        .business-document pre code {
+            background: none;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-section">
+            <div class="test-header">
+                Word Export Functionality Test
+            </div>
+            <div class="test-content">
+                <p>This page tests the Word document export functionality using the docx.js library. The system should be able to:</p>
+                <ul>
+                    <li>Convert HTML content to Word-compatible formatting</li>
+                    <li>Preserve images, tables, and styling in Word export</li>
+                    <li>Generate downloadable .docx files</li>
+                    <li>Handle headers, footers, and page settings</li>
+                </ul>
+                
+                <div id="statusArea"></div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="loadSampleContent()">Load Sample Content</button>
+                    <button class="btn btn-primary" onclick="previewContent()">Preview Content</button>
+                    <button class="btn btn-secondary" onclick="exportToWord()" id="export-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14,2 14,8 20,8"></polyline>
+                            <line x1="12" y1="18" x2="12" y2="12"></line>
+                            <line x1="9" y1="15" x2="12" y2="12"></line>
+                            <line x1="15" y1="15" x2="12" y2="12"></line>
+                        </svg>
+                        Export to Word
+                    </button>
+                    <button class="btn btn-primary" onclick="testSystemStatus()">Test System Status</button>
+                </div>
+                
+                <div class="sample-content">
+                    <h3>Content Selection:</h3>
+                    <select id="contentType" onchange="loadSampleContent()">
+                        <option value="comprehensive">Comprehensive Business Document</option>
+                        <option value="business">Business Proposal</option>
+                        <option value="simple">Simple Document</option>
+                        <option value="formatted">Rich Formatted Content</option>
+                    </select>
+                </div>
+                
+                <div class="content-preview" id="contentPreview">
+                    <p><em>Click "Load Sample Content" to see preview</em></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dependencies -->
+    <script src="lib/business-document-formatter.js"></script>
+    <script src="lib/markdown-renderer.js"></script>
+    
+    <!-- Word Export Dependencies -->
+    <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+    <script src="lib/word-export-manager-browser.js"></script>
+
+    <script>
+        let wordExportManager;
+        let markdownRenderer;
+        let businessFormatter;
+        
+        // Sample content for testing
+        const sampleContent = {
+            comprehensive: {
+                title: 'Comprehensive Business Document Test',
+                markdown: `# Executive Summary
+
+This document demonstrates the **Word export functionality** with comprehensive business document formatting capabilities.
+
+## Key Features
+
+The Word export system provides the following capabilities:
+
+- **Professional formatting** with consistent typography
+- **Image support** with proper sizing and positioning
+- **Table rendering** with borders and styling
+- **List formatting** for both bulleted and numbered lists
+- **Header and footer** integration with company branding
+
+## Export Options
+
+The system provides multiple export options:
+
+1. **Standard Word Export** - Basic document generation
+2. **Business Document Export** - Professional formatting with business styling
+3. **Custom Layout Options** - Configurable page size, orientation, and margins
+
+### Technical Implementation
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| Word Export Manager | docx.js Library | Core export functionality |
+| Business Formatter | CSS Custom Properties | Professional styling |
+| Markdown Renderer | Custom Parser | Content processing |
+
+## Code Example
+
+\`\`\`javascript
+const wordExportManager = new WordExportManager({
+    defaultFilename: 'business-report',
+    businessFormatting: true
+});
+
+await wordExportManager.exportToWord(content, options);
+\`\`\`
+
+## Implementation Details
+
+The Word export system uses the docx.js library to provide:
+
+- Client-side document generation without server dependencies
+- Full formatting preservation including fonts, colors, and spacing
+- Image embedding with automatic base64 conversion
+- Table structure preservation with proper borders and alignment
+
+> Professional document export capabilities that meet business standards while maintaining web accessibility and responsive design principles.
+
+### Quality Assurance
+
+The system includes comprehensive testing for:
+
+- Cross-browser compatibility
+- Various content types and structures
+- Image handling and optimization
+- Performance with large documents
+
+## Conclusion
+
+This enhanced Word export system provides the professional document output needed for business communications while maintaining ease of use and broad browser compatibility.`,
+
+                business: `BUSINESS PROPOSAL
+
+**Project:** Enhanced Document Export System
+**Date:** ${new Date().toLocaleDateString()}
+**Prepared by:** Development Team
+
+## Executive Summary
+
+This proposal outlines the implementation of advanced Word document export capabilities for our business document generation platform.
+
+### Key Objectives
+
+1. Implement professional document styling with consistent typography
+2. Provide automated Word export functionality  
+3. Ensure responsive design for various devices
+4. Maintain accessibility compliance throughout the system
+
+### Technical Requirements
+
+- **Client-side processing** for security and performance
+- **Format preservation** across different document types
+- **Image handling** with automatic optimization
+- **Cross-browser compatibility** for maximum reach
+
+### Implementation Timeline
+
+| Phase | Duration | Deliverables |
+|-------|----------|-------------|
+| Phase 1 | 2 weeks | Core export functionality |
+| Phase 2 | 1 week | Business formatting integration |
+| Phase 3 | 1 week | Testing and optimization |
+
+### Budget Considerations
+
+The implementation leverages existing infrastructure and open-source libraries to minimize costs while maximizing functionality.
+
+**Recommendation:** Proceed with implementation to enhance our competitive position in the business document generation market.`
+            },
+
+            simple: `Simple Document Test
+
+This is a simple text document to test basic Word export functionality.
+
+Key Points:
+- Simple paragraph formatting
+- Basic list items
+- **Bold text** and *italic text*
+- Standard business formatting
+
+The export should preserve all formatting while creating a clean, professional Word document.`,
+
+            formatted: `# Rich Formatting Test Document
+
+## Text Formatting Examples
+
+This document contains **bold text**, *italic text*, and ***bold italic text*** to test formatting preservation.
+
+### Lists and Structure
+
+#### Unordered List:
+- First item with **bold** text
+- Second item with *italic* text
+- Third item with `inline code`
+
+#### Ordered List:
+1. Numbered item one
+2. Numbered item two with [link text](https://example.com)
+3. Numbered item three
+
+### Code and Quotes
+
+Here's some inline \`code\` and a code block:
+
+\`\`\`javascript
+function testFunction() {
+    console.log("Testing Word export");
+    return true;
+}
+\`\`\`
+
+> This is a blockquote that should be properly formatted in the Word document with appropriate indentation and styling.
+
+### Table Example
+
+| Feature | Status | Priority |
+|---------|--------|----------|
+| Text Formatting | ✅ Complete | High |
+| Image Support | ✅ Complete | High |
+| Table Export | ✅ Complete | Medium |
+| List Formatting | ✅ Complete | Medium |
+
+### Final Notes
+
+This document tests various formatting elements to ensure they are properly converted to Word format while maintaining professional appearance and readability.`
+        };
+        
+        // Initialize components
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Word Export Test loaded');
+            
+            // Initialize Word Export Manager
+            if (typeof WordExportManager !== 'undefined') {
+                wordExportManager = new WordExportManager({
+                    defaultFilename: 'test-document',
+                    businessFormatting: false
+                });
+                showStatus('Word Export Manager initialized', 'success');
+            } else {
+                showStatus('Word Export Manager not available', 'error');
+            }
+            
+            // Initialize other components
+            if (typeof MarkdownRenderer !== 'undefined') {
+                markdownRenderer = new MarkdownRenderer();
+                showStatus('Markdown Renderer initialized', 'success');
+            }
+            
+            if (typeof BusinessDocumentFormatter !== 'undefined') {
+                businessFormatter = new BusinessDocumentFormatter();
+                showStatus('Business Document Formatter initialized', 'success');
+            }
+            
+            // Load initial content
+            loadSampleContent();
+        });
+        
+        function showStatus(message, type = 'info') {
+            const statusArea = document.getElementById('statusArea');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            statusArea.appendChild(statusDiv);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (statusDiv.parentNode) {
+                    statusDiv.parentNode.removeChild(statusDiv);
+                }
+            }, 5000);
+        }
+        
+        function loadSampleContent() {
+            const contentType = document.getElementById('contentType').value;
+            const content = sampleContent[contentType];
+            
+            if (!content) {
+                showStatus('Content type not found', 'error');
+                return;
+            }
+            
+            // Convert markdown to HTML if needed
+            let htmlContent = content.markdown || content;
+            if (markdownRenderer && content.markdown) {
+                htmlContent = markdownRenderer.renderToHTML(content.markdown);
+            }
+            
+            // Apply business formatting if available
+            const preview = document.getElementById('contentPreview');
+            preview.innerHTML = htmlContent;
+            preview.className = 'content-preview business-document';
+            
+            if (businessFormatter) {
+                businessFormatter.applyBusinessStyling(preview);
+            }
+            
+            showStatus(`Loaded ${contentType} content`, 'success');
+        }
+        
+        function previewContent() {
+            const preview = document.getElementById('contentPreview');
+            const content = preview.innerHTML;
+            
+            if (!content || content.trim() === '') {
+                showStatus('No content to preview', 'error');
+                return;
+            }
+            
+            // Open preview in new window
+            const previewWindow = window.open('', '_blank');
+            previewWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Content Preview</title>
+                    <link rel="stylesheet" href="styles.css">
+                    <link rel="stylesheet" href="lib/business-document-styles.css">
+                </head>
+                <body class="business-document">
+                    ${content}
+                </body>
+                </html>
+            `);
+            previewWindow.document.close();
+            
+            showStatus('Preview opened in new window', 'success');
+        }
+        
+        async function exportToWord() {
+            if (!wordExportManager) {
+                showStatus('Word Export Manager not available', 'error');
+                return;
+            }
+            
+            const exportBtn = document.getElementById('export-btn');
+            const preview = document.getElementById('contentPreview');
+            const htmlContent = preview.innerHTML;
+            
+            if (!htmlContent || htmlContent.trim() === '') {
+                showStatus('No content to export', 'error');
+                return;
+            }
+            
+            try {
+                // Show loading state
+                const originalHTML = exportBtn.innerHTML;
+                exportBtn.innerHTML = `
+                    <svg class="icon animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                    </svg>
+                    Generating Word...
+                `;
+                exportBtn.disabled = true;
+                
+                // Export options
+                const exportOptions = {
+                    title: 'Test Document',
+                    filename: 'word-export-test',
+                    pageSize: 'A4',
+                    orientation: 'portrait',
+                    includeHeaders: true,
+                    includeFooters: true,
+                    showPageNumbers: true,
+                    headerFooterData: {
+                        header: 'Word Export Test Document',
+                        footer: 'Generated by Word Export Manager'
+                    },
+                    businessFormatting: true,
+                    convertRelativeUrls: true,
+                    includeTimestamp: true
+                };
+                
+                showStatus('Starting Word export...', 'info');
+                
+                // Export to Word
+                const success = await wordExportManager.exportToWord(htmlContent, exportOptions);
+                
+                if (success) {
+                    showStatus('Word export completed successfully', 'success');
+                } else {
+                    showStatus('Word export failed', 'error');
+                }
+                
+                // Restore button
+                exportBtn.innerHTML = originalHTML;
+                exportBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('Word export error:', error);
+                showStatus(`Word export error: ${error.message}`, 'error');
+                
+                // Restore button
+                exportBtn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14,2 14,8 20,8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="12" y2="12"></line>
+                        <line x1="15" y1="15" x2="12" y2="12"></line>
+                    </svg>
+                    Export to Word
+                `;
+                exportBtn.disabled = false;
+            }
+        }
+        
+        function testSystemStatus() {
+            const results = [];
+            
+            // Test docx library
+            if (typeof docx !== 'undefined') {
+                results.push('✓ docx.js library loaded');
+            } else {
+                results.push('✗ docx.js library not loaded');
+            }
+            
+            // Test Word Export Manager
+            if (wordExportManager && wordExportManager.getCapabilities) {
+                results.push('✓ Word Export Manager ready');
+                const capabilities = wordExportManager.getCapabilities();
+                results.push(`✓ Supported formats: ${capabilities.formats.join(', ')}`);
+                results.push(`✓ Supported page sizes: ${capabilities.pageSizes.join(', ')}`);
+            } else {
+                results.push('✗ Word Export Manager not ready');
+            }
+            
+            // Test other components
+            if (markdownRenderer) {
+                results.push('✓ Markdown Renderer available');
+            } else {
+                results.push('✗ Markdown Renderer not available');
+            }
+            
+            if (businessFormatter) {
+                results.push('✓ Business Document Formatter available');
+            } else {
+                results.push('✗ Business Document Formatter not available');
+            }
+            
+            // Display results
+            const resultText = results.join('\n');
+            showStatus(`System Status:\n${resultText}`, results.some(r => r.includes('✗')) ? 'error' : 'success');
+            console.log('System Status:', results);
+        }
+    </script>
+</body>
+</html>
