@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Acceptance Testing Framework</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+        }
+        .test-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .feedback-form {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .rating-scale {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .rating-button {
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            background: white;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .rating-button.selected {
+            background: #007bff;
+            color: white;
+        }
+        .results-summary {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .test-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-in-progress { background: #cce5ff; color: #004085; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+        
+        .editor-preview {
+            border: 1px solid #ddd;
+            min-height: 200px;
+            padding: 10px;
+            margin: 10px 0;
+            background: white;
+        }
+        
+        .layout-options {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .layout-option {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            min-width: 120px;
+        }
+        
+        .layout-option.selected {
+            border-color: #007bff;
+            background: #e7f3ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>User Acceptance Testing Framework</h1>
+        <p>This framework tests the critical production fixes across three main areas: JavaScript functionality, report quality, and editor layout improvements.</p>
+        
+        <div id="test-progress">
+            <h3>Testing Progress</h3>
+            <div id="progress-summary"></div>
+        </div>
+    </div>
+
+    <!-- Test Section 1: Usability Feedback -->
+    <div class="test-container">
+        <div class="test-section">
+            <h2>1. Usability Feedback Testing</h2>
+            <p>Test overall application usability and user experience improvements.</p>
+            
+            <div class="test-item">
+                <h4>1.1 JavaScript Module Loading <span class="test-status status-pending" id="status-js-loading">Pending</span></h4>
+                <p>Test that the application loads without JavaScript errors and all modules work correctly.</p>
+                
+                <div class="feedback-form">
+                    <label>Rate the application loading experience:</label>
+                    <div class="rating-scale" data-test="js-loading">
+                        <button class="rating-button" data-rating="1">1 - Poor</button>
+                        <button class="rating-button" data-rating="2">2 - Fair</button>
+                        <button class="rating-button" data-rating="3">3 - Good</button>
+                        <button class="rating-button" data-rating="4">4 - Very Good</button>
+                        <button class="rating-button" data-rating="5">5 - Excellent</button>
+                    </div>
+                    <textarea placeholder="Comments about loading experience..." rows="3" style="width: 100%; margin-top: 10px;" id="feedback-js-loading"></textarea>
+                    <button onclick="submitFeedback('js-loading')" style="margin-top: 10px; padding: 8px 15px;">Submit Feedback</button>
+                </div>
+            </div>
+
+            <div class="test-item">
+                <h4>1.2 Template System Functionality <span class="test-status status-pending" id="status-template">Pending</span></h4>
+                <p>Test template system initialization and dependency loading.</p>
+                
+                <div class="feedback-form">
+                    <label>Rate the template system performance:</label>
+                    <div class="rating-scale" data-test="template">
+                        <button class="rating-button" data-rating="1">1 - Poor</button>
+                        <button class="rating-button" data-rating="2">2 - Fair</button>
+                        <button class="rating-button" data-rating="3">3 - Good</button>
+                        <button class="rating-button" data-rating="4">4 - Very Good</button>
+                        <button class="rating-button" data-rating="5">5 - Excellent</button>
+                    </div>
+                    <textarea placeholder="Comments about template functionality..." rows="3" style="width: 100%; margin-top: 10px;" id="feedback-template"></textarea>
+                    <button onclick="submitFeedback('template')" style="margin-top: 10px; padding: 8px 15px;">Submit Feedback</button>
+                </div>
+            </div>
+
+            <div class="test-item">
+                <h4>1.3 Print Preview Functionality <span class="test-status status-pending" id="status-print">Pending</span></h4>
+                <p>Test print preview generation and display.</p>
+                
+                <div class="feedback-form">
+                    <label>Rate the print preview experience:</label>
+                    <div class="rating-scale" data-test="print">
+                        <button class="rating-button" data-rating="1">1 - Poor</button>
+                        <button class="rating-button" data-rating="2">2 - Fair</button>
+                        <button class="rating-button" data-rating="3">3 - Good</button>
+                        <button class="rating-button" data-rating="4">4 - Very Good</button>
+                        <button class="rating-button" data-rating="5">5 - Excellent</button>
+                    </div>
+                    <textarea placeholder="Comments about print preview..." rows="3" style="width: 100%; margin-top: 10px;" id="feedback-print"></textarea>
+                    <button onclick="submitFeedback('print')" style="margin-top: 10px; padding: 8px 15px;">Submit Feedback</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Section 2: Report Quality Validation -->
+    <div class="test-container">
+        <div class="test-section">
+            <h2>2. Report Quality Validation</h2>
+            <p>Validate that investment reports meet user expectations and include proper analysis.</p>
+            
+            <div class="test-item">
+                <h4>2.1 Investment Analysis Content <span class="test-status status-pending" id="status-investment">Pending</span></h4>
+                <p>Test that reports include FCR, CCR, and leverage analysis as specified.</p>
+                
+                <div id="sample-report-area">
+                    <h5>Sample Investment Data for Testing:</h5>
+                    <div style="background: #f8f9fa; padding: 10px; border-radius: 3px; margin: 10px 0;">
+                        <strong>Test Data:</strong><br>
+                        FCR (総収益率): 8.5%<br>
+                        K% (ローン定数): 6.2%<br>
+                        Initial Investment: ¥50,000,000<br>
+                        Annual Net Cash Flow: ¥3,200,000
+                    </div>
+                    <button onclick="generateSampleReport()" style="padding: 8px 15px; margin: 10px 0;">Generate Sample Report</button>
+                    <div id="generated-report" style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; min-height: 100px; background: white;"></div>
+                </div>
+                
+                <div class="feedback-form">
+                    <label>Rate the report content quality:</label>
+                    <div class="rating-scale" data-test="investment">
+                        <button class="rating-button" data-rating="1">1 - Poor</button>
+                        <button class="rating-button" data-rating="2">2 - Fair</button>
+                        <button class="rating-button" data-rating="3">3 - Good</button>
+                        <button class="rating-button" data-rating="4">4 - Very Good</button>
+                        <button class="rating-button" data-rating="5">5 - Excellent</button>
+                    </div>
+                    <textarea placeholder="Comments about report quality and completeness..." rows="3" style="width: 100%; margin-top: 10px;" id="feedback-investment"></textarea>
+                    <button onclick="submitFeedback('investment')" style="margin-top: 10px; padding: 8px 15px;">Submit Feedback</button>
+                </div>
+            </div>
+
+            <div class="test-item">
+                <h4>2.2 Report Structure Validation <span class="test-status status-pending" id="status-structure">Pending</span></h4>
+                <p>Validate 4-part report structure (Executive Summary, Benefits, Risks, Evidence).</p>
+                
+                <div class="feedback-form">
+                    <label>Rate the report structure and organization:</label>
+                    <div class="rating-scale" data-test="structure">
+                        <button class="rating-button" data-rating="1">1 - Poor</button>
+                        <button class="rating-button" data-rating="2">2 - Fair</button>
+                        <button class="rating-button" data-rating="3">3 - Good</button>
+                        <button class="rating-button" data-rating="4">4 - Very Good</button>
+                        <button class="rating-button" data-rating="5">5 - Excellent</button>
+                    </div>
+                    <textarea placeholder="Comments about report structure..." rows="3" style="width: 100%; margin-top: 10px;" id="feedback-structure"></textarea>
+                    <button onclick="submitFeedback('structure')" style="margin-top: 10px; padding: 8px 15px;">Submit Feedback</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Section 3: Editor Layout Preferences -->
+    <div class="test-container">
+        <div class="test-section">
+            <h2>3. Editor Layout Preferences Testing</h2>
+            <p>Test different editor layout options and gather user preferences.</p>
+            
+            <div class="test-item">
+                <h4>3.1 Layout Mode Selection <span class="test-status status-pending" id="status-layout">Pending</span></h4>
+                <p>Test different layout modes and determine user preferences.</p>
+                
+                <div class="layout-options">
+                    <div class="layout-option" data-layout="split" onclick="selectLayout('split')">
+                        <strong>Split Panel</strong><br>
+                        <small>Side-by-side editing</small>
+                    </div>
+                    <div class="layout-option" data-layout="tabbed" onclick="selectLayout('tabbed')">
+                        <strong>Tabbed Interface</strong><br>
+                        <small>Switch between modes</small>
+                    </div>
+                    <div class="layout-option" data-layout="overlay" onclick="selectLayout('overlay')">
+                        <strong>Overlay Preview</strong><br>
+                        <small>Modal preview window</small>
+                    </div>
+                </div>
+                
+                <div class="editor-preview" id="layout-preview">
+                    <p>Select a layout option above to preview the editor interface.</p>
+                </div>
+                
+                <div class="feedback-form">
+                    <label>Rate your preferred layout option:</label>
+                    <div class="rating-scale" data-test="layout">
+                        <button class="rating-button" data-rating="1">1 - Poor</button>
+                        <button class="rating-button" data-rating="2">2 - Fair</button>
+                        <button class="rating-button" data-rating="3">3 - Good</button>
+                        <button class="rating-button" data-rating="4">4 - Very Good</button>
+                        <button class="rating-button" data-rating="5">5 - Excellent</button>
+                    </div>
+                    <textarea placeholder="Comments about layout preferences..." rows="3" style="width: 100%; margin-top: 10px;" id="feedback-layout"></textarea>
+                    <button onclick="submitFeedback('layout')" style="margin-top: 10px; padding: 8px 15px;">Submit Feedback</button>
+                </div>
+            </div>
+
+            <div class="test-item">
+                <h4>3.2 Responsive Design Testing <span class="test-status status-pending" id="status-responsive">Pending</span></h4>
+                <p>Test editor layout on different screen sizes.</p>
+                
+                <div style="margin: 15px 0;">
+                    <button onclick="testResponsive('mobile')" style="margin: 5px;">Test Mobile (375px)</button>
+                    <button onclick="testResponsive('tablet')" style="margin: 5px;">Test Tablet (768px)</button>
+                    <button onclick="testResponsive('desktop')" style="margin: 5px;">Test Desktop (1200px)</button>
+                    <button onclick="testResponsive('reset')" style="margin: 5px;">Reset to Full Width</button>
+                </div>
+                
+                <div class="feedback-form">
+                    <label>Rate the responsive design experience:</label>
+                    <div class="rating-scale" data-test="responsive">
+                        <button class="rating-button" data-rating="1">1 - Poor</button>
+                        <button class="rating-button" data-rating="2">2 - Fair</button>
+                        <button class="rating-button" data-rating="3">3 - Good</button>
+                        <button class="rating-button" data-rating="4">4 - Very Good</button>
+                        <button class="rating-button" data-rating="5">5 - Excellent</button>
+                    </div>
+                    <textarea placeholder="Comments about responsive behavior..." rows="3" style="width: 100%; margin-top: 10px;" id="feedback-responsive"></textarea>
+                    <button onclick="submitFeedback('responsive')" style="margin-top: 10px; padding: 8px 15px;">Submit Feedback</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="test-container">
+        <div class="results-summary">
+            <h3>Testing Results Summary</h3>
+            <div id="results-content">
+                <p>Complete the tests above to see results summary.</p>
+            </div>
+            <button onclick="generateReport()" style="margin-top: 15px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 3px;">Generate Final Report</button>
+        </div>
+    </div>
+
+    <script>
+        // Test data storage
+        let testResults = {
+            'js-loading': { rating: null, feedback: '', status: 'pending' },
+            'template': { rating: null, feedback: '', status: 'pending' },
+            'print': { rating: null, feedback: '', status: 'pending' },
+            'investment': { rating: null, feedback: '', status: 'pending' },
+            'structure': { rating: null, feedback: '', status: 'pending' },
+            'layout': { rating: null, feedback: '', status: 'pending' },
+            'responsive': { rating: null, feedback: '', status: 'pending' }
+        };
+
+        let selectedLayout = null;
+
+        // Initialize the testing framework
+        function initializeTests() {
+            updateProgressSummary();
+            
+            // Add event listeners for rating buttons
+            document.querySelectorAll('.rating-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const testName = this.closest('.rating-scale').dataset.test;
+                    const rating = this.dataset.rating;
+                    
+                    // Clear previous selections
+                    this.closest('.rating-scale').querySelectorAll('.rating-button').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    
+                    // Select current button
+                    this.classList.add('selected');
+                    
+                    // Store rating
+                    testResults[testName].rating = parseInt(rating);
+                });
+            });
+        }
+
+        function submitFeedback(testName) {
+            const feedbackElement = document.getElementById(`feedback-${testName}`);
+            const feedback = feedbackElement.value;
+            
+            if (!testResults[testName].rating) {
+                alert('Please select a rating before submitting feedback.');
+                return;
+            }
+            
+            testResults[testName].feedback = feedback;
+            testResults[testName].status = 'completed';
+            
+            // Update status indicator
+            const statusElement = document.getElementById(`status-${testName}`);
+            statusElement.textContent = 'Completed';
+            statusElement.className = 'test-status status-completed';
+            
+            updateProgressSummary();
+            
+            alert('Feedback submitted successfully!');
+        }
+
+        function generateSampleReport() {
+            const reportArea = document.getElementById('generated-report');
+            
+            // Simulate report generation with proper investment analysis
+            const sampleReport = `
+                <h4>投資分析レポート (Investment Analysis Report)</h4>
+                
+                <h5>1. 投資概要 (Executive Summary)</h5>
+                <p>本投資案件は、FCR 8.5%に対してローン定数6.2%のポジティブ・レバレッジ効果を示しています。
+                イールドギャップ2.3%により、借入による収益性向上が期待できます。</p>
+                
+                <h5>2. 優位性 (Benefits)</h5>
+                <ul>
+                    <li>FCR (総収益率): 8.5% - 市場平均を上回る収益性</li>
+                    <li>CCR (自己資金配当率): 6.4% - 良好なキャッシュフロー</li>
+                    <li>ポジティブ・レバレッジ効果による収益性向上</li>
+                </ul>
+                
+                <h5>3. リスク (Risks)</h5>
+                <ul>
+                    <li>金利上昇リスク</li>
+                    <li>空室率変動リスク</li>
+                    <li>市場価格変動リスク</li>
+                </ul>
+                
+                <h5>4. 定量的証拠 (Quantitative Evidence)</h5>
+                <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
+                    <tr style="background: #f8f9fa;">
+                        <td style="border: 1px solid #ddd; padding: 8px;"><strong>指標</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;"><strong>値</strong></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">FCR (総収益率)</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">8.5%</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">K% (ローン定数)</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">6.2%</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">CCR (自己資金配当率)</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">6.4%</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">イールドギャップ</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">2.3%</td>
+                    </tr>
+                </table>
+            `;
+            
+            reportArea.innerHTML = sampleReport;
+        }
+
+        function selectLayout(layoutType) {
+            selectedLayout = layoutType;
+            
+            // Clear previous selections
+            document.querySelectorAll('.layout-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Select current option
+            document.querySelector(`[data-layout="${layoutType}"]`).classList.add('selected');
+            
+            // Update preview
+            const preview = document.getElementById('layout-preview');
+            let previewContent = '';
+            
+            switch(layoutType) {
+                case 'split':
+                    previewContent = `
+                        <div style="display: flex; height: 150px;">
+                            <div style="flex: 1; border: 1px solid #ccc; margin-right: 5px; padding: 10px; background: #f8f9fa;">
+                                <strong>Edit Area</strong><br>
+                                Content editing interface
+                            </div>
+                            <div style="flex: 1; border: 1px solid #ccc; margin-left: 5px; padding: 10px; background: #fff;">
+                                <strong>Preview Area</strong><br>
+                                Real-time preview
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'tabbed':
+                    previewContent = `
+                        <div>
+                            <div style="border-bottom: 1px solid #ccc; margin-bottom: 10px;">
+                                <button style="padding: 8px 15px; margin-right: 5px; background: #007bff; color: white; border: none;">Edit</button>
+                                <button style="padding: 8px 15px; background: #f8f9fa; border: 1px solid #ccc;">Preview</button>
+                            </div>
+                            <div style="height: 120px; border: 1px solid #ccc; padding: 10px; background: #f8f9fa;">
+                                <strong>Edit Mode Active</strong><br>
+                                Switch tabs to change between edit and preview modes
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'overlay':
+                    previewContent = `
+                        <div style="position: relative; height: 150px; border: 1px solid #ccc; padding: 10px; background: #f8f9fa;">
+                            <strong>Edit Area</strong><br>
+                            Content editing interface
+                            <div style="position: absolute; top: 20px; right: 20px; background: white; border: 2px solid #007bff; padding: 10px; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                                <strong>Preview Overlay</strong><br>
+                                <small>Modal preview window</small>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            preview.innerHTML = previewContent;
+        }
+
+        function testResponsive(size) {
+            const container = document.body;
+            
+            switch(size) {
+                case 'mobile':
+                    container.style.maxWidth = '375px';
+                    container.style.margin = '0 auto';
+                    break;
+                case 'tablet':
+                    container.style.maxWidth = '768px';
+                    container.style.margin = '0 auto';
+                    break;
+                case 'desktop':
+                    container.style.maxWidth = '1200px';
+                    container.style.margin = '0 auto';
+                    break;
+                case 'reset':
+                    container.style.maxWidth = '1200px';
+                    container.style.margin = '0 auto';
+                    break;
+            }
+        }
+
+        function updateProgressSummary() {
+            const completed = Object.values(testResults).filter(test => test.status === 'completed').length;
+            const total = Object.keys(testResults).length;
+            const percentage = Math.round((completed / total) * 100);
+            
+            document.getElementById('progress-summary').innerHTML = `
+                <p><strong>Progress:</strong> ${completed}/${total} tests completed (${percentage}%)</p>
+                <div style="background: #e9ecef; height: 20px; border-radius: 10px; overflow: hidden;">
+                    <div style="background: #007bff; height: 100%; width: ${percentage}%; transition: width 0.3s;"></div>
+                </div>
+            `;
+        }
+
+        function generateReport() {
+            const completed = Object.values(testResults).filter(test => test.status === 'completed').length;
+            const total = Object.keys(testResults).length;
+            
+            if (completed < total) {
+                alert(`Please complete all tests before generating the report. ${completed}/${total} completed.`);
+                return;
+            }
+            
+            // Calculate average ratings
+            const ratings = Object.values(testResults).map(test => test.rating);
+            const averageRating = (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1);
+            
+            // Generate detailed report
+            let reportContent = `
+                <h4>User Acceptance Testing Results</h4>
+                <p><strong>Overall Rating:</strong> ${averageRating}/5.0</p>
+                <p><strong>Tests Completed:</strong> ${completed}/${total}</p>
+                
+                <h5>Detailed Results:</h5>
+                <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
+                    <tr style="background: #f8f9fa;">
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Test Area</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">Rating</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Feedback</th>
+                    </tr>
+            `;
+            
+            const testNames = {
+                'js-loading': 'JavaScript Loading',
+                'template': 'Template System',
+                'print': 'Print Preview',
+                'investment': 'Investment Analysis',
+                'structure': 'Report Structure',
+                'layout': 'Editor Layout',
+                'responsive': 'Responsive Design'
+            };
+            
+            Object.entries(testResults).forEach(([key, result]) => {
+                reportContent += `
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${testNames[key]}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${result.rating}/5</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${result.feedback || 'No feedback provided'}</td>
+                    </tr>
+                `;
+            });
+            
+            reportContent += '</table>';
+            
+            // Add recommendations
+            const lowRatings = Object.entries(testResults).filter(([key, result]) => result.rating <= 2);
+            if (lowRatings.length > 0) {
+                reportContent += `
+                    <h5>Areas for Improvement:</h5>
+                    <ul>
+                `;
+                lowRatings.forEach(([key, result]) => {
+                    reportContent += `<li>${testNames[key]} (Rating: ${result.rating}/5)</li>`;
+                });
+                reportContent += '</ul>';
+            }
+            
+            document.getElementById('results-content').innerHTML = reportContent;
+            
+            // Save results to localStorage for persistence
+            localStorage.setItem('userAcceptanceTestResults', JSON.stringify({
+                timestamp: new Date().toISOString(),
+                results: testResults,
+                averageRating: averageRating,
+                selectedLayout: selectedLayout
+            }));
+            
+            alert('Final report generated successfully!');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeTests);
+    </script>
+</body>
+</html>
