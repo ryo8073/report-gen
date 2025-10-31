@@ -27,10 +27,10 @@ try {
     console.error('GOOGLE_AI_API_KEY environment variable is not set');
   } else {
     gemini = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
-    // Use gemini-1.5-pro for better numerical reasoning and logical analysis
-    // This model is more stable and better at handling complex financial calculations
+    // Use gemini-2.5-pro for better numerical reasoning, logical analysis, and multimodal capabilities
+    // This is the latest Gemini Pro model with improved performance and better handling of complex financial calculations
     geminiModel = gemini.getGenerativeModel({ 
-      model: "gemini-1.5-pro",
+      model: "gemini-2.5-pro",
       generationConfig: {
         temperature: 0.7,
         topK: 40,
@@ -2551,7 +2551,7 @@ async function analyzeFileWithVision(file, reportType) {
       return {
         fileName: file.name,
         content: geminiResult,
-        model: 'gemini-1.5-pro'
+        model: 'gemini-2.5-pro'
       };
     } catch (geminiError) {
       console.error(`[VISION] Both vision models failed for ${file.name}`);
@@ -2562,7 +2562,7 @@ async function analyzeFileWithVision(file, reportType) {
   }
 }
 
-// Analyze with Gemini 1.5 Pro (supports PDF and images, better numerical reasoning)
+// Analyze with Gemini 2.5 Pro (supports PDF and images, better numerical reasoning)
 async function analyzeWithGeminiVision(file, reportType) {
   if (!geminiModel) {
     throw new Error('Gemini model not available');
