@@ -2381,21 +2381,83 @@ async function processFilesWithVision(files, reportType) {
       }
 
       // Check if file type is supported for vision processing
-      const visionSupportedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      const textSupportedTypes = ['text/plain', 'text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      const isVisionSupported = visionSupportedTypes.includes(file.type);
-      const isTextSupported = textSupportedTypes.includes(file.type);
+      const visionSupportedTypes = [
+        'application/pdf', 
+        'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/tiff'
+      ];
+      const textSupportedTypes = [
+        'text/plain', 
+        'text/csv'
+      ];
+      const excelTypes = [
+        'application/vnd.ms-excel', // .xls
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+      ];
+      const wordTypes = [
+        'application/msword', // .doc
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
+      ];
+      
+      // Also check file extension as fallback
+      const fileName = file.name.toLowerCase();
+      const isImageByExtension = /\.(jpg|jpeg|png|gif|webp|bmp|tiff)$/i.test(fileName);
+      const isPDFByExtension = /\.pdf$/i.test(fileName);
+      const isCSVByExtension = /\.csv$/i.test(fileName);
+      const isExcelByExtension = /\.(xlsx|xls)$/i.test(fileName);
+      
+      const isVisionSupported = visionSupportedTypes.includes(file.type) || isPDFByExtension || isImageByExtension;
+      const isTextSupported = textSupportedTypes.includes(file.type) || isCSVByExtension;
+      const isExcelFile = excelTypes.includes(file.type) || isExcelByExtension;
+      const isWordFile = wordTypes.includes(file.type);
 
       // Process with appropriate method based on file type
       let visionResult;
       if (isVisionSupported) {
-        console.log(`[VISION] Using vision analysis for ${file.name}`);
+        console.log(`[VISION] Using vision analysis for ${file.name} (${file.type || 'detected by extension'})`);
         visionResult = await analyzeFileWithVision(file, reportType);
         visionResults.push(visionResult);
         processedFiles.push(file.name);
-      } else if (isTextSupported) {
-        console.log(`[VISION] Using text processing for ${file.name} (${file.type})`);
-        visionResult = await processTextFile(file);
+      } else if (isTextSupported || isCSVByExtension) {
+        console.log(`[VISION] Using CSV/text processing for ${file.name} (${file.type || 'CSV detected by extension'})`);
+        // Use enhanced CSV processing for CSV files
+        if (isCSVByExtension || file.type === 'text/csv') {
+          const { processCSVFile } = await import('./file-processors.js');
+          visionResult = await processCSVFile(file, reportType);
+        } else {
+          visionResult = await processTextFile(file);
+        }
+        visionResults.push(visionResult);
+        processedFiles.push(file.name);
+      } else if (isExcelFile) {
+        console.log(`[VISION] Using Excel processing for ${file.name} (${file.type || 'Excel detected by extension'})`);
+        try {
+          const { processExcelFile } = await import('./file-processors.js');
+          visionResult = await processExcelFile(file, reportType);
+        } catch (importError) {
+          console.warn(`[VISION] Excel processor not available, using fallback:`, importError.message);
+          visionResult = await processTextFallback(file);
+          visionResult = {
+            fileName: file.name,
+            content: visionResult,
+            model: 'fallback'
+          };
+        }
+        visionResults.push(visionResult);
+        processedFiles.push(file.name);
+      } else if (isWordFile) {
+        console.log(`[VISION] Using Word document processing for ${file.name} (${file.type})`);
+        try {
+          const { processWordFile } = await import('./file-processors.js');
+          visionResult = await processWordFile(file, reportType);
+        } catch (importError) {
+          console.warn(`[VISION] Word processor not available, using fallback:`, importError.message);
+          visionResult = await processTextFallback(file);
+          visionResult = {
+            fileName: file.name,
+            content: visionResult,
+            model: 'fallback'
+          };
+        }
         visionResults.push(visionResult);
         processedFiles.push(file.name);
       } else {
