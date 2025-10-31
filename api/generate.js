@@ -2115,25 +2115,49 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
       // Add files directly to Gemini (native multimodal support)
       for (const file of files) {
         try {
+          // Validate file structure
+          if (!file.name || !file.type || !file.data) {
+            console.error(`[GEMINI] Invalid file structure for ${file.name || 'unknown'}`);
+            throw new Error(`Invalid file structure: missing name, type, or data`);
+          }
+
+          console.log(`[GEMINI] Processing file: ${file.name} (${file.type}), data length: ${file.data?.length || 0}`);
+
           if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
-            console.log(`[GEMINI] Adding ${file.name} (${file.type}) directly to multimodal input`);
-            
+            // Validate that data is base64 string
+            if (typeof file.data !== 'string') {
+              console.error(`[GEMINI] Invalid data type for ${file.name}: expected string, got ${typeof file.data}`);
+              throw new Error(`Invalid data type: expected base64 string`);
+            }
+
+            // Validate base64 format
+            if (!file.data.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
+              console.error(`[GEMINI] Invalid base64 format for ${file.name}`);
+              throw new Error(`Invalid base64 format`);
+            }
+
             // Validate file size for multimodal processing
             const fileSizeKB = Math.round(file.data.length * 0.75 / 1024);
+            console.log(`[GEMINI] File ${file.name} size: ${fileSizeKB}KB`);
+            
             if (fileSizeKB > 5120) { // 5MB limit for multimodal
               console.log(`[GEMINI] File ${file.name} too large for multimodal (${fileSizeKB}KB), using text processing`);
               const fallbackContent = await processTextFallback(file);
               parts.push({ text: `\n\n【ファイル: ${file.name}】\n${fallbackContent}` });
             } else {
+              console.log(`[GEMINI] Adding ${file.name} (${file.type}, ${fileSizeKB}KB) directly to multimodal input`);
               parts.push({
                 inlineData: {
                   mimeType: file.type,
-                  data: file.data
+                  data: file.data // base64 string as-is
                 }
               });
             }
           } else {
             // For text files, process and add as text
+            if (typeof file.data !== 'string') {
+              throw new Error(`Invalid data type for text file: expected string`);
+            }
             const buffer = Buffer.from(file.data, 'base64');
             const textContent = buffer.toString('utf8');
             parts.push({
@@ -2142,8 +2166,14 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
           }
         } catch (fileError) {
           console.error(`[GEMINI] Error processing file ${file.name}:`, fileError);
+          console.error(`[GEMINI] File details:`, {
+            name: file.name,
+            type: file.type,
+            dataType: typeof file.data,
+            dataLength: file.data?.length || 0
+          });
           parts.push({
-            text: `\n\n【ファイル処理エラー: ${file.name}】\n${fileError.message}`
+            text: `\n\n【ファイル処理エラー: ${file.name}】\n${fileError.message}\nファイルタイプ: ${file.type}\nデータタイプ: ${typeof file.data}\nデータ長: ${file.data?.length || 0}`
           });
         }
       }
