@@ -508,5 +508,245 @@
     "sessionId": "session_1761786427416_mg9xj7gbujh",
     "context": {},
     "severity": "medium"
+  },
+  {
+    "id": "error_1761895962018_dz6oqpay6x5",
+    "timestamp": "2025-10-31T07:32:42.018Z",
+    "errorType": "comparison_validation_error",
+    "errorMessage": "Property A data is required for comparison analysis.",
+    "reportType": "comparison_analysis",
+    "sessionId": "comparison_1761895962017_dfukd9gcs8e",
+    "context": {},
+    "severity": "low"
+  },
+  {
+    "id": "error_1761896286138_3m3fj73btit",
+    "timestamp": "2025-10-31T07:38:06.138Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "invalid_type",
+    "sessionId": "session_1761896286124_it14yfbfrcj",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761896286162_7lse76ur1zx",
+    "timestamp": "2025-10-31T07:38:06.162Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please provide either text input or upload files to generate a report.",
+    "reportType": "jp_investment_4part",
+    "sessionId": "session_1761896286159_vn32zb3uja9",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761896286207_yz4780v9n2o",
+    "timestamp": "2025-10-31T07:38:06.207Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761896286205_ydrc1wq339",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897420104_rl8gz4lx55m",
+    "timestamp": "2025-10-31T07:57:00.104Z",
+    "errorType": "validation_error",
+    "errorMessage": "File \"invalid-file.pdf\" has invalid data format. Please try uploading again.",
+    "reportType": "jp_investment_4part",
+    "sessionId": "session_1761897420089_i59m22kdved",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897420132_1ta53p6ai7b",
+    "timestamp": "2025-10-31T07:57:00.132Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "non_existent_template",
+    "sessionId": "session_1761897420129_l4kgw1qaypa",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897420163_o4dchcp0yt",
+    "timestamp": "2025-10-31T07:57:00.163Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761897420159_z4dkdu71b1e",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897420180_9y6vj76wr3j",
+    "timestamp": "2025-10-31T07:57:00.180Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761897420178_6cliytl3q3d",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897420201_3j7s6low5g9",
+    "timestamp": "2025-10-31T07:57:00.201Z",
+    "errorType": "validation_error",
+    "errorMessage": "Input text is too long. Please limit to 10,000 characters.",
+    "reportType": "jp_investment_4part",
+    "sessionId": "session_1761897420198_6r21us2ijl",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897510607_kbokbkqm76b",
+    "timestamp": "2025-10-31T07:58:30.607Z",
+    "errorType": "validation_error",
+    "errorMessage": "File type \"undefined\" is not supported. Please use PDF, image, or text files.",
+    "reportType": "jp_investment_4part",
+    "sessionId": "session_1761897510603_1oe7kx2zay2",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897510649_72tfvxmkaor",
+    "timestamp": "2025-10-31T07:58:30.649Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761897510644_opisyvixgpp",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897541343_7f4ch0kl1rc",
+    "timestamp": "2025-10-31T07:59:01.343Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761897541340_y8q8wvfhc3",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897541377_ldyt0y0nqi",
+    "timestamp": "2025-10-31T07:59:01.377Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please select a report type to continue.",
+    "reportType": "unknown",
+    "sessionId": "session_1761897541368_w7aj3qga9e",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897582744_emf3yg8msn",
+    "timestamp": "2025-10-31T07:59:42.744Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "invalid_type",
+    "sessionId": "session_1761897582740_4nze5k1mkbv",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897582774_3aez2iy1pc6",
+    "timestamp": "2025-10-31T07:59:42.774Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "invalid_type",
+    "sessionId": "session_1761897582771_gbhijxg9kf7",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897582793_cnc1uc9i94",
+    "timestamp": "2025-10-31T07:59:42.793Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "invalid_type",
+    "sessionId": "session_1761897582786_39a7qqh9633",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897582814_mnty5u2a6zd",
+    "timestamp": "2025-10-31T07:59:42.814Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "invalid_type",
+    "sessionId": "session_1761897582802_pusskg6ikvb",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897582830_wv9k81ipk5",
+    "timestamp": "2025-10-31T07:59:42.831Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "invalid_type",
+    "sessionId": "session_1761897582822_hpe2vefjpzf",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897582848_6kd84hqhiua",
+    "timestamp": "2025-10-31T07:59:42.848Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "invalid_type",
+    "sessionId": "session_1761897582839_ae1je69nosh",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897582866_37lcf6h0gd8",
+    "timestamp": "2025-10-31T07:59:42.866Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "invalid_type",
+    "sessionId": "session_1761897582857_9359m0m8o9",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897582885_y7pmvm7v87",
+    "timestamp": "2025-10-31T07:59:42.885Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "invalid_type",
+    "sessionId": "session_1761897582874_pfo87eh48u8",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897582905_2wnlz3ffk1x",
+    "timestamp": "2025-10-31T07:59:42.905Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "invalid_type",
+    "sessionId": "session_1761897582895_yv29npi9cx",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897582922_xxb5i8v9eps",
+    "timestamp": "2025-10-31T07:59:42.922Z",
+    "errorType": "validation_error",
+    "errorMessage": "Invalid report type selected. Please choose a valid option.",
+    "reportType": "invalid_type",
+    "sessionId": "session_1761897582913_o8ck9goqkuc",
+    "context": {},
+    "severity": "medium"
+  },
+  {
+    "id": "error_1761897672779_xgghrf1rldr",
+    "timestamp": "2025-10-31T08:01:12.779Z",
+    "errorType": "validation_error",
+    "errorMessage": "Please provide either text input or upload files to generate a report.",
+    "reportType": "jp_investment_4part",
+    "sessionId": "session_1761897672775_vinq52uzg4g",
+    "context": {},
+    "severity": "medium"
   }
 ]

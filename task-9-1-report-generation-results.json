@@ -1,0 +1,390 @@
+{
+  "task": "9.1 Report Generation Testing",
+  "timestamp": "2025-10-31T07:40:21.602Z",
+  "summary": {
+    "passed": 33,
+    "failed": 6,
+    "total": 39,
+    "successRate": 85
+  },
+  "categories": {
+    "report_generation": {
+      "passed": 4,
+      "total": 5
+    },
+    "content_validation": {
+      "passed": 7,
+      "total": 7
+    },
+    "template_validation": {
+      "passed": 3,
+      "total": 7
+    },
+    "prompt_validation": {
+      "passed": 4,
+      "total": 4
+    },
+    "input_variations": {
+      "passed": 3,
+      "total": 3
+    },
+    "custom_reports": {
+      "passed": 3,
+      "total": 3
+    },
+    "custom_validation": {
+      "passed": 3,
+      "total": 3
+    },
+    "error_handling": {
+      "passed": 3,
+      "total": 4
+    },
+    "performance": {
+      "passed": 3,
+      "total": 3
+    }
+  },
+  "reportTypes": {
+    "jp_investment_4part": {
+      "success": true,
+      "contentLength": 1595,
+      "hasExpectedSections": true,
+      "hasModernContent": true,
+      "generationTime": "Available"
+    },
+    "jp_tax_strategy": {
+      "success": true,
+      "contentLength": 1468,
+      "hasExpectedSections": false,
+      "hasModernContent": true,
+      "generationTime": "Available"
+    },
+    "jp_inheritance_strategy": {
+      "success": true,
+      "contentLength": 1613,
+      "hasExpectedSections": false,
+      "hasModernContent": true,
+      "generationTime": "Available"
+    },
+    "custom": {
+      "success": true,
+      "contentLength": 1343,
+      "hasExpectedSections": true,
+      "hasModernContent": true,
+      "generationTime": "Available"
+    }
+  },
+  "promptValidation": {
+    "jp_investment_4part": {
+      "expectedKeywords": 7,
+      "foundKeywords": 7,
+      "coverage": 1,
+      "description": "4-part investment analysis structure"
+    },
+    "jp_tax_strategy": {
+      "expectedKeywords": 6,
+      "foundKeywords": 2,
+      "coverage": 0.3333333333333333,
+      "description": "Tax strategy content"
+    },
+    "jp_inheritance_strategy": {
+      "expectedKeywords": 5,
+      "foundKeywords": 0,
+      "coverage": 0,
+      "description": "Inheritance strategy content"
+    }
+  },
+  "inputVariations": {
+    "Short Input": {
+      "inputLength": 28,
+      "outputLength": 1624,
+      "success": true
+    },
+    "Medium Input": {
+      "inputLength": 137,
+      "outputLength": 1710,
+      "success": true
+    },
+    "Long Input": {
+      "inputLength": 584,
+      "outputLength": 1515,
+      "success": true
+    }
+  },
+  "details": [
+    {
+      "test": "jp_investment_4part - Basic Generation",
+      "passed": true,
+      "details": "Generated successfully",
+      "category": "report_generation",
+      "timestamp": "2025-10-31T07:31:22.981Z"
+    },
+    {
+      "test": "jp_investment_4part - Content Length",
+      "passed": true,
+      "details": "1595 chars (min: 1000)",
+      "category": "content_validation",
+      "timestamp": "2025-10-31T07:31:22.982Z"
+    },
+    {
+      "test": "jp_investment_4part - Template Structure",
+      "passed": true,
+      "details": "Contains expected sections",
+      "category": "template_validation",
+      "timestamp": "2025-10-31T07:31:22.982Z"
+    },
+    {
+      "test": "jp_investment_4part - Prompt Freshness",
+      "passed": true,
+      "details": "Contains expected Japanese content",
+      "category": "prompt_validation",
+      "timestamp": "2025-10-31T07:31:22.982Z"
+    },
+    {
+      "test": "jp_tax_strategy - Basic Generation",
+      "passed": true,
+      "details": "Generated successfully",
+      "category": "report_generation",
+      "timestamp": "2025-10-31T07:31:58.846Z"
+    },
+    {
+      "test": "jp_tax_strategy - Content Length",
+      "passed": true,
+      "details": "1468 chars (min: 800)",
+      "category": "content_validation",
+      "timestamp": "2025-10-31T07:31:58.847Z"
+    },
+    {
+      "test": "jp_tax_strategy - Template Structure",
+      "passed": false,
+      "details": "Missing expected sections",
+      "category": "template_validation",
+      "timestamp": "2025-10-31T07:31:58.847Z"
+    },
+    {
+      "test": "jp_tax_strategy - Prompt Freshness",
+      "passed": true,
+      "details": "Contains expected Japanese content",
+      "category": "prompt_validation",
+      "timestamp": "2025-10-31T07:31:58.847Z"
+    },
+    {
+      "test": "jp_inheritance_strategy - Basic Generation",
+      "passed": true,
+      "details": "Generated successfully",
+      "category": "report_generation",
+      "timestamp": "2025-10-31T07:32:42.007Z"
+    },
+    {
+      "test": "jp_inheritance_strategy - Content Length",
+      "passed": true,
+      "details": "1613 chars (min: 800)",
+      "category": "content_validation",
+      "timestamp": "2025-10-31T07:32:42.007Z"
+    },
+    {
+      "test": "jp_inheritance_strategy - Template Structure",
+      "passed": false,
+      "details": "Missing expected sections",
+      "category": "template_validation",
+      "timestamp": "2025-10-31T07:32:42.007Z"
+    },
+    {
+      "test": "jp_inheritance_strategy - Prompt Freshness",
+      "passed": true,
+      "details": "Contains expected Japanese content",
+      "category": "prompt_validation",
+      "timestamp": "2025-10-31T07:32:42.008Z"
+    },
+    {
+      "test": "comparison_analysis - Basic Generation",
+      "passed": false,
+      "details": "Status: 400, Error: Property A data is required for comparison analysis.",
+      "category": "report_generation",
+      "timestamp": "2025-10-31T07:32:42.021Z"
+    },
+    {
+      "test": "custom - Basic Generation",
+      "passed": true,
+      "details": "Generated successfully",
+      "category": "report_generation",
+      "timestamp": "2025-10-31T07:33:13.339Z"
+    },
+    {
+      "test": "custom - Content Length",
+      "passed": true,
+      "details": "1343 chars (min: 500)",
+      "category": "content_validation",
+      "timestamp": "2025-10-31T07:33:13.339Z"
+    },
+    {
+      "test": "custom - Template Structure",
+      "passed": true,
+      "details": "Contains expected sections",
+      "category": "template_validation",
+      "timestamp": "2025-10-31T07:33:13.340Z"
+    },
+    {
+      "test": "custom - Prompt Freshness",
+      "passed": true,
+      "details": "Contains expected Japanese content",
+      "category": "prompt_validation",
+      "timestamp": "2025-10-31T07:33:13.340Z"
+    },
+    {
+      "test": "Input Variation - Short Input",
+      "passed": true,
+      "details": "Generated 1624 chars",
+      "category": "input_variations",
+      "timestamp": "2025-10-31T07:33:46.652Z"
+    },
+    {
+      "test": "Short Input - Length Adequacy",
+      "passed": true,
+      "details": "1624 chars (expected min: 300)",
+      "category": "content_validation",
+      "timestamp": "2025-10-31T07:33:46.652Z"
+    },
+    {
+      "test": "Input Variation - Medium Input",
+      "passed": true,
+      "details": "Generated 1710 chars",
+      "category": "input_variations",
+      "timestamp": "2025-10-31T07:34:23.570Z"
+    },
+    {
+      "test": "Medium Input - Length Adequacy",
+      "passed": true,
+      "details": "1710 chars (expected min: 500)",
+      "category": "content_validation",
+      "timestamp": "2025-10-31T07:34:23.570Z"
+    },
+    {
+      "test": "Input Variation - Long Input",
+      "passed": true,
+      "details": "Generated 1515 chars",
+      "category": "input_variations",
+      "timestamp": "2025-10-31T07:34:55.946Z"
+    },
+    {
+      "test": "Long Input - Length Adequacy",
+      "passed": true,
+      "details": "1515 chars (expected min: 800)",
+      "category": "content_validation",
+      "timestamp": "2025-10-31T07:34:55.946Z"
+    },
+    {
+      "test": "Template Validation - jp_investment_4part",
+      "passed": true,
+      "details": "Found 7/7 expected keywords (100%)",
+      "category": "template_validation",
+      "timestamp": "2025-10-31T07:35:26.634Z"
+    },
+    {
+      "test": "Template Validation - jp_tax_strategy",
+      "passed": false,
+      "details": "Found 2/6 expected keywords (33%)",
+      "category": "template_validation",
+      "timestamp": "2025-10-31T07:36:00.849Z"
+    },
+    {
+      "test": "Template Validation - jp_inheritance_strategy",
+      "passed": false,
+      "details": "Found 0/5 expected keywords (0%)",
+      "category": "template_validation",
+      "timestamp": "2025-10-31T07:36:33.409Z"
+    },
+    {
+      "test": "Custom Report - Real Estate Focus",
+      "passed": true,
+      "details": "Generated successfully",
+      "category": "custom_reports",
+      "timestamp": "2025-10-31T07:37:08.438Z"
+    },
+    {
+      "test": "Custom Content - Real Estate Focus",
+      "passed": true,
+      "details": "Found 2/3 expected terms",
+      "category": "custom_validation",
+      "timestamp": "2025-10-31T07:37:08.438Z"
+    },
+    {
+      "test": "Custom Report - Tax Optimization",
+      "passed": true,
+      "details": "Generated successfully",
+      "category": "custom_reports",
+      "timestamp": "2025-10-31T07:37:37.185Z"
+    },
+    {
+      "test": "Custom Content - Tax Optimization",
+      "passed": true,
+      "details": "Found 3/3 expected terms",
+      "category": "custom_validation",
+      "timestamp": "2025-10-31T07:37:37.185Z"
+    },
+    {
+      "test": "Custom Report - Market Analysis",
+      "passed": true,
+      "details": "Generated successfully",
+      "category": "custom_reports",
+      "timestamp": "2025-10-31T07:38:06.107Z"
+    },
+    {
+      "test": "Custom Content - Market Analysis",
+      "passed": true,
+      "details": "Found 3/3 expected terms",
+      "category": "custom_validation",
+      "timestamp": "2025-10-31T07:38:06.107Z"
+    },
+    {
+      "test": "Error Handling - Invalid Report Type",
+      "passed": true,
+      "details": "Correctly rejected: Invalid report type selected. Please choose a valid option.",
+      "category": "error_handling",
+      "timestamp": "2025-10-31T07:38:06.142Z"
+    },
+    {
+      "test": "Error Handling - Empty Input",
+      "passed": false,
+      "details": "Unexpected error: Please provide either text input or upload files to generate a report.",
+      "category": "error_handling",
+      "timestamp": "2025-10-31T07:38:06.165Z"
+    },
+    {
+      "test": "Error Handling - Missing Report Type",
+      "passed": true,
+      "details": "Correctly rejected: Please select a report type to continue.",
+      "category": "error_handling",
+      "timestamp": "2025-10-31T07:38:06.209Z"
+    },
+    {
+      "test": "Error Handling - Very Long Input",
+      "passed": true,
+      "details": "Handled gracefully",
+      "category": "error_handling",
+      "timestamp": "2025-10-31T07:38:42.366Z"
+    },
+    {
+      "test": "Performance - Short Input Performance",
+      "passed": true,
+      "details": "25974ms (limit: 30000ms)",
+      "category": "performance",
+      "timestamp": "2025-10-31T07:39:08.340Z"
+    },
+    {
+      "test": "Performance - Medium Input Performance",
+      "passed": true,
+      "details": "35427ms (limit: 45000ms)",
+      "category": "performance",
+      "timestamp": "2025-10-31T07:39:43.767Z"
+    },
+    {
+      "test": "Performance - Long Input Performance",
+      "passed": true,
+      "details": "37831ms (limit: 60000ms)",
+      "category": "performance",
+      "timestamp": "2025-10-31T07:40:21.599Z"
+    }
+  ]
+}

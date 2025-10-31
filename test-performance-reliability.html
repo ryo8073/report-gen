@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance and Reliability Testing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .status.running {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .results pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: #007bff;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .metric {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+        
+        .log-entry.info {
+            color: #007bff;
+        }
+        
+        .log-entry.success {
+            color: #28a745;
+        }
+        
+        .log-entry.error {
+            color: #dc3545;
+        }
+        
+        .log-entry.warning {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Performance and Reliability Testing Suite</h1>
+        
+        <div class="test-section">
+            <h2>Test Controls</h2>
+            <div class="test-controls">
+                <button id="runPerformanceBtn" class="btn-primary">Run Performance Test</button>
+                <button id="runReliabilityBtn" class="btn-primary">Run Reliability Test</button>
+                <button id="runCompleteBtn" class="btn-success">Run Complete Suite</button>
+                <button id="clearResultsBtn" class="btn-secondary">Clear Results</button>
+                <button id="exportResultsBtn" class="btn-secondary">Export Results</button>
+            </div>
+            
+            <div id="testStatus" class="status" style="display: none;"></div>
+            
+            <div class="progress" id="progressContainer" style="display: none;">
+                <div class="progress-bar" id="progressBar">0%</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Real-time Metrics</h2>
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value" id="memoryUsage">0 MB</div>
+                    <div class="metric-label">Memory Usage</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="testCount">0</div>
+                    <div class="metric-label">Tests Completed</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="successRate">0%</div>
+                    <div class="metric-label">Success Rate</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="avgResponseTime">0ms</div>
+                    <div class="metric-label">Avg Response Time</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Log</h2>
+            <div id="testLog" class="log"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Results</h2>
+            <div id="testResults" class="results">
+                <p>No tests run yet. Click a test button to begin.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TestRunner {
+            constructor() {
+                this.currentTest = null;
+                this.results = {};
+                this.testCount = 0;
+                this.successCount = 0;
+                this.setupEventListeners();
+                this.startMetricsMonitoring();
+            }
+
+            setupEventListeners() {
+                document.getElementById('runPerformanceBtn').addEventListener('click', () => {
+                    this.runPerformanceTest();
+                });
+                
+                document.getElementById('runReliabilityBtn').addEventListener('click', () => {
+                    this.runReliabilityTest();
+                });
+                
+                document.getElementById('runCompleteBtn').addEventListener('click', () => {
+                    this.runCompleteTest();
+                });
+                
+                document.getElementById('clearResultsBtn').addEventListener('click', () => {
+                    this.clearResults();
+                });
+                
+                document.getElementById('exportResultsBtn').addEventListener('click', () => {
+                    this.exportResults();
+                });
+            }
+
+            startMetricsMonitoring() {
+                setInterval(() => {
+                    this.updateMetrics();
+                }, 1000);
+            }
+
+            updateMetrics() {
+                // Update memory usage
+                if (performance.memory) {
+                    const memoryMB = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                    document.getElementById('memoryUsage').textContent = `${memoryMB} MB`;
+                }
+
+                // Update test count
+                document.getElementById('testCount').textContent = this.testCount;
+
+                // Update success rate
+                const successRate = this.testCount > 0 ? Math.round((this.successCount / this.testCount) * 100) : 0;
+                document.getElementById('successRate').textContent = `${successRate}%`;
+
+                // Update average response time (placeholder)
+                document.getElementById('avgResponseTime').textContent = '0ms';
+            }
+
+            log(message, type = 'info') {
+                const logElement = document.getElementById('testLog');
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                logElement.appendChild(entry);
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+
+            setStatus(message, type = 'running') {
+                const statusElement = document.getElementById('testStatus');
+                statusElement.textContent = message;
+                statusElement.className = `status ${type}`;
+                statusElement.style.display = 'block';
+            }
+
+            setProgress(percent) {
+                const progressContainer = document.getElementById('progressContainer');
+                const progressBar = document.getElementById('progressBar');
+                
+                if (percent > 0) {
+                    progressContainer.style.display = 'block';
+                    progressBar.style.width = `${percent}%`;
+                    progressBar.textContent = `${Math.round(percent)}%`;
+                } else {
+                    progressContainer.style.display = 'none';
+                }
+            }
+
+            async runPerformanceTest() {
+                this.log('Starting performance test...', 'info');
+                this.setStatus('Running Performance Test...', 'running');
+                this.setProgress(10);
+
+                try {
+                    // Load and run performance benchmarker
+                    const benchmarker = new PerformanceBenchmarker();
+                    this.setProgress(30);
+                    
+                    const results = await benchmarker.runCompleteBenchmark();
+                    this.setProgress(100);
+                    
+                    this.results.performance = results;
+                    this.testCount++;
+                    this.successCount++;
+                    
+                    this.log('Performance test completed successfully', 'success');
+                    this.setStatus('Performance Test Completed', 'success');
+                    this.displayResults();
+                    
+                } catch (error) {
+                    this.testCount++;
+                    this.log(`Performance test failed: ${error.message}`, 'error');
+                    this.setStatus('Performance Test Failed', 'error');
+                } finally {
+                    this.setProgress(0);
+                }
+            }
+
+            async runReliabilityTest() {
+                this.log('Starting reliability test...', 'info');
+                this.setStatus('Running Reliability Test...', 'running');
+                this.setProgress(10);
+
+                try {
+                    // Load and run reliability tester
+                    const tester = new ReliabilityTester();
+                    this.setProgress(30);
+                    
+                    const results = await tester.runCompleteReliabilityTest();
+                    this.setProgress(100);
+                    
+                    this.results.reliability = results;
+                    this.testCount++;
+                    this.successCount++;
+                    
+                    this.log('Reliability test completed successfully', 'success');
+                    this.setStatus('Reliability Test Completed', 'success');
+                    this.displayResults();
+                    
+                } catch (error) {
+                    this.testCount++;
+                    this.log(`Reliability test failed: ${error.message}`, 'error');
+                    this.setStatus('Reliability Test Failed', 'error');
+                } finally {
+                    this.setProgress(0);
+                }
+            }
+
+            async runCompleteTest() {
+                this.log('Starting complete test suite...', 'info');
+                this.setStatus('Running Complete Test Suite...', 'running');
+                this.setProgress(5);
+
+                try {
+                    // Load and run complete test suite
+                    const testSuite = new PerformanceReliabilityTestSuite();
+                    this.setProgress(20);
+                    
+                    const results = await testSuite.runCompleteTestSuite();
+                    this.setProgress(100);
+                    
+                    this.results.complete = results;
+                    this.testCount++;
+                    this.successCount++;
+                    
+                    this.log('Complete test suite finished successfully', 'success');
+                    this.setStatus('Complete Test Suite Completed', 'success');
+                    this.displayResults();
+                    
+                } catch (error) {
+                    this.testCount++;
+                    this.log(`Complete test suite failed: ${error.message}`, 'error');
+                    this.setStatus('Complete Test Suite Failed', 'error');
+                } finally {
+                    this.setProgress(0);
+                }
+            }
+
+            displayResults() {
+                const resultsElement = document.getElementById('testResults');
+                
+                if (Object.keys(this.results).length === 0) {
+                    resultsElement.innerHTML = '<p>No test results available.</p>';
+                    return;
+                }
+
+                let html = '<h3>Test Results Summary</h3>';
+                
+                // Display latest results
+                const latestKey = Object.keys(this.results).pop();
+                const latestResults = this.results[latestKey];
+                
+                if (latestResults.combined) {
+                    html += `
+                        <div class="metrics">
+                            <div class="metric">
+                                <div class="metric-value">${latestResults.combined.overallScore || 0}</div>
+                                <div class="metric-label">Overall Score</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">${latestResults.combined.performanceScore || 0}</div>
+                                <div class="metric-label">Performance Score</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">${latestResults.combined.reliabilityScore || 0}</div>
+                                <div class="metric-label">Reliability Score</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">${latestResults.combined.summary?.status || 'UNKNOWN'}</div>
+                                <div class="metric-label">Status</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += '<h4>Detailed Results</h4>';
+                html += `<pre>${JSON.stringify(this.results, null, 2)}</pre>`;
+                
+                resultsElement.innerHTML = html;
+            }
+
+            clearResults() {
+                this.results = {};
+                this.testCount = 0;
+                this.successCount = 0;
+                document.getElementById('testResults').innerHTML = '<p>Results cleared.</p>';
+                document.getElementById('testLog').innerHTML = '';
+                document.getElementById('testStatus').style.display = 'none';
+                this.log('Results cleared', 'info');
+            }
+
+            exportResults() {
+                if (Object.keys(this.results).length === 0) {
+                    this.log('No results to export', 'warning');
+                    return;
+                }
+
+                const dataStr = JSON.stringify(this.results, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `test-results-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+                link.click();
+                
+                this.log('Results exported successfully', 'success');
+            }
+        }
+
+        // Load test modules
+        const loadTestModules = async () => {
+            try {
+                // Load performance benchmarker
+                const perfScript = document.createElement('script');
+                perfScript.src = './test-performance-benchmarking.js';
+                document.head.appendChild(perfScript);
+                
+                // Load reliability tester
+                const relScript = document.createElement('script');
+                relScript.src = './test-reliability-validation.js';
+                document.head.appendChild(relScript);
+                
+                // Load complete test suite
+                const suiteScript = document.createElement('script');
+                suiteScript.src = './test-performance-reliability-suite.js';
+                document.head.appendChild(suiteScript);
+                
+                console.log('Test modules loaded successfully');
+            } catch (error) {
+                console.error('Failed to load test modules:', error);
+            }
+        };
+
+        // Initialize test runner when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTestModules();
+            window.testRunner = new TestRunner();
+        });
+    </script>
+</body>
+</html>

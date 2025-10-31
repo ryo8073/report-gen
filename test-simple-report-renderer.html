@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Report Renderer Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .test-controls button {
+            margin: 5px;
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-controls button:hover {
+            background: #2563eb;
+        }
+        #reportContainer {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Simple Report Renderer Test</h1>
+        
+        <div class="test-controls">
+            <h3>Test Controls</h3>
+            <button onclick="testBasicReport()">Basic Report</button>
+            <button onclick="testMarkdownReport()">Markdown Report</button>
+            <button onclick="testLongReport()">Long Report</button>
+            <button onclick="testNavigationFeatures()">Navigation Test</button>
+            <button onclick="testEmptyReport()">Empty Report</button>
+            <button onclick="testErrorHandling()">Error Handling</button>
+            <button onclick="clearReport()">Clear</button>
+        </div>
+        
+        <div id="reportContainer"></div>
+    </div>
+
+    <script src="/lib/simple-report-renderer.js"></script>
+    <script>
+        let renderer = null;
+        
+        function initRenderer() {
+            const container = document.getElementById('reportContainer');
+            if (renderer) {
+                renderer.destroy();
+            }
+            renderer = new SimpleReportRenderer(container, {
+                enableCopy: true,
+                enableExport: true,
+                enablePrint: true,
+                showWordCount: true,
+                showReadingTime: true
+            });
+        }
+        
+        function testBasicReport() {
+            initRenderer();
+            const content = `# テストレポート
+
+これは基本的なレポートのテストです。
+
+## 概要
+このレポートは以下の内容を含みます：
+- 基本的なテキスト
+- **太字のテキスト**
+- *斜体のテキスト*
+
+## 詳細
+レポートの詳細な内容がここに表示されます。
+
+### サブセクション
+- リスト項目1
+- リスト項目2
+- リスト項目3
+
+## 結論
+テストが正常に完了しました。`;
+            
+            renderer.setContent(content, {
+                title: 'テストレポート',
+                generatedAt: new Date()
+            });
+        }
+        
+        function testMarkdownReport() {
+            initRenderer();
+            const content = `# Markdownテストレポート
+
+## はじめに
+このレポートはMarkdown形式のテストです。
+
+### 機能テスト
+以下の機能をテストします：
+
+* **コピー機能**: クリップボードへのコピー
+* **印刷機能**: ブラウザの印刷機能
+* **エクスポート機能**: 
+  - テキスト形式 (.txt)
+  - Markdown形式 (.md)
+  - PDF形式 (.pdf)
+  - RTF形式 (.rtf)
+
+### フォーマットテスト
+
+#### 見出し
+# H1見出し
+## H2見出し  
+### H3見出し
+
+#### リスト
+- 項目A
+- 項目B
+- 項目C
+
+#### 強調
+**重要な内容**
+*強調された内容*
+
+## まとめ
+すべての機能が正常に動作することを確認しました。`;
+            
+            renderer.setContent(content);
+        }
+        
+        function testLongReport() {
+            initRenderer();
+            let content = `# 長いレポートのテスト
+
+このレポートは長いコンテンツのテスト用です。目次機能、セクション間ナビゲーション、および読みやすさの改善をテストします。
+
+## 概要
+
+このテストでは以下の機能を確認します：
+
+1. **目次の自動生成**: 複数のヘッダーがある場合に目次が表示される
+2. **アンカーリンク**: 各ヘッダーにクリック可能なアンカーが追加される
+3. **スムーズスクロール**: セクション間の移動が滑らかに行われる
+4. **読みやすさの向上**: フォント、行間、コントラストが最適化される
+
+`;
+            
+            // Generate long content with varied structure
+            for (let i = 1; i <= 15; i++) {
+                content += `## セクション ${i}: 詳細分析
+
+これはセクション${i}の内容です。このセクションには以下の情報が含まれています：
+
+### ${i}.1 基本情報
+
+**重要なポイント**: このセクションでは重要な概念について説明します。
+
+- 項目${i}-1: 詳細な説明がここに入ります。長い文章でも読みやすくなるように行間とフォントサイズが調整されています。
+- 項目${i}-2: さらに詳細な説明がここに入ります。*斜体*や**太字**のテキストも適切に表示されます。
+- 項目${i}-3: 追加の情報がここに入ります。
+
+### ${i}.2 詳細分析
+
+このサブセクションでは、より詳細な分析を行います：
+
+1. 第一の要素: 数値データの分析
+2. 第二の要素: 傾向の把握
+3. 第三の要素: 将来予測
+
+> **注意**: この引用ブロックは重要な情報を強調するために使用されています。印刷時にも適切に表示されるようにスタイリングされています。
+
+#### ${i}.2.1 サブサブセクション
+
+さらに細かい分類での情報整理：
+
+- ネストされたリスト項目1
+  - サブ項目A
+  - サブ項目B
+- ネストされたリスト項目2
+  - サブ項目C
+  - サブ項目D
+
+このセクションの内容は合計で約400文字程度になります。読了時間の計算テストにも使用されます。
+
+`;
+            }
+            
+            content += `## 結論
+
+長いレポートのテストが完了しました。以下の機能が正しく動作することを確認してください：
+
+### 確認項目
+
+1. **目次機能**: ページ上部に目次が表示され、各セクションへのリンクが機能する
+2. **ナビゲーション**: ヘッダーの「#」マークをクリックしてセクションに移動できる
+3. **スムーズスクロール**: セクション間の移動が滑らかに行われる
+4. **読みやすさ**: 
+   - 適切なフォントサイズと行間
+   - 高いコントラスト比
+   - モバイルデバイスでの最適化
+5. **印刷対応**: 印刷時に適切なレイアウトで表示される
+6. **アクセシビリティ**: スクリーンリーダーに対応したマークアップ
+
+### 最終確認
+
+文字数カウントと読了時間の計算が正しく動作し、すべての機能が期待通りに動作することを確認してください。`;
+            
+            renderer.setContent(content);
+        }
+        
+        function testEmptyReport() {
+            initRenderer();
+            renderer.setContent('');
+        }
+        
+        function testErrorHandling() {
+            initRenderer();
+            // Test with invalid content
+            try {
+                renderer.setContent(null);
+            } catch (error) {
+                console.log('Error handling test:', error);
+            }
+        }
+        
+        function testNavigationFeatures() {
+            initRenderer();
+            const content = `# ナビゲーション機能テスト
+
+このレポートは新しいナビゲーション機能をテストするためのものです。
+
+## 機能概要
+
+以下の機能がテストされます：
+
+### 目次の自動生成
+複数のヘッダーがある場合、自動的に目次が生成されます。
+
+### アンカーリンク
+各ヘッダーにマウスオーバーすると「#」マークが表示され、クリックでそのセクションにリンクできます。
+
+### スムーズスクロール
+目次やアンカーリンクをクリックすると、滑らかにスクロールします。
+
+## セクション A: 基本機能
+
+このセクションでは基本的な機能について説明します。
+
+### A.1 サブセクション
+詳細な内容がここに入ります。
+
+#### A.1.1 サブサブセクション
+さらに詳細な内容です。
+
+## セクション B: 高度な機能
+
+このセクションでは高度な機能について説明します。
+
+### B.1 パフォーマンス最適化
+- 高速なレンダリング
+- メモリ効率の改善
+- レスポンシブデザイン
+
+### B.2 アクセシビリティ
+- スクリーンリーダー対応
+- キーボードナビゲーション
+- 高コントラストモード対応
+
+## セクション C: 印刷対応
+
+### C.1 印刷レイアウト
+印刷時に最適化されたレイアウトが適用されます。
+
+### C.2 ページ分割制御
+適切な位置でページが分割されるように制御されています。
+
+## 結論
+
+すべてのナビゲーション機能が正常に動作することを確認してください。`;
+            
+            renderer.setContent(content);
+        }
+
+        function clearReport() {
+            if (renderer) {
+                renderer.clear();
+            }
+        }
+        
+        // Initialize with basic report on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            testBasicReport();
+        });
+    </script>
+</body>
+</html>

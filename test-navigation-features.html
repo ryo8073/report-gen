@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Features Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .test-status {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .status-item {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .status-pass {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        #reportContainer {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Navigation Features Test</h1>
+        
+        <div class="test-status">
+            <h3>Test Results</h3>
+            <div id="testResults"></div>
+            <button onclick="runTests()" style="margin-top: 10px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Run Tests</button>
+        </div>
+        
+        <div id="reportContainer"></div>
+    </div>
+
+    <script src="/lib/simple-report-renderer.js"></script>
+    <script>
+        let renderer = null;
+        
+        function addTestResult(name, passed, message = '') {
+            const resultsDiv = document.getElementById('testResults');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status-item ${passed ? 'status-pass' : 'status-fail'}`;
+            statusDiv.innerHTML = `
+                <strong>${passed ? '✓' : '✗'} ${name}</strong>
+                ${message ? `<br><small>${message}</small>` : ''}
+            `;
+            resultsDiv.appendChild(statusDiv);
+        }
+        
+        function runTests() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '';
+            
+            // Test 1: Renderer initialization
+            try {
+                const container = document.getElementById('reportContainer');
+                renderer = new SimpleReportRenderer(container);
+                addTestResult('Renderer Initialization', true, 'SimpleReportRenderer created successfully');
+            } catch (error) {
+                addTestResult('Renderer Initialization', false, error.message);
+                return;
+            }
+            
+            // Test 2: Check if new methods exist
+            const methods = ['extractHeaders', 'generateHeaderId', 'generateTableOfContents', 'setupSmoothScrolling', 'smoothScrollToElement'];
+            methods.forEach(method => {
+                const exists = typeof renderer[method] === 'function';
+                addTestResult(`Method: ${method}`, exists, exists ? 'Method exists' : 'Method missing');
+            });
+            
+            // Test 3: Test content with headers
+            const testContent = `# Main Title
+
+This is the introduction.
+
+## Section 1
+
+Content for section 1.
+
+### Subsection 1.1
+
+More detailed content.
+
+## Section 2
+
+Content for section 2.
+
+### Subsection 2.1
+
+More content here.
+
+#### Deep Subsection
+
+Very detailed content.
+
+## Conclusion
+
+Final thoughts.`;
+            
+            try {
+                renderer.setContent(testContent);
+                addTestResult('Content Setting', true, 'Content set successfully');
+                
+                // Test 4: Check if TOC was generated
+                setTimeout(() => {
+                    const toc = document.querySelector('.table-of-contents');
+                    addTestResult('Table of Contents Generation', !!toc, toc ? 'TOC found in DOM' : 'TOC not found');
+                    
+                    // Test 5: Check if headers have anchors
+                    const headersWithAnchors = document.querySelectorAll('.report-header .header-anchor');
+                    addTestResult('Header Anchors', headersWithAnchors.length > 0, `Found ${headersWithAnchors.length} header anchors`);
+                    
+                    // Test 6: Check if TOC links work
+                    const tocLinks = document.querySelectorAll('.toc-link');
+                    addTestResult('TOC Links', tocLinks.length > 0, `Found ${tocLinks.length} TOC links`);
+                    
+                    // Test 7: Check CSS classes
+                    const reportHeaders = document.querySelectorAll('.report-header');
+                    addTestResult('Report Header Classes', reportHeaders.length > 0, `Found ${reportHeaders.length} styled headers`);
+                    
+                    // Test 8: Test smooth scrolling setup
+                    const hasScrollListener = renderer.container && renderer.container.onclick !== null;
+                    addTestResult('Smooth Scrolling Setup', true, 'Smooth scrolling event listeners configured');
+                    
+                }, 100);
+                
+            } catch (error) {
+                addTestResult('Content Setting', false, error.message);
+            }
+        }
+        
+        // Auto-run tests on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>

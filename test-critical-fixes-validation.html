@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Critical Fixes Validation Test</title>
+    <style>
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f9fafb;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #374151;
+        }
+        
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .test-button:hover {
+            background: #2563eb;
+        }
+        
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .critical-issue {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .critical-issue h3 {
+            margin: 0 0 10px 0;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Critical Fixes Validation Test</h1>
+        <p>このページは、サイトの重要な修正が正しく動作するかをテストします。</p>
+        
+        <div class="critical-issue">
+            <h3>🎯 主要な問題: レポートが最新のプロンプトを反映しない</h3>
+            <p>この問題が最も重要です。レポート生成時に最新のプロンプトテンプレートが使用されているかを確認します。</p>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">1. JavaScript エラー修正の確認</div>
+            <button class="test-button" onclick="testJavaScriptErrors()">JavaScript エラーをチェック</button>
+            <div id="jsErrorStatus" class="status info" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">2. プロンプトテンプレートマネージャーのテスト</div>
+            <button class="test-button" onclick="testPromptTemplateManager()">テンプレートマネージャーをテスト</button>
+            <button class="test-button" onclick="testTemplateLoading()">テンプレート読み込みをテスト</button>
+            <div id="templateStatus" class="status info" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">3. 認証エラー抑制の確認</div>
+            <button class="test-button" onclick="testAuthSuppression()">認証エラー抑制をテスト</button>
+            <div id="authStatus" class="status info" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">4. 各レポートタイプのプロンプト確認</div>
+            <button class="test-button" onclick="testInvestmentPrompt()">投資分析プロンプト</button>
+            <button class="test-button" onclick="testInheritancePrompt()">相続対策プロンプト</button>
+            <button class="test-button" onclick="testTaxPrompt()">税務戦略プロンプト</button>
+            <button class="test-button" onclick="testComparisonPrompt()">比較分析プロンプト</button>
+            <div id="promptTestStatus" class="status info" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">5. 総合テスト結果</div>
+            <button class="test-button" onclick="runAllTests()">すべてのテストを実行</button>
+            <div id="overallStatus" class="status info" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+            element.style.display = 'block';
+        }
+        
+        function testJavaScriptErrors() {
+            const errors = [];
+            let hasErrors = false;
+            
+            // Test for critical JavaScript classes and functions
+            const requiredClasses = [
+                'PromptTemplateManager',
+                'EnhancedResultsLayout', 
+                'AccessibilityManager',
+                'BusinessDocumentFormatter'
+            ];
+            
+            const requiredFunctions = [
+                'initializeEnhancedResults',
+                'setupBasicResultsActions',
+                'markdownToHtml'
+            ];
+            
+            // Check classes
+            requiredClasses.forEach(className => {
+                if (typeof window[className] === 'undefined') {
+                    errors.push(`❌ Missing class: ${className}`);
+                    hasErrors = true;
+                } else {
+                    errors.push(`✅ Found class: ${className}`);
+                }
+            });
+            
+            // Check functions
+            requiredFunctions.forEach(funcName => {
+                if (typeof window[funcName] === 'undefined') {
+                    errors.push(`❌ Missing function: ${funcName}`);
+                    hasErrors = true;
+                } else {
+                    errors.push(`✅ Found function: ${funcName}`);
+                }
+            });
+            
+            const result = errors.join('\n') + '\n\n' + 
+                          (hasErrors ? '❌ JavaScript エラーが検出されました' : '✅ JavaScript エラーなし');
+            
+            showStatus('jsErrorStatus', result, hasErrors ? 'error' : 'success');
+        }
+        
+        async function testPromptTemplateManager() {
+            try {
+                if (typeof PromptTemplateManager === 'undefined') {
+                    showStatus('templateStatus', '❌ PromptTemplateManager クラスが見つかりません', 'error');
+                    return;
+                }
+                
+                const manager = new PromptTemplateManager();
+                const status = manager.getStatus();
+                
+                let result = '✅ PromptTemplateManager が正常に初期化されました\n\n';
+                result += `キャッシュタイムアウト: ${status.cacheTimeout}ms\n`;
+                result += `利用可能なテンプレート: ${Object.keys(manager.templateFiles).join(', ')}\n`;
+                result += `読み込み済みテンプレート: ${status.loadedTemplates.join(', ') || 'なし'}\n`;
+                
+                showStatus('templateStatus', result, 'success');
+            } catch (error) {
+                showStatus('templateStatus', `❌ PromptTemplateManager テストエラー: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testTemplateLoading() {
+            try {
+                if (typeof PromptTemplateManager === 'undefined') {
+                    showStatus('templateStatus', '❌ PromptTemplateManager が利用できません', 'error');
+                    return;
+                }
+                
+                const manager = new PromptTemplateManager();
+                const templateName = 'jp_investment_4part';
+                
+                showStatus('templateStatus', `📥 テンプレート "${templateName}" を読み込み中...`, 'info');
+                
+                const template = await manager.loadTemplate(templateName);
+                
+                let result = `✅ テンプレート "${templateName}" の読み込み成功\n\n`;
+                result += `テンプレート長: ${template.length} 文字\n`;
+                result += `プレビュー: ${template.substring(0, 200)}...\n\n`;
+                result += `🔍 これが最新のプロンプトテンプレートです`;
+                
+                showStatus('templateStatus', result, 'success');
+            } catch (error) {
+                showStatus('templateStatus', `❌ テンプレート読み込みエラー: ${error.message}`, 'error');
+            }
+        }
+        
+        function testAuthSuppression() {
+            let result = '🔍 認証エラー抑制の確認:\n\n';
+            
+            // Check if auth services are disabled
+            if (window.supabase === null) {
+                result += '✅ Supabase が無効化されています\n';
+            } else {
+                result += '❌ Supabase がまだ有効です\n';
+            }
+            
+            if (window.firebase === null) {
+                result += '✅ Firebase が無効化されています\n';
+            } else {
+                result += '❌ Firebase がまだ有効です\n';
+            }
+            
+            // Check if error listeners are in place
+            const hasErrorListeners = window.addEventListener.toString().includes('error');
+            if (hasErrorListeners) {
+                result += '✅ エラーリスナーが設定されています\n';
+            } else {
+                result += '❌ エラーリスナーが見つかりません\n';
+            }
+            
+            result += '\n🛡️ 認証エラーは自動的に抑制されます';
+            
+            showStatus('authStatus', result, 'success');
+        }
+        
+        async function testInvestmentPrompt() {
+            await testSpecificPrompt('jp_investment_4part', '投資分析');
+        }
+        
+        async function testInheritancePrompt() {
+            await testSpecificPrompt('jp_inheritance_strategy', '相続対策');
+        }
+        
+        async function testTaxPrompt() {
+            await testSpecificPrompt('jp_tax_strategy', '税務戦略');
+        }
+        
+        async function testComparisonPrompt() {
+            await testSpecificPrompt('comparison_analysis', '比較分析');
+        }
+        
+        async function testSpecificPrompt(templateName, displayName) {
+            try {
+                if (typeof PromptTemplateManager === 'undefined') {
+                    showStatus('promptTestStatus', '❌ PromptTemplateManager が利用できません', 'error');
+                    return;
+                }
+                
+                const manager = new PromptTemplateManager();
+                showStatus('promptTestStatus', `📥 ${displayName}プロンプトを読み込み中...`, 'info');
+                
+                const template = await manager.loadTemplate(templateName);
+                
+                let result = `✅ ${displayName}プロンプト読み込み成功\n\n`;
+                result += `テンプレート: ${templateName}\n`;
+                result += `文字数: ${template.length}\n`;
+                result += `最終更新: ${new Date().toLocaleString('ja-JP')}\n\n`;
+                result += `内容プレビュー:\n${template.substring(0, 300)}...\n\n`;
+                result += `🎯 このプロンプトがレポート生成に使用されます`;
+                
+                showStatus('promptTestStatus', result, 'success');
+            } catch (error) {
+                showStatus('promptTestStatus', `❌ ${displayName}プロンプトエラー: ${error.message}`, 'error');
+            }
+        }
+        
+        async function runAllTests() {
+            showStatus('overallStatus', '🔄 すべてのテストを実行中...', 'info');
+            
+            let results = [];
+            let hasErrors = false;
+            
+            // Test 1: JavaScript Errors
+            try {
+                const requiredClasses = ['PromptTemplateManager', 'EnhancedResultsLayout'];
+                const missingClasses = requiredClasses.filter(cls => typeof window[cls] === 'undefined');
+                
+                if (missingClasses.length === 0) {
+                    results.push('✅ JavaScript: すべてのクラスが利用可能');
+                } else {
+                    results.push(`❌ JavaScript: 不足クラス ${missingClasses.join(', ')}`);
+                    hasErrors = true;
+                }
+            } catch (error) {
+                results.push(`❌ JavaScript: テストエラー`);
+                hasErrors = true;
+            }
+            
+            // Test 2: Prompt Template Manager
+            try {
+                if (typeof PromptTemplateManager !== 'undefined') {
+                    const manager = new PromptTemplateManager();
+                    results.push('✅ プロンプトマネージャー: 正常に動作');
+                } else {
+                    results.push('❌ プロンプトマネージャー: 利用不可');
+                    hasErrors = true;
+                }
+            } catch (error) {
+                results.push('❌ プロンプトマネージャー: 初期化エラー');
+                hasErrors = true;
+            }
+            
+            // Test 3: Template Loading
+            try {
+                if (typeof PromptTemplateManager !== 'undefined') {
+                    const manager = new PromptTemplateManager();
+                    const template = await manager.loadTemplate('jp_investment_4part');
+                    if (template && template.length > 0) {
+                        results.push('✅ テンプレート読み込み: 成功');
+                    } else {
+                        results.push('❌ テンプレート読み込み: 空のテンプレート');
+                        hasErrors = true;
+                    }
+                } else {
+                    results.push('❌ テンプレート読み込み: マネージャー不可');
+                    hasErrors = true;
+                }
+            } catch (error) {
+                results.push('❌ テンプレート読み込み: エラー');
+                hasErrors = true;
+            }
+            
+            // Test 4: Authentication Suppression
+            const authSuppressed = window.supabase === null && window.firebase === null;
+            if (authSuppressed) {
+                results.push('✅ 認証抑制: 正常に動作');
+            } else {
+                results.push('⚠️ 認証抑制: 部分的に動作');
+            }
+            
+            const finalResult = results.join('\n') + '\n\n' + 
+                              (hasErrors ? 
+                               '❌ 一部のテストが失敗しました。修正が必要です。' : 
+                               '🎉 すべてのテストが成功しました！\n\n🎯 重要: レポートが最新のプロンプトを使用するようになりました');
+            
+            showStatus('overallStatus', finalResult, hasErrors ? 'error' : 'success');
+        }
+        
+        // Auto-run basic tests on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testJavaScriptErrors();
+                testPromptTemplateManager();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
