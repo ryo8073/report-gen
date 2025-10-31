@@ -2567,24 +2567,15 @@ async function analyzeWithGPT4Vision(file, reportType) {
         }
       ];
       
-      // For PDFs, use document type; for images, use image_url
-      if (file.type === 'application/pdf') {
-        contentArray.push({
-          type: "document",
-          document: {
-            type: "pdf",
-            data: file.data
-          }
-        });
-      } else {
-        contentArray.push({
-          type: "image_url",
-          image_url: {
-            url: `data:${file.type};base64,${file.data}`,
-            detail: "high" // High detail for accurate numerical extraction
-          }
-        });
-      }
+      // For PDFs and images, use image_url format
+      // Note: OpenAI may require PDF to be converted to images first, but we'll try direct processing
+      contentArray.push({
+        type: "image_url",
+        image_url: {
+          url: `data:${file.type};base64,${file.data}`,
+          detail: "high" // High detail for accurate numerical extraction
+        }
+      });
       
       const completion = await openai.chat.completions.create({
         model: visionModel,
