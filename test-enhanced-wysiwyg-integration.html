@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced WYSIWYG Integration Test</title>
+    <link rel="stylesheet" href="lib/enhanced-wysiwyg-editor.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-editor {
+            margin: 2rem 0;
+            min-height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .output {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enhanced WYSIWYG Integration Test</h1>
+        <p>This test verifies that the Enhanced WYSIWYG Editor properly integrates with the RichTextEditor component.</p>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="testEnhancedEditor()">Test Enhanced Editor</button>
+            <button class="btn" onclick="testAccessibilityFeatures()">Test Accessibility</button>
+            <button class="btn" onclick="testMarkdownIntegration()">Test Markdown</button>
+            <button class="btn" onclick="testBusinessFormatting()">Test Business Format</button>
+            <button class="btn" onclick="setTestContent()">Set Test Content</button>
+            <button class="btn" onclick="getContent()">Get Content</button>
+            <button class="btn" onclick="clearEditor()">Clear</button>
+        </div>
+        
+        <div id="enhanced-editor" class="test-editor"></div>
+        <div id="output" class="output"></div>
+    </div>
+
+    <script src="lib/accessibility-manager.js"></script>
+    <script src="lib/formatting-toolbar.js"></script>
+    <script src="lib/rich-text-editor.js"></script>
+    <script src="lib/enhanced-wysiwyg-editor.js"></script>
+    
+    <script>
+        let enhancedEditor = null;
+        
+        function log(message) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.textContent += `[${timestamp}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+            console.log(message);
+        }
+        
+        function testEnhancedEditor() {
+            const container = document.getElementById('enhanced-editor');
+            container.innerHTML = '';
+            
+            log('Testing Enhanced WYSIWYG Editor...');
+            
+            try {
+                // Check if required classes are available
+                const requiredClasses = [
+                    'EnhancedWYSIWYGEditor',
+                    'RichTextEditor',
+                    'FormattingToolbar',
+                    'AccessibilityManager'
+                ];
+                
+                const missingClasses = requiredClasses.filter(className => typeof window[className] === 'undefined');
+                
+                if (missingClasses.length > 0) {
+                    log(`⚠ Missing classes: ${missingClasses.join(', ')}`);
+                } else {
+                    log('✓ All required classes are available');
+                }
+                
+                enhancedEditor = new EnhancedWYSIWYGEditor(container, {
+                    enableMarkdownParsing: true,
+                    enableBusinessFormatting: false,
+                    enableRealTimePreview: true,
+                    enableAutoSave: false,
+                    enableToolbar: true,
+                    enableKeyboardShortcuts: true,
+                    enableAccessibility: true,
+                    enableAriaLabels: true,
+                    enableKeyboardNavigation: true,
+                    enableScreenReaderSupport: true,
+                    placeholder: 'Enhanced WYSIWYG Editor test...',
+                    onContentChange: (content, textContent) => {
+                        log(`Enhanced editor content changed: ${textContent ? textContent.length : 0} chars`);
+                    },
+                    onMarkdownChange: (markdown) => {
+                        log(`Markdown updated: ${markdown ? markdown.length : 0} chars`);
+                    }
+                });
+                
+                log('✓ Enhanced WYSIWYG Editor created successfully');
+                
+                setTimeout(() => {
+                    if (enhancedEditor.isReady()) {
+                        log('✓ Enhanced editor is ready');
+                        
+                        // Check if RichTextEditor was created internally
+                        if (enhancedEditor.richTextEditor) {
+                            log('✓ Internal RichTextEditor instance found');
+                            if (enhancedEditor.richTextEditor.isReady()) {
+                                log('✓ Internal RichTextEditor is ready');
+                            } else {
+                                log('⚠ Internal RichTextEditor is not ready');
+                            }
+                        } else {
+                            log('⚠ No internal RichTextEditor instance found');
+                        }
+                        
+                        // Check if accessibility manager was created
+                        if (enhancedEditor.accessibilityManager) {
+                            log('✓ Accessibility manager initialized');
+                        } else {
+                            log('⚠ No accessibility manager found');
+                        }
+                        
+                    } else {
+                        log('✗ Enhanced editor is not ready');
+                    }
+                }, 200);
+                
+            } catch (error) {
+                log(`✗ Error creating enhanced editor: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        function testAccessibilityFeatures() {
+            if (!enhancedEditor) {
+                log('✗ Enhanced editor not initialized');
+                return;
+            }
+            
+            log('Testing accessibility features...');
+            
+            try {
+                // Check ARIA attributes
+                const editorElement = document.querySelector('[role="textbox"]');
+                if (editorElement) {
+                    log('✓ Found editor with textbox role');
+                    
+                    const ariaLabel = editorElement.getAttribute('aria-label');
+                    const ariaDescribedby = editorElement.getAttribute('aria-describedby');
+                    const ariaMultiline = editorElement.getAttribute('aria-multiline');
+                    
+                    log(`ARIA label: ${ariaLabel || 'none'}`);
+                    log(`ARIA describedby: ${ariaDescribedby || 'none'}`);
+                    log(`ARIA multiline: ${ariaMultiline || 'none'}`);
+                } else {
+                    log('⚠ No editor element with textbox role found');
+                }
+                
+                // Check toolbar accessibility
+                const toolbar = document.querySelector('[role="toolbar"]');
+                if (toolbar) {
+                    log('✓ Found toolbar with proper role');
+                    
+                    const toolbarLabel = toolbar.getAttribute('aria-label');
+                    log(`Toolbar label: ${toolbarLabel || 'none'}`);
+                    
+                    const buttons = toolbar.querySelectorAll('button[aria-pressed]');
+                    log(`Found ${buttons.length} toggle buttons with aria-pressed`);
+                } else {
+                    log('⚠ No toolbar with proper role found');
+                }
+                
+                // Test keyboard shortcuts
+                log('Testing keyboard shortcuts...');
+                enhancedEditor.focus();
+                
+                // Simulate Ctrl+B
+                const boldEvent = new KeyboardEvent('keydown', {
+                    key: 'b',
+                    ctrlKey: true,
+                    bubbles: true
+                });
+                document.dispatchEvent(boldEvent);
+                log('✓ Ctrl+B shortcut tested');
+                
+            } catch (error) {
+                log(`✗ Error testing accessibility: ${error.message}`);
+            }
+        }
+        
+        function testMarkdownIntegration() {
+            if (!enhancedEditor) {
+                log('✗ Enhanced editor not initialized');
+                return;
+            }
+            
+            log('Testing markdown integration...');
+            
+            try {
+                const markdownContent = `# Test Heading
+                
+This is a **bold** text and this is *italic* text.
+
+## Subheading
+
+- List item 1
+- List item 2
+- List item 3
+
+Here's a [link](https://example.com) and some \`inline code\`.`;
+                
+                enhancedEditor.setContent(markdownContent, 'markdown');
+                log('✓ Markdown content set');
+                
+                setTimeout(() => {
+                    const htmlContent = enhancedEditor.getContent('html');
+                    const markdownOutput = enhancedEditor.getContent('markdown');
+                    
+                    log('HTML output:');
+                    log(htmlContent.substring(0, 200) + '...');
+                    log('Markdown output:');
+                    log(markdownOutput.substring(0, 200) + '...');
+                    
+                }, 100);
+                
+            } catch (error) {
+                log(`✗ Error testing markdown: ${error.message}`);
+            }
+        }
+        
+        function testBusinessFormatting() {
+            if (!enhancedEditor) {
+                log('✗ Enhanced editor not initialized');
+                return;
+            }
+            
+            log('Testing business formatting...');
+            
+            try {
+                enhancedEditor.toggleBusinessFormatting();
+                log('✓ Business formatting toggled');
+                
+                const testContent = `
+                    <h1>ビジネスレポート</h1>
+                    <h2>概要</h2>
+                    <p>これはビジネス文書のフォーマットテストです。</p>
+                    <ul>
+                        <li>項目1</li>
+                        <li>項目2</li>
+                        <li>項目3</li>
+                    </ul>
+                `;
+                
+                enhancedEditor.setContent(testContent);
+                log('✓ Business formatted content set');
+                
+            } catch (error) {
+                log(`✗ Error testing business formatting: ${error.message}`);
+            }
+        }
+        
+        function setTestContent() {
+            if (!enhancedEditor) {
+                log('✗ Enhanced editor not initialized');
+                return;
+            }
+            
+            const testContent = `
+                <h1>Enhanced WYSIWYG Editor Test</h1>
+                <h2>Features</h2>
+                <p>This editor supports:</p>
+                <ul>
+                    <li><strong>Rich text formatting</strong></li>
+                    <li><em>Markdown integration</em></li>
+                    <li><u>Accessibility features</u></li>
+                    <li>Business document formatting</li>
+                </ul>
+                <h3>Accessibility</h3>
+                <p>The editor includes comprehensive accessibility support including:</p>
+                <ol>
+                    <li>Keyboard navigation</li>
+                    <li>Screen reader compatibility</li>
+                    <li>ARIA labels and roles</li>
+                    <li>High contrast mode</li>
+                </ol>
+            `;
+            
+            enhancedEditor.setContent(testContent);
+            log('✓ Test content set in enhanced editor');
+        }
+        
+        function getContent() {
+            if (!enhancedEditor) {
+                log('✗ Enhanced editor not initialized');
+                return;
+            }
+            
+            try {
+                const htmlContent = enhancedEditor.getContent('html');
+                const textContent = enhancedEditor.getContent('text');
+                const markdownContent = enhancedEditor.getContent('markdown');
+                
+                log('HTML Content:');
+                log(htmlContent.substring(0, 300) + (htmlContent.length > 300 ? '...' : ''));
+                log('\nText Content:');
+                log(textContent.substring(0, 200) + (textContent.length > 200 ? '...' : ''));
+                log('\nMarkdown Content:');
+                log(markdownContent.substring(0, 200) + (markdownContent.length > 200 ? '...' : ''));
+                
+                log(`\nStats: HTML: ${htmlContent.length}, Text: ${textContent.length}, Markdown: ${markdownContent.length}`);
+                
+            } catch (error) {
+                log(`✗ Error getting content: ${error.message}`);
+            }
+        }
+        
+        function clearEditor() {
+            if (enhancedEditor) {
+                try {
+                    enhancedEditor.clear();
+                    log('✓ Enhanced editor cleared');
+                } catch (error) {
+                    log(`✗ Error clearing editor: ${error.message}`);
+                }
+            }
+            
+            const output = document.getElementById('output');
+            output.textContent = '';
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Page loaded, ready to test Enhanced WYSIWYG Editor');
+            log('Click "Test Enhanced Editor" to start testing');
+        });
+    </script>
+</body>
+</html>

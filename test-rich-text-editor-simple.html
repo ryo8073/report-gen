@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Rich Text Editor Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-editor {
+            margin: 2rem 0;
+        }
+        
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .output {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simple Rich Text Editor Test</h1>
+        
+        <div class="controls">
+            <button class="btn" onclick="testBasicEditor()">Test Basic Editor</button>
+            <button class="btn" onclick="testWithToolbar()">Test With Toolbar</button>
+            <button class="btn" onclick="testContent()">Test Content</button>
+            <button class="btn" onclick="clearTest()">Clear</button>
+        </div>
+        
+        <div id="editor-container" class="test-editor"></div>
+        <div id="output" class="output"></div>
+    </div>
+
+    <script>
+        // Define CSS variables for the components
+        const style = document.createElement('style');
+        style.textContent = `
+            :root {
+                --color-primary: #3b82f6;
+                --color-gray-50: #f9fafb;
+                --color-gray-100: #f3f4f6;
+                --color-gray-200: #e5e7eb;
+                --color-gray-300: #d1d5db;
+                --color-gray-400: #9ca3af;
+                --color-gray-500: #6b7280;
+                --color-gray-600: #4b5563;
+                --color-gray-700: #374151;
+                --color-gray-800: #1f2937;
+                --color-gray-900: #111827;
+                --color-red-50: #fef2f2;
+                --color-red-200: #fecaca;
+                --color-red-500: #ef4444;
+                --color-red-600: #dc2626;
+                --color-red-700: #b91c1c;
+                --color-green-500: #10b981;
+                --color-yellow-500: #f59e0b;
+                --space-1: 0.25rem;
+                --space-2: 0.5rem;
+                --space-3: 0.75rem;
+                --space-4: 1rem;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        let editor = null;
+        
+        function log(message) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.textContent += `[${timestamp}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+            console.log(message);
+        }
+        
+        function testBasicEditor() {
+            const container = document.getElementById('editor-container');
+            container.innerHTML = '';
+            
+            log('Testing basic RichTextEditor...');
+            
+            try {
+                // Check if classes are available
+                if (typeof RichTextEditor === 'undefined') {
+                    log('✗ RichTextEditor class not found');
+                    return;
+                }
+                
+                if (typeof FormattingToolbar === 'undefined') {
+                    log('⚠ FormattingToolbar class not found - will test without toolbar');
+                }
+                
+                editor = new RichTextEditor(container, {
+                    enableToolbar: false,
+                    enableRealTimePreview: true,
+                    enableAutoSave: false,
+                    placeholder: 'Type here to test...',
+                    onContentChange: (content, textContent) => {
+                        log(`Content changed: ${textContent.length} chars`);
+                    }
+                });
+                
+                log('✓ Basic RichTextEditor created successfully');
+                
+                setTimeout(() => {
+                    if (editor.isReady()) {
+                        log('✓ Editor is ready');
+                        editor.setContent('<p>Hello, this is a test!</p>');
+                        log('✓ Test content set');
+                    } else {
+                        log('✗ Editor is not ready');
+                    }
+                }, 100);
+                
+            } catch (error) {
+                log(`✗ Error creating basic editor: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        function testWithToolbar() {
+            const container = document.getElementById('editor-container');
+            container.innerHTML = '';
+            
+            log('Testing RichTextEditor with toolbar...');
+            
+            try {
+                if (typeof FormattingToolbar === 'undefined') {
+                    log('✗ FormattingToolbar class not found - cannot test with toolbar');
+                    return;
+                }
+                
+                editor = new RichTextEditor(container, {
+                    enableToolbar: true,
+                    enableRealTimePreview: true,
+                    enableAutoSave: false,
+                    placeholder: 'Type here to test with toolbar...',
+                    onContentChange: (content, textContent) => {
+                        log(`Content changed: ${textContent.length} chars`);
+                    }
+                });
+                
+                log('✓ RichTextEditor with toolbar created successfully');
+                
+                setTimeout(() => {
+                    if (editor.isReady()) {
+                        log('✓ Editor with toolbar is ready');
+                        editor.setContent('<p><strong>Bold</strong> and <em>italic</em> text!</p>');
+                        log('✓ Formatted test content set');
+                    } else {
+                        log('✗ Editor with toolbar is not ready');
+                    }
+                }, 100);
+                
+            } catch (error) {
+                log(`✗ Error creating editor with toolbar: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        function testContent() {
+            if (!editor) {
+                log('✗ No editor instance available');
+                return;
+            }
+            
+            log('Testing content operations...');
+            
+            try {
+                const htmlContent = editor.getContent();
+                const textContent = editor.getTextContent();
+                const isDirty = editor.isDirtyContent();
+                
+                log(`HTML: ${htmlContent}`);
+                log(`Text: ${textContent}`);
+                log(`Dirty: ${isDirty}`);
+                log('✓ Content operations successful');
+                
+            } catch (error) {
+                log(`✗ Error testing content: ${error.message}`);
+            }
+        }
+        
+        function clearTest() {
+            const container = document.getElementById('editor-container');
+            const output = document.getElementById('output');
+            
+            if (editor) {
+                try {
+                    editor.destroy();
+                    log('✓ Editor destroyed');
+                } catch (error) {
+                    log(`✗ Error destroying editor: ${error.message}`);
+                }
+                editor = null;
+            }
+            
+            container.innerHTML = '';
+            output.textContent = '';
+        }
+        
+        // Load scripts dynamically
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            log('Page loaded, loading scripts...');
+            
+            try {
+                await loadScript('lib/formatting-toolbar.js');
+                log('✓ FormattingToolbar script loaded');
+            } catch (error) {
+                log('⚠ FormattingToolbar script failed to load');
+            }
+            
+            try {
+                await loadScript('lib/rich-text-editor.js');
+                log('✓ RichTextEditor script loaded');
+            } catch (error) {
+                log('✗ RichTextEditor script failed to load');
+                return;
+            }
+            
+            log('Ready to test! Click "Test Basic Editor" to start.');
+        });
+    </script>
+</body>
+</html>

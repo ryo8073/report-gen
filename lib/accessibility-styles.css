@@ -1,0 +1,813 @@
+/**
+ * Accessibility Styles
+ * Comprehensive CSS for accessibility features including high contrast,
+ * focus indicators, screen reader support, and reduced motion
+ */
+
+/* Screen Reader Only Content */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Skip Links */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: #000000;
+    color: #ffffff;
+    padding: 8px 12px;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 10000;
+    font-weight: 600;
+    font-size: 14px;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 6px;
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
+
+/* Enhanced Focus Indicators */
+.accessibility-focus-indicator {
+    outline: 3px solid #0066cc !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 1px #ffffff, 0 0 0 4px #0066cc !important;
+    border-radius: 4px;
+}
+
+.accessibility-focus-indicator-high-contrast {
+    outline: 3px solid #ffff00 !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 1px #000000, 0 0 0 4px #ffff00 !important;
+    border-radius: 4px;
+}
+
+/* Focus Management for Interactive Elements */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+[role="button"]:focus,
+[role="textbox"]:focus,
+[role="combobox"]:focus,
+[role="tab"]:focus,
+[role="menuitem"]:focus,
+a:focus {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 1px #ffffff, 0 0 0 3px #0066cc;
+}
+
+/* High Contrast Mode */
+.accessibility-high-contrast {
+    filter: contrast(150%) brightness(1.2);
+}
+
+.accessibility-high-contrast *,
+.accessibility-high-contrast *::before,
+.accessibility-high-contrast *::after {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #000000 !important;
+}
+
+.accessibility-high-contrast button,
+.accessibility-high-contrast input,
+.accessibility-high-contrast select,
+.accessibility-high-contrast textarea,
+.accessibility-high-contrast [role="button"] {
+    border: 2px solid #000000 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+.accessibility-high-contrast button:hover,
+.accessibility-high-contrast button:focus,
+.accessibility-high-contrast [role="button"]:hover,
+.accessibility-high-contrast [role="button"]:focus {
+    background: #ffff00 !important;
+    color: #000000 !important;
+    border-color: #000000 !important;
+}
+
+.accessibility-high-contrast button:active,
+.accessibility-high-contrast [role="button"]:active {
+    background: #ff0000 !important;
+    color: #ffffff !important;
+}
+
+.accessibility-high-contrast a {
+    color: #0000ff !important;
+    text-decoration: underline !important;
+    font-weight: 600 !important;
+}
+
+.accessibility-high-contrast a:visited {
+    color: #800080 !important;
+}
+
+.accessibility-high-contrast a:hover,
+.accessibility-high-contrast a:focus {
+    background: #ffff00 !important;
+    color: #000000 !important;
+}
+
+.accessibility-high-contrast .tab-button.active {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+.accessibility-high-contrast .toolbar-btn.active {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* High Contrast Focus Indicators */
+.accessibility-high-contrast button:focus,
+.accessibility-high-contrast input:focus,
+.accessibility-high-contrast select:focus,
+.accessibility-high-contrast textarea:focus,
+.accessibility-high-contrast [role="button"]:focus,
+.accessibility-high-contrast a:focus {
+    outline: 3px solid #ffff00 !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 1px #000000, 0 0 0 4px #ffff00 !important;
+}
+
+/* Reduced Motion Support */
+.accessibility-reduced-motion *,
+.accessibility-reduced-motion *::before,
+.accessibility-reduced-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .accessibility-focus-indicator,
+    .accessibility-focus-indicator-high-contrast {
+        transition: none !important;
+    }
+}
+
+/* Keyboard Navigation Indicators */
+.keyboard-navigation-active {
+    outline: 2px dashed #0066cc;
+    outline-offset: 2px;
+}
+
+/* Tab Navigation Accessibility */
+.tab-navigation {
+    position: relative;
+}
+
+.tab-navigation::before {
+    content: "タブナビゲーション";
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.tab-button {
+    position: relative;
+}
+
+.tab-button:focus {
+    z-index: 1;
+}
+
+.tab-button[aria-selected="true"] {
+    font-weight: 600;
+}
+
+.tab-button[aria-selected="true"]::after {
+    content: " (選択中)";
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Modal Accessibility */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+}
+
+.modal-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    z-index: 9999;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+}
+
+.modal-content:focus {
+    outline: 2px solid #0066cc;
+    outline-offset: -2px;
+}
+
+/* Form Accessibility */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-input:focus {
+    border-color: #0066cc;
+    outline: 2px solid #0066cc;
+    outline-offset: -2px;
+}
+
+.form-input[aria-invalid="true"] {
+    border-color: #dc2626;
+}
+
+.form-input[aria-invalid="true"]:focus {
+    border-color: #dc2626;
+    outline-color: #dc2626;
+}
+
+.form-error {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-help {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Toolbar Accessibility */
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: #f9fafb;
+}
+
+.toolbar-btn {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbar-btn:hover {
+    background: #f3f4f6;
+}
+
+.toolbar-btn:focus {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
+}
+
+.toolbar-btn[aria-pressed="true"] {
+    background: #3b82f6;
+    color: #ffffff;
+    border-color: #3b82f6;
+}
+
+.toolbar-btn[aria-pressed="true"]:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.toolbar-divider {
+    width: 1px;
+    height: 1.5rem;
+    background: #d1d5db;
+    margin: 0 0.25rem;
+}
+
+/* Editor Accessibility */
+.editor-container {
+    position: relative;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.editor-container:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.editor-content {
+    min-height: 300px;
+    padding: 1rem;
+    outline: none;
+}
+
+.editor-content:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
+}
+
+/* Status and Live Regions */
+.status-region {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.status-indicator.status-saved {
+    background: #10b981;
+}
+
+.status-indicator.status-modified {
+    background: #f59e0b;
+}
+
+.status-indicator.status-error {
+    background: #ef4444;
+}
+
+/* Color Picker Accessibility */
+.color-picker-wrapper {
+    position: relative;
+}
+
+.color-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem;
+    z-index: 1000;
+    display: none;
+}
+
+.color-dropdown.show {
+    display: block;
+}
+
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.25rem;
+}
+
+.color-option {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.color-option:focus {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+}
+
+.color-option.selected {
+    border-width: 2px;
+    border-color: #0066cc;
+}
+
+/* Table Accessibility */
+.table-insert-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.table-insert-content {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    max-width: 400px;
+    width: 90%;
+}
+
+.table-size-selector {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2px;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+}
+
+.table-cell-preview {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+}
+
+.table-cell-preview:focus {
+    outline: 2px solid #0066cc;
+    outline-offset: 1px;
+}
+
+.table-cell-preview:hover,
+.table-cell-preview.selected {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.table-size-display {
+    text-align: center;
+    font-weight: 600;
+    margin: 0.5rem 0;
+}
+
+.table-insert-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.table-insert-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.table-insert-btn.primary {
+    background: #3b82f6;
+    color: #ffffff;
+    border-color: #3b82f6;
+}
+
+.table-insert-btn:hover {
+    background: #f3f4f6;
+}
+
+.table-insert-btn.primary:hover {
+    background: #2563eb;
+}
+
+.table-insert-btn:focus {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
+}
+
+/* Help Modal Accessibility */
+.accessibility-help-modal,
+.editor-help-modal,
+.tab-navigation-help-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.accessibility-help-content,
+.editor-help-content,
+.tab-navigation-help-content {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.help-sections {
+    margin: 1.5rem 0;
+}
+
+.help-section {
+    margin-bottom: 1.5rem;
+}
+
+.help-section h3 {
+    margin: 0 0 0.5rem 0;
+    color: #374151;
+    font-size: 1.125rem;
+}
+
+.help-section ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.help-section li {
+    margin-bottom: 0.25rem;
+}
+
+.help-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.help-close-btn {
+    padding: 0.5rem 1rem;
+    background: #3b82f6;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.help-close-btn:hover {
+    background: #2563eb;
+}
+
+.help-close-btn:focus {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
+
+/* Keyboard Shortcut Display */
+kbd {
+    display: inline-block;
+    padding: 0.125rem 0.25rem;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Error States */
+.error-message {
+    padding: 1rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 4px;
+    color: #dc2626;
+}
+
+.error-message button {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #dc2626;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.error-message button:hover {
+    background: #b91c1c;
+}
+
+.error-message button:focus {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
+
+/* Loading States */
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f4f6;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.accessibility-reduced-motion .loading-spinner {
+    animation: none;
+    border-top-color: #3b82f6;
+}
+
+/* Responsive Accessibility */
+@media (max-width: 768px) {
+    .modal-content,
+    .accessibility-help-content,
+    .editor-help-content,
+    .tab-navigation-help-content {
+        width: 95%;
+        padding: 1rem;
+        max-height: 95vh;
+    }
+    
+    .toolbar {
+        flex-wrap: wrap;
+    }
+    
+    .toolbar-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    
+    .color-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .table-size-selector {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+/* Print Accessibility */
+@media print {
+    .skip-link,
+    .sr-only,
+    .status-region,
+    .toolbar,
+    .tab-navigation,
+    .modal-backdrop,
+    .modal-content {
+        display: none !important;
+    }
+    
+    .accessibility-focus-indicator,
+    .accessibility-focus-indicator-high-contrast {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+}
+
+/* Dark Mode Support (respects system preference) */
+@media (prefers-color-scheme: dark) {
+    .modal-content,
+    .accessibility-help-content,
+    .editor-help-content,
+    .tab-navigation-help-content,
+    .table-insert-content {
+        background: #1f2937;
+        color: #f9fafb;
+        border-color: #374151;
+    }
+    
+    .form-input,
+    .toolbar-btn {
+        background: #374151;
+        color: #f9fafb;
+        border-color: #4b5563;
+    }
+    
+    .form-input:focus,
+    .toolbar-btn:focus {
+        border-color: #60a5fa;
+        outline-color: #60a5fa;
+    }
+    
+    .status-bar {
+        background: #374151;
+        border-color: #4b5563;
+        color: #d1d5db;
+    }
+}
+
+/* Custom Properties for Theming */
+:root {
+    --accessibility-focus-color: #0066cc;
+    --accessibility-focus-bg: #ffffff;
+    --accessibility-high-contrast-focus: #ffff00;
+    --accessibility-high-contrast-bg: #000000;
+    --accessibility-error-color: #dc2626;
+    --accessibility-success-color: #10b981;
+    --accessibility-warning-color: #f59e0b;
+}
+
+/* Utility Classes */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.focus-trap {
+    position: relative;
+}
+
+.focus-trap::before,
+.focus-trap::after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.keyboard-user *:focus {
+    outline: 2px solid var(--accessibility-focus-color);
+    outline-offset: 2px;
+}
+
+.mouse-user *:focus {
+    outline: none;
+}
