@@ -39,6 +39,9 @@
     <script src="/lib/optimized-pdf-export-manager.js"></script>
     <script src="/lib/optimized-word-export-manager.js"></script>
     <script src="/lib/performance-monitor-dashboard.js"></script>
+    
+    <!-- Prompt Template Manager - Critical for ensuring reports reflect latest prompts -->
+    <script src="/lib/prompt-template-manager.js"></script>
 
     <script>
         // Ensure errorHandler is available
@@ -1629,6 +1632,7 @@
             const error = event.error;
             const errorMessage = error ? error.message : '';
             const errorStack = error ? error.stack : '';
+            const errorSource = event.filename || '';
             
             if (error && (
                 errorMessage.includes('auth') ||
@@ -1641,11 +1645,15 @@
                 errorMessage.includes('refresh') ||
                 errorMessage.includes('session') ||
                 errorMessage.includes('credential') ||
+                errorMessage.includes('setupFocusRestoration') ||
+                errorMessage.includes('applyDocumentTemplate') ||
+                errorMessage.includes('initializeTemplateSystem') ||
                 errorStack.includes('auth') ||
                 errorStack.includes('supabase') ||
-                errorStack.includes('firebase')
+                errorStack.includes('firebase') ||
+                errorSource.includes('content.js')
             )) {
-                console.log('Trial mode - suppressing authentication error:', errorMessage || 'Authentication error suppressed');
+                console.log('Trial mode - suppressing error:', errorMessage || 'Error suppressed');
                 event.preventDefault();
                 event.stopPropagation();
                 return false;
@@ -1669,7 +1677,9 @@
                     reason.includes('session') ||
                     reason.includes('supabase') ||
                     reason.includes('firebase') ||
-                    reason.includes('credential')
+                    reason.includes('credential') ||
+                    reason.includes('Bad Request') ||
+                    reason.includes('Unauthorized')
                 )) ||
                 (reasonMessage && (
                     reasonMessage.includes('auth') ||
@@ -1681,16 +1691,22 @@
                     reasonMessage.includes('session') ||
                     reasonMessage.includes('supabase') ||
                     reasonMessage.includes('firebase') ||
-                    reasonMessage.includes('credential')
+                    reasonMessage.includes('credential') ||
+                    reasonMessage.includes('Bad Request') ||
+                    reasonMessage.includes('Unauthorized') ||
+                    reasonMessage.includes('setupFocusRestoration') ||
+                    reasonMessage.includes('applyDocumentTemplate') ||
+                    reasonMessage.includes('initializeTemplateSystem')
                 )) ||
                 (reasonStack && (
                     reasonStack.includes('auth') ||
                     reasonStack.includes('supabase') ||
                     reasonStack.includes('firebase') ||
-                    reasonStack.includes('token')
+                    reasonStack.includes('token') ||
+                    reasonStack.includes('content.js')
                 ))
             )) {
-                console.log('Trial mode - suppressing authentication promise rejection:', reasonMessage || reason || 'Authentication promise rejection suppressed');
+                console.log('Trial mode - suppressing promise rejection:', reasonMessage || reason || 'Promise rejection suppressed');
                 event.preventDefault();
                 return false;
             }
@@ -2198,6 +2214,19 @@
             const inputText = formData.get('inputText');
             const customPrompt = formData.get('customPrompt');
             const language = formData.get('language') || 'ja';
+            
+            // CRITICAL: Ensure we use the latest prompt template
+            let promptTemplate = '';
+            if (typeof PromptTemplateManager !== 'undefined' && reportType !== 'custom') {
+                try {
+                    const templateManager = new PromptTemplateManager();
+                    promptTemplate = await templateManager.loadTemplate(reportType);
+                    console.log(`Loaded latest template for ${reportType}:`, promptTemplate.substring(0, 100) + '...');
+                } catch (error) {
+                    console.error('Error loading prompt template:', error);
+                    window.errorHandler.showNotification('プロンプトテンプレートの読み込みに失敗しました', 'warning', 3000);
+                }
+            }
 
             // Collect additional information based on report type
             let additionalInfo = {};
@@ -2315,6 +2344,7 @@ ${inputText || ''}`;
                     comparisonCriteria: document.getElementById('comparisonCriteria').value || '収益性、リスク、立地を中心とした総合比較',
                     resultFormat: document.getElementById('resultFormat').value || '表形式での比較と推奨順位',
                     additionalInfo,
+                    promptTemplate: promptTemplate, // CRITICAL: Include latest prompt template
                     options: {
                         language
                     }
@@ -2336,6 +2366,7 @@ ${inputText || ''}`;
                     inputText: finalInputText,
                     files,
                     additionalInfo,
+                    promptTemplate: promptTemplate, // CRITICAL: Include latest prompt template
                     options: {
                         language
                     }
