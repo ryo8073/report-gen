@@ -226,21 +226,21 @@ async function processPropertyData(propertyData) {
 
 // Generate comparison report using existing AI infrastructure
 async function generateComparisonReport({ prompt, additionalInfo, sessionId }) {
-  let aiService = 'openai';
+  let aiService = 'gemini';
   let report;
   
   try {
-    // Try OpenAI first
-    report = await generateComparisonWithOpenAI({ prompt, additionalInfo });
-  } catch (openaiError) {
-    console.log('OpenAI failed for comparison, trying Gemini:', openaiError.message);
+    // Try Gemini first (priority service)
+    report = await generateComparisonWithGemini({ prompt, additionalInfo });
+  } catch (geminiError) {
+    console.log('Gemini failed for comparison, trying OpenAI:', geminiError.message);
     
-    if (shouldTryFallback(openaiError)) {
+    if (shouldTryFallback(geminiError)) {
       try {
-        // Fallback to Gemini
-        aiService = 'gemini';
-        report = await generateComparisonWithGemini({ prompt, additionalInfo });
-        console.log('Successfully generated comparison report using Gemini fallback');
+        // Fallback to OpenAI
+        aiService = 'openai';
+        report = await generateComparisonWithOpenAI({ prompt, additionalInfo });
+        console.log('Successfully generated comparison report using OpenAI fallback');
         
         report.serviceNotification = {
           message: 'Your comparison report was generated using our backup AI service to ensure uninterrupted service.',
@@ -248,12 +248,12 @@ async function generateComparisonReport({ prompt, additionalInfo, sessionId }) {
           details: 'The primary service was temporarily unavailable, but report quality remains consistent.',
           timestamp: new Date().toISOString()
         };
-      } catch (geminiError) {
-        console.error('Both AI services failed for comparison:', { openaiError: openaiError.message, geminiError: geminiError.message });
-        throw createDualServiceFailureError(openaiError, geminiError);
+      } catch (openaiError) {
+        console.error('Both AI services failed for comparison:', { geminiError: geminiError.message, openaiError: openaiError.message });
+        throw createDualServiceFailureError(geminiError, openaiError);
       }
     } else {
-      throw openaiError;
+      throw geminiError;
     }
   }
   
@@ -1929,7 +1929,7 @@ export default async (req, res) => {
 };
 
 async function generateReport({ reportType, inputText, files, additionalInfo, options }) {
-  let aiService = 'openai';
+  let aiService = 'gemini';
   let report;
   let investmentAnalysis = null;
   
@@ -1970,18 +1970,18 @@ async function generateReport({ reportType, inputText, files, additionalInfo, op
   }
   
   try {
-    // Try OpenAI first (existing logic)
-    report = await generateWithOpenAI({ reportType, inputText, files, additionalInfo, options });
-  } catch (openaiError) {
-    console.log('OpenAI failed, trying Gemini:', openaiError.message);
+    // Try Gemini first (priority service)
+    report = await generateWithGemini({ reportType, inputText, files, additionalInfo, options });
+  } catch (geminiError) {
+    console.log('Gemini failed, trying OpenAI:', geminiError.message);
     
     // Check if we should try fallback based on error type
-    if (shouldTryFallback(openaiError)) {
+    if (shouldTryFallback(geminiError)) {
       try {
-        // Fallback to Gemini
-        aiService = 'gemini';
-        report = await generateWithGemini({ reportType, inputText, files, additionalInfo, options });
-        console.log('Successfully generated report using Gemini fallback');
+        // Fallback to OpenAI
+        aiService = 'openai';
+        report = await generateWithOpenAI({ reportType, inputText, files, additionalInfo, options });
+        console.log('Successfully generated report using OpenAI fallback');
         
         // Add user-friendly notification about backup service usage
         report.serviceNotification = {
@@ -1990,14 +1990,14 @@ async function generateReport({ reportType, inputText, files, additionalInfo, op
           details: 'The primary service was temporarily unavailable, but report quality remains consistent.',
           timestamp: new Date().toISOString()
         };
-      } catch (geminiError) {
-        console.error('Both AI services failed:', { openaiError: openaiError.message, geminiError: geminiError.message });
+      } catch (openaiError) {
+        console.error('Both AI services failed:', { geminiError: geminiError.message, openaiError: openaiError.message });
         // Both failed - throw enhanced dual-service failure error
-        throw createDualServiceFailureError(openaiError, geminiError);
+        throw createDualServiceFailureError(geminiError, openaiError);
       }
     } else {
       // Don't try fallback for certain error types, just throw original error
-      throw openaiError;
+      throw geminiError;
     }
   }
   
