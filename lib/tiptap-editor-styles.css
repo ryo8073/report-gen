@@ -10,9 +10,23 @@
     padding: 8px;
     background-color: #f9f9f9;
     display: flex;
-    gap: 4px;
+    gap: 8px;
     flex-wrap: wrap;
     align-items: center;
+}
+
+/* Toolbar groups for visual separation */
+.tiptap-toolbar .toolbar-group {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding-right: 8px;
+    border-right: 1px solid #ddd;
+}
+
+.tiptap-toolbar .toolbar-group:last-child {
+    border-right: none;
+    padding-right: 0;
 }
 
 .tiptap-toolbar button {
@@ -150,6 +164,34 @@
     font-style: italic;
 }
 
+/* Underline */
+.ProseMirror u {
+    text-decoration: underline;
+}
+
+/* Strikethrough */
+.ProseMirror s,
+.ProseMirror strike {
+    text-decoration: line-through;
+}
+
+/* Text Alignment */
+.ProseMirror [style*="text-align: left"] {
+    text-align: left;
+}
+
+.ProseMirror [style*="text-align: center"] {
+    text-align: center;
+}
+
+.ProseMirror [style*="text-align: right"] {
+    text-align: right;
+}
+
+.ProseMirror [style*="text-align: justify"] {
+    text-align: justify;
+}
+
 /* Lists */
 .ProseMirror ul,
 .ProseMirror ol {
@@ -266,4 +308,5 @@
 .ProseMirror ::selection {
     background-color: rgba(0, 123, 255, 0.2);
 }
+
 
