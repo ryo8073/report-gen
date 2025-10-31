@@ -2022,15 +2022,24 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
     // Get the OpenAI-optimized prompt using PromptManager (await to ensure prompts are loaded)
     let fullPrompt = await promptManager.buildServiceOptimizedPrompt(reportType, inputText, files, additionalInfo, 'openai');
   
-    // Process files with enhanced multimodal capabilities
+    // CRITICAL: Process files with Vision analysis FIRST to extract numerical data accurately
     let fileContent = '';
     if (files && files.length > 0) {
       try {
-        console.log(`[OPENAI] Processing ${files.length} files with vision processing`);
+        console.log(`[OPENAI] Processing ${files.length} files with GPT-4o Vision analysis FIRST`);
+        // Use Vision analysis to extract numerical data from PDFs and images
         fileContent = await processFilesWithVision(files, reportType);
-        // Add file content to the prompt
-        fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
-        console.log(`[OPENAI] File processing completed, content length: ${fileContent.length} chars`);
+        console.log(`[OPENAI] Vision analysis completed, extracted content length: ${fileContent.length} chars`);
+        
+        // Validate that Vision analysis actually extracted numerical data
+        const hasNumericalData = /[\d.]+%/g.test(fileContent) || /[\d.,]+円/g.test(fileContent) || /[\d.]+倍/g.test(fileContent);
+        if (!hasNumericalData && fileContent.length < 100) {
+          console.warn('[OPENAI] Vision analysis may not have extracted sufficient numerical data');
+          console.warn('[OPENAI] Vision analysis result:', fileContent.substring(0, 500));
+        }
+        
+        // Add extracted file content to prompt with EXPLICIT instructions to use the data
+        fullPrompt += `\n\n【添付ファイル分析結果（GPT-4o Vision AIによる抽出）】\n${fileContent}\n\n【重要】上記のGPT-4o Vision AIによるファイル分析結果から、以下のすべての数値データを正確に抽出し、レポートに反映してください。数値は小数点以下2桁まで正確に表示してください。\n\n【必須抽出・表示項目】\n1. FCR（総収益率）: [具体的な数値、例：5.97%] ※%は小数点以下2桁まで正確に\n2. K%（ローン定数）: [具体的な数値、例：5.06%] ※%は小数点以下2桁まで正確に\n3. CCR（自己資金配当率、キャッシュオンキャッシュ）: [具体的な数値、例：8.45%] ※特に重要、必ず抽出、%は小数点以下2桁まで\n4. DCR（借入金償還余裕率）: [具体的な数値、例：1.58倍] ※小数点以下2桁まで\n5. BER（損益分岐入居率）: [具体的な数値、例：65.72%] ※%は小数点以下2桁まで\n6. IRR（内部収益率）: 以下の表形式で必ず提示（小数点以下2桁まで）\n\n   | 項目 | 融資利用時 | 全額自己資金時 |\n   |------|------------|----------------|\n   | 税引前IRR | [具体的な数値、例：7.29%] | [具体的な数値、例：4.07%] |\n   | 税引後IRR | [具体的な数値、例：6.45%] | [具体的な数値、例：3.29%] |\n\n7. NPV（正味現在価値）: [具体的な数値、例：2,682,559円] ※円単位で正確な数値、3桁区切りで表示\n\n【重要な注意事項】\n- Vision AI分析結果を詳細に確認し、すべての数値を正確に抽出してください\n- 「不明」「データ不足」「例：」「申し訳ありませんが」「しかし、一般的な」「指定されたPDFファイルの内容を直接分析することはできません」「ガイドラインを提供します」などの表現は一切使用せず、実際に抽出した数値のみを記載してください\n- 数値の単位（%、円、倍など）も正確に記録してください\n- 指標の説明だけでなく、実際の数値データに基づいた具体的な分析を行ってください\n- Executive Summaryでは、抽出した数値データに基づいて投資評価を行ってください（例：「FCRが5.97%、K%が5.06%であることから、ポジティブ・レバレッジが確認できます。税引前IRRは7.29%、税引後IRRは6.45%と期待収益率を上回る結果となっており、投資価値があると評価されます。」）`;
       } catch (fileError) {
         console.error('[OPENAI] File processing error:', fileError);
         // Fallback to legacy processing
