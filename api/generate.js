@@ -2121,7 +2121,7 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
         console.log(`[GEMINI] Vision analysis completed, extracted content length: ${fileContent.length} chars`);
         
         // Add extracted file content to prompt with explicit instructions
-        fullPrompt += `\n\n【添付ファイル分析結果（Vision AIによる抽出）】\n${fileContent}\n\n上記のファイル分析結果から、すべての数値データ（FCR、K%、DCR、BER、IRR、NPV等）を正確に抽出し、レポートに反映してください。数値が「不明」や「データ不足」とならないよう、ファイル分析結果を詳細に確認してください。`;
+        fullPrompt += `\n\n【添付ファイル分析結果（Vision AIによる抽出）】\n${fileContent}\n\n【重要】上記のファイル分析結果から、以下のすべての数値データを正確に抽出し、レポートに反映してください：\n- FCR（総収益率）\n- K%（ローン定数）\n- CCR（自己資金配当率、キャッシュオンキャッシュ）※特に重要\n- DCR（借入金償還余裕率）\n- BER（損益分岐入居率）\n- IRR（内部収益率）: 税引前・融資利用時、税引後・融資利用時、税引前・全額自己資金時、税引後・全額自己資金時（表形式で提示）\n- NPV（正味現在価値）\n\n数値が「不明」や「データ不足」とならないよう、ファイル分析結果を詳細に確認し、すべての数値を具体的に記載してください。指標の説明だけではなく、実際の数値データに基づいた具体的な分析を行ってください。`;
       } catch (visionError) {
         console.error('[GEMINI] Vision analysis failed, falling back to direct multimodal:', visionError);
         console.error('[GEMINI] Vision error details:', visionError.message);
@@ -2630,11 +2630,19 @@ function getVisionAnalysisPrompt(reportType, fileType) {
 **特に注目する投資指標**:
 - FCR (総収益率)
 - K% (ローン定数) 
+- CCR (自己資金配当率、キャッシュオンキャッシュ) ※特に重要、必ず抽出
 - DCR (借入金償還余裕率)
 - BER (損益分岐入居率)
-- IRR (内部収益率) - 税引前・税引後、融資利用・全額自己資金
+- IRR (内部収益率) - 税引前・税引後、融資利用・全額自己資金を表形式で整理
 - NPV (正味現在価値)
-- イールドギャップ (FCR - K%)`;
+- イールドギャップ (FCR - K%)
+
+**IRR表形式での出力**：
+以下の表形式でIRR指標を必ず出力してください：
+| 項目 | 融資利用時 | 全額自己資金時 |
+|------|------------|----------------|
+| 税引前IRR | [%] | [%] |
+| 税引後IRR | [%] | [%] |`;
   }
 
   return basePrompt;
@@ -3545,7 +3553,7 @@ function getOptimizedSystemMessage(reportType, service) {
   } else if (service === 'gemini') {
     // Gemini-specific optimizations
     const geminiOptimizations = {
-      jp_investment_4part: `Role: 機関投資家レベル不動産投資専門コンサルタント（20年以上経験）\n\nTask: 添付ファイルから投資指標を抽出し、4部構成の投資分析レポートを作成\n\n【CRITICAL OUTPUT FORMAT REQUIREMENTS - MUST FOLLOW STRICTLY】\n- 出力は「1. Executive Summary（投資概要）」から即座に開始。冒頭に「承知いたしました」「はい」「添付されたファイルを分析し」「以下」「以下の」などの導入文、挨拶文、前置き、説明文を一切含めないこと。レポートのタイトルも不要。\n- 最後に「以上が」「ご不明な点がございましたら」などの結び文を一切含めないこと。\n- 指定された構成（1. Executive Summary、2. Benefits、3. Risks、4. Evidence）の内容のみを記述。\n- 投資推奨度は必ず日本語で記述（「推奨」「強く推奨」「条件付き推奨」「非推奨」など）。英語表記（RECOMMENDED、NOT_RECOMMENDEDなど）は一切使用禁止。\n- 投資グレードも日本語で記述（「優良」「良好」「普通」「要改善」など）。\n\n【CRITICAL NUMERICAL DATA EXTRACTION】\n- 添付されたPDFや画像ファイルから、FCR、K%、DCR、BER、IRR、NPVなどの数値を必ず正確に抽出してください\n- 「不明」「データ不足」と表示する前に、添付ファイルを詳細に確認してください\n- 4.3節では、IRR指標を必ず以下の表形式で提示してください：\n\n| 項目 | 融資利用時 | 全額自己資金時 |\n|------|------------|----------------|\n| 税引前IRR | [%] | [%] |\n| 税引後IRR | [%] | [%] |\n\nQuality Requirements:\n- 数値精度の絶対性（FCR、K%、DCR、BER、IRR、NPV）- 添付ファイルから必ず数値を抽出\n- イールドギャップ計算の正確性（FCR - K%）\n- レバレッジ判定の厳密性：FCR > K% なら必ずポジティブ・レバレッジと判定。FCRとK%を直接数値比較し、誤ってネガティブと判断しない\n- レバレッジ効果の定量化\n- 実務的投資判断の提供\n- 適切なリスク評価\n\nOutput: 機関投資家が実際の投資判断に使用できる高品質分析レポート`,
+      jp_investment_4part: `Role: 機関投資家レベル不動産投資専門コンサルタント（20年以上経験）\n\nTask: 添付ファイルから投資指標を抽出し、4部構成の投資分析レポートを作成\n\n【CRITICAL OUTPUT FORMAT REQUIREMENTS - MUST FOLLOW STRICTLY】\n- 出力は「1. Executive Summary（投資概要）」から即座に開始。冒頭に「承知いたしました」「はい」「添付されたファイルを分析し」「以下」「以下の」などの導入文、挨拶文、前置き、説明文を一切含めないこと。レポートのタイトルも不要。\n- 最後に「以上が」「ご不明な点がございましたら」などの結び文を一切含めないこと。\n- 指定された構成（1. Executive Summary、2. Benefits、3. Risks、4. Evidence）の内容のみを記述。\n- 投資推奨度は必ず日本語で記述（「推奨」「強く推奨」「条件付き推奨」「非推奨」など）。英語表記（RECOMMENDED、NOT_RECOMMENDEDなど）は一切使用禁止。\n- 投資グレードも日本語で記述（「優良」「良好」「普通」「要改善」など）。\n\n【CRITICAL NUMERICAL DATA EXTRACTION】\n- 添付されたPDFや画像ファイル、またはVision AIによる抽出結果から、以下の5つの指標を必ず具体的な数値で表示してください：\n  1. FCR（総収益率）: [%]\n  2. K%（ローン定数）: [%]\n  3. CCR（自己資金配当率、キャッシュオンキャッシュ）: [%] ※特に重要、必ず抽出\n  4. DCR（借入金償還余裕率）: [倍]\n  5. BER（損益分岐入居率）: [%]\n- IRR指標は必ず以下の表形式で提示してください：\n\n| 項目 | 融資利用時 | 全額自己資金時 |\n|------|------------|----------------|\n| 税引前IRR | [%] | [%] |\n| 税引後IRR | [%] | [%] |\n\n- 「不明」「データ不足」と表示する前に、Vision AIによる抽出結果や添付ファイルを詳細に確認してください\n- 指標の説明だけではなく、実際の数値データに基づいた具体的な分析を行ってください\n\nQuality Requirements:\n- 数値精度の絶対性（FCR、K%、CCR、DCR、BER、IRR、NPV）- 添付ファイルやVision AI抽出結果から必ず数値を抽出\n- イールドギャップ計算の正確性（FCR - K%）\n- レバレッジ判定の厳密性：FCR > K% なら必ずポジティブ・レバレッジと判定。FCRとK%を直接数値比較し、誤ってネガティブと判断しない\n- CCR（自己資金配当率）の明示：FCR > K%の場合、CCR > FCRとなることを必ず説明\n- レバレッジ効果の定量化\n- 実務的投資判断の提供\n- 適切なリスク評価\n\nOutput: 機関投資家が実際の投資判断に使用できる高品質分析レポート`,
       jp_tax_strategy: `Role: 日本税制精通タックスストラテジスト（Big4税理士法人パートナーレベル）\n\nTask: 不動産投資による税務最適化戦略の分析\n\n【CRITICAL OUTPUT FORMAT REQUIREMENTS - MUST FOLLOW STRICTLY】\n- 出力は最初のセクションから即座に開始。冒頭に「承知いたしました」「はい」「添付されたファイルを分析し」「以下」「以下の」などの導入文、挨拶文、前置き、説明文を一切含めないこと。レポートのタイトルも不要。\n- 最後に「以上が」「ご不明な点がございましたら」などの結び文を一切含めないこと。\n- 指定された構成の内容のみを記述。\n\nFocus: 減価償却費活用による所得税・住民税の合法的軽減\n\nOutput: 定量的根拠に基づく税務戦略レポート`,
       jp_inheritance_strategy: `Role: エステートプランニング専門コンサルタント（30年以上経験）\n\nTask: 収益不動産レバレッジを核とした相続対策戦略分析\n\n【CRITICAL OUTPUT FORMAT REQUIREMENTS - MUST FOLLOW STRICTLY】\n- 出力は最初のセクションから即座に開始。冒頭に「承知いたしました」「はい」「添付されたファイルを分析し」「以下」「以下の」などの導入文、挨拶文、前置き、説明文を一切含めないこと。レポートのタイトルも不要。\n- 最後に「以上が」「ご不明な点がございましたら」などの結び文を一切含めないこと。\n- 指定された構成の内容のみを記述。\n- 数値判定の厳密性：FCR > I% なら必ず「CF創出力あり」と判定。FCRとI%を直接数値比較し、誤って「CF創出力なし」と判断しない\n\nFocus: 相続税評価額圧縮と債務控除最適化\n\nOutput: 次世代資産承継最適化レポート`,
       comparison_analysis: `Role: 不動産投資比較分析専門家（30年以上経験）\n\nTask: 複数投資物件の多角的比較分析\n\n【CRITICAL OUTPUT FORMAT REQUIREMENTS - MUST FOLLOW STRICTLY】\n- 出力は最初のセクションから即座に開始。冒頭に「承知いたしました」「はい」「添付されたファイルを分析し」「以下」「以下の」などの導入文、挨拶文、前置き、説明文を一切含めないこと。レポートのタイトルも不要。\n- 最後に「以上が」「ご不明な点がございましたら」などの結び文を一切含めないこと。\n- 指定された構成の内容のみを記述。\n- 投資推奨度や推奨物件は必ず日本語で記述（「推奨」「強く推奨」「条件付き推奨」「非推奨」など）。英語表記（RECOMMENDED、NOT_RECOMMENDEDなど）は一切使用禁止。\n- レバレッジ判定の厳密性：FCR > K% なら必ずポジティブ・レバレッジと判定。FCRとK%を直接数値比較し、誤ってネガティブと判断しない\n\nFocus: レバレッジの質・強度・持続可能性\n\nOutput: データ基づく客観的投資推奨レポート`,
