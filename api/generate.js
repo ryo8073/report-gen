@@ -2106,7 +2106,7 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
     // Get the Gemini-optimized prompt using PromptManager (await to ensure prompts are loaded)
     let fullPrompt = await promptManager.buildServiceOptimizedPrompt(reportType, inputText, files, additionalInfo, 'gemini');
     
-    // Gemini 2.0 Flash supports direct multimodal input - re-enabling carefully
+    // Gemini 1.5 Pro supports direct multimodal input - re-enabling carefully
     let parts = [{ text: fullPrompt }];
     
     if (files && files.length > 0) {
@@ -2379,7 +2379,7 @@ async function analyzeFileWithVision(file, reportType) {
   console.log(`[VISION] Analyzing ${file.name} with vision AI`);
   
   try {
-    // Try Gemini 2.0 Flash first (better for documents)
+    // Try Gemini 1.5 Pro first (better for documents and numerical analysis)
     const geminiResult = await analyzeWithGeminiVision(file, reportType);
     return {
       fileName: file.name,
@@ -2404,7 +2404,7 @@ async function analyzeFileWithVision(file, reportType) {
   }
 }
 
-// Analyze with Gemini 2.0 Flash (supports PDF and images)
+// Analyze with Gemini 1.5 Pro (supports PDF and images, better numerical reasoning)
 async function analyzeWithGeminiVision(file, reportType) {
   if (!geminiModel) {
     throw new Error('Gemini model not available');
@@ -3483,8 +3483,8 @@ function getGeminiOptimizedConfig(reportType) {
   const optimizations = {
     jp_investment_4part: {
       ...baseConfig,
-      temperature: 0.6, // More consistent for financial analysis
-      topP: 0.9, // More focused responses
+      temperature: 0.5, // Lower temperature for more precise numerical analysis and leverage judgment
+      topP: 0.85, // More focused for accurate financial calculations
       maxOutputTokens: 4500 // Longer for comprehensive 4-part analysis
     },
     jp_tax_strategy: {
