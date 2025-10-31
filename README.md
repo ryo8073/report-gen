@@ -2,25 +2,28 @@
 
 プロフェッショナルなレポートを自動生成するWebアプリケーション。投資分析、税務戦略、相続対策などの専門的なレポートをAIで生成します。
 
+**注意**: 本システムは一時的な試用サイトとして運用されており、認証機能は無効化されています。
+
 ## 🎯 主な機能
 
 ### 📊 レポート生成
 - **投資分析（4部構成）**: Executive Summary、Benefits、Risks、Evidence
 - **税務戦略（減価償却）**: 年収・家族構成を考慮した節税分析
 - **相続対策戦略**: 資産情報・法定相続人を基にした相続税対策
-- **カスタムプロンプト**: 独自の分析要求に対応
+- **比較分析**: 複数の物件や投資案件の比較分析
 
-### 👤 ユーザー管理
-- **試用期間システム**: 2週間または15回の利用制限
-- **認証システム**: Firebase Authentication
-- **カスタムプロンプト保存**: ユーザー別のプロンプト管理
+### ✏️ 編集機能
+- **WYSIWYGエディタ**: Wordライクな編集体験（HTMLとして直接編集可能）
+- **リアルタイムプレビュー**: 編集内容の即座な確認
+- **印刷プレビュー**: 印刷・PDF出力前の確認表示
+- **Markdown対応**: Markdown形式のコンテンツを自動的にHTMLに変換して表示
 
-### 🔧 管理機能
-- **Admin Dashboard**: 使用統計、ユーザー管理
-- **試用期間統計**: コンバージョン率、利用状況分析
-- **カスタムプロンプト管理**: 全ユーザーのプロンプト確認・削除
+### 📤 エクスポート機能
+- **PDF出力**: 高品質なPDFドキュメント生成
+- **Word出力**: Microsoft Word形式でのエクスポート（オプション）
+- **印刷**: ブラウザ標準の印刷機能に対応
 
-## 🚀 セットアップ
+## 🚀 クイックスタート
 
 ### 1. 依存関係のインストール
 ```bash
@@ -29,31 +32,30 @@ npm install
 
 ### 2. 環境変数の設定
 ```bash
-# .env.exampleをコピーして.envを作成
+# .env.exampleをコピーして.envを作成（存在する場合）
 cp .env.example .env
-
-# .envファイルを編集して実際の値を設定
-# - OPENAI_API_KEY: OpenAIのAPIキー
-# - JWT_SECRET: ランダムな文字列（セキュリティ用）
-# - Firebase関連の設定値
 ```
 
-### 3. Firebase設定
-```bash
-# Firebase設定の検証
-npm run firebase:validate
+`.env`ファイルに以下の値を設定：
 
-# 環境変数チェック
-npm run firebase:env-check
+```env
+# OpenAI設定（必須）
+OPENAI_API_KEY=sk-proj-xxxxxxxxxx
 
-# データベース初期化
-npm run db:init
+# Google AI (Gemini) 設定（オプション - フォールバック用）
+GOOGLE_AI_API_KEY=your-google-ai-api-key
 
-# 管理者ユーザー作成
-npm run admin:init
+# その他
+NODE_ENV=development
+PORT=3000
 ```
 
-### 4. 開発サーバー起動
+**注意**: 
+- OpenAI APIキーが必須です
+- Google AI APIキーは任意（OpenAIが失敗した場合のフォールバックとして使用）
+- 認証機能は無効化されているため、Firebase設定は不要です
+
+### 3. 開発サーバー起動
 ```bash
 # 通常の開発サーバー
 npm run dev
@@ -64,160 +66,205 @@ npm run debug
 
 サーバーは `http://localhost:3000` で起動します。
 
-### 🔧 トラブルシューティング
+## 📝 使用方法
 
-レポート生成が動作しない場合：
+### レポート生成の流れ
 
-1. **環境変数の確認**
-   ```bash
-   npm run firebase:env-check
-   ```
+1. **レポートタイプの選択**
+   - 投資分析レポート（4部構成）
+   - 税務戦略レポート
+   - 相続対策戦略レポート
+   - 比較分析レポート
 
-2. **デバッグサーバーでテスト**
-   ```bash
-   npm run debug
-   # http://localhost:3001 でアクセス
-   ```
+2. **データの入力**
+   - テキスト入力欄に分析したいデータを入力
+   - PDFや画像ファイルを添付可能（投資分析レポートなど）
 
-3. **APIキーの確認**
-   - OpenAI APIキーが正しく設定されているか
-   - Firebase設定が正しいか
+3. **レポート生成**
+   - 「レポートを生成」ボタンをクリック
+   - AIがプロンプトテンプレートに基づいてレポートを生成
 
-4. **ログの確認**
-   - ブラウザのコンソールでエラーを確認
-   - サーバーのログを確認
+4. **レポートの編集**
+   - 編集タブでWYSIWYGエディタを使用して内容を編集
+   - リアルタイムで変更が反映されます
 
-## 🧪 テスト
-
-### 全テスト実行
-```bash
-npm run test:all
-```
-
-### 個別テスト
-```bash
-npm run test:auth      # 認証システムテスト
-npm run test:reports   # レポート生成テスト
-npm run test:trial     # 試用期間システムテスト
-```
+5. **エクスポート**
+   - PDF出力、Word出力、印刷プレビュー機能を利用
 
 ## 📁 プロジェクト構造
 
 ```
-├── api/                    # API エンドポイント
-│   ├── auth/              # 認証関連
-│   ├── admin/             # 管理者機能
-│   ├── custom-prompts/    # カスタムプロンプト管理
-│   └── trial/             # 試用期間管理
-├── lib/                   # ライブラリ
-│   ├── firebase-admin.js  # Firebase Admin SDK
-│   ├── firebase-db.js     # データベース操作
-│   └── auth.js           # 認証ヘルパー
-├── scripts/              # セットアップスクリプト
-├── PROMPTS/              # レポートテンプレート
-├── *.html               # フロントエンド画面
-└── test-*.js           # テストスクリプト
+├── api/                      # API エンドポイント
+│   └── generate.js          # レポート生成API
+├── lib/                     # ライブラリ
+│   ├── pdf-export-manager.js      # PDFエクスポート
+│   ├── enhanced-wysiwyg-editor.js  # WYSIWYGエディタ
+│   ├── markdown-renderer.js       # Markdownレンダリング
+│   └── performance-optimization-manager.js  # パフォーマンス最適化
+├── PROMPTS/                 # レポートテンプレート（重要）
+│   ├── jp_investment_4part.md
+│   ├── jp_tax_strategy.md
+│   ├── jp_inheritance_strategy.md
+│   └── comparison_analysis.md
+├── index.html              # メインページ
+├── investment-analysis.html # 投資分析専用ページ
+└── server.js               # Expressサーバー
 ```
 
 ## 🔑 環境変数
 
-`.env` ファイルに以下を設定：
+最小限の設定（`.env`ファイル）:
 
 ```env
-# Firebase設定
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxx@your-project.iam.gserviceaccount.com
+# OpenAI API（必須）
+OPENAI_API_KEY=sk-proj-your-openai-api-key-here
 
-# JWT設定
-JWT_SECRET=your-jwt-secret-key
+# Google AI (Gemini) - オプション（フォールバック用）
+GOOGLE_AI_API_KEY=your-google-ai-api-key
 
-# OpenAI設定
-OPENAI_API_KEY=your-openai-api-key
-
-# その他
+# サーバー設定
+PORT=3000
 NODE_ENV=development
 ```
 
-## 💰 試用期間システム
+## 🛠 API エンドポイント
 
-### 制限内容
-- **期間制限**: 登録から2週間
-- **利用制限**: レポート生成15回まで
-- **制限到達時**: 有料プランへの誘導
+### レポート生成
+- `POST /api/generate` - レポート生成
 
-### 料金プラン
-- **ベーシック**: ¥2,980/月（月50回まで）
-- **プロ**: ¥4,980/月（無制限）
-- **エンタープライズ**: お問い合わせ
-
-## 🛠 開発
-
-### API エンドポイント
-
-#### 認証
-- `POST /api/auth/register-firebase` - ユーザー登録
-- `POST /api/auth/login-firebase` - ログイン
-- `GET /api/auth/me-firebase` - ユーザー情報取得
-- `POST /api/auth/logout` - ログアウト
-
-#### レポート生成
-- `POST /api/generate-firebase` - レポート生成
-
-#### 試用期間
-- `GET /api/trial/status` - 試用期間状況確認
-- `POST /api/trial/upgrade` - アップグレード（デモ）
-
-#### カスタムプロンプト
-- `POST /api/custom-prompts/save` - プロンプト保存
-- `GET /api/custom-prompts/list` - プロンプト一覧
-- `DELETE /api/custom-prompts/delete` - プロンプト削除
-
-#### 管理者
-- `GET /api/admin/stats-firebase` - 使用統計
-- `GET /api/admin/trial-stats` - 試用期間統計
-- `GET /api/admin/custom-prompts` - カスタムプロンプト管理
-
-### データベーススキーマ
-
-#### users コレクション
-```javascript
+**リクエスト例:**
+```json
 {
-  id: string,
-  email: string,
-  password: string,
-  role: 'user' | 'admin',
-  isActive: boolean,
-  // 試用期間情報
-  trialStartDate: timestamp,
-  trialEndDate: timestamp,
-  trialUsageCount: number,
-  trialMaxUsage: number,
-  subscriptionStatus: 'trial' | 'trial_expired' | 'active',
-  subscriptionPlan: string | null
+  "reportType": "jp_investment_4part",
+  "inputText": "物件データ...",
+  "files": [],
+  "additionalInfo": {}
 }
 ```
 
-#### custom_prompts コレクション
-```javascript
+**レスポンス例:**
+```json
 {
-  id: string,
-  userId: string,
-  userEmail: string,
-  title: string,
-  content: string,
-  description: string,
-  tags: string[],
-  isActive: boolean,
-  createdAt: timestamp,
-  updatedAt: timestamp
+  "success": true,
+  "report": {
+    "content": "生成されたレポート内容（Markdown形式）",
+    "title": "投資分析レポート",
+    "usage": {
+      "promptTokens": 1500,
+      "completionTokens": 2000,
+      "totalTokens": 3500
+    }
+  }
 }
 ```
+
+## 🔧 トラブルシューティング
+
+### レポート生成が動作しない場合
+
+1. **環境変数の確認**
+   - OpenAI APIキーが正しく設定されているか確認
+   - `.env`ファイルがプロジェクトルートに存在するか確認
+
+2. **APIキーの確認**
+   ```bash
+   # OpenAI設定の検証
+   npm run openai:validate
+   
+   # Google AI設定の検証（オプション）
+   npm run google-ai:validate
+   ```
+
+3. **サーバーログの確認**
+   - ブラウザのコンソールでエラーを確認
+   - サーバーのターミナル出力を確認
+
+4. **プロンプトファイルの確認**
+   - `PROMPTS/`フォルダ内の`.md`ファイルが正しく読み込まれているか確認
+   - サーバー起動時のログで「PROMPT MANAGER」のメッセージを確認
+
+### よくある問題
+
+**Q: レポートが生成されない**
+- APIキーが正しく設定されているか確認
+- ネットワーク接続を確認
+- サーバーログでエラーメッセージを確認
+
+**Q: 印刷プレビューやエディタでMarkdown記法（##、**など）が表示される**
+- これは既に修正済みです。ページをリロードしてください
+
+**Q: PDF出力が空になる**
+- ブラウザのコンソールでエラーを確認
+- PDFエクスポートマネージャーのログを確認
+
+## 📚 プロンプトテンプレート
+
+レポート生成に使用されるプロンプトテンプレートは`PROMPTS/`フォルダ内にあります：
+
+- `jp_investment_4part.md`: 投資分析レポート（4部構成）
+- `jp_tax_strategy.md`: 税務戦略レポート
+- `jp_inheritance_strategy.md`: 相続対策戦略レポート
+- `comparison_analysis.md`: 比較分析レポート
+
+プロンプトを変更する場合は、該当ファイルを編集し、サーバーを再起動してください。
+
+詳細なプロンプト管理方法については、`PROMPT_MAINTENANCE_GUIDE.md`を参照してください。
+
+## 🧪 テスト
+
+### レポート生成テスト
+```bash
+npm run test:reports
+```
+
+### API統合テスト
+```bash
+npm run test:integration
+```
+
+### OpenAI設定テスト
+```bash
+npm run test:openai
+```
+
+### Google AI設定テスト（オプション）
+```bash
+npm run test:google-ai
+```
+
+## 🎨 機能詳細
+
+### WYSIWYGエディタ
+- **ドキュメントライクな編集**: Wordのような編集体験
+- **リアルタイムプレビュー**: 編集内容が即座に反映
+- **Markdown自動変換**: Markdown記法を自動的にHTMLに変換して表示
+
+### 印刷プレビュー
+- **正確なページレイアウト**: 印刷時の表示を正確に再現
+- **ページネーション**: 複数ページのドキュメントに対応
+- **ズーム機能**: 表示倍率の調整が可能
+
+### PDFエクスポート
+- **高品質な出力**: プロフェッショナルなドキュメント生成
+- **ヘッダー・フッター対応**: カスタムヘッダー・フッターの設定可能
+
+## 🔒 セキュリティについて
+
+**注意**: 本システムは一時的な試用サイトとして運用されており：
+- 認証機能は無効化されています
+- すべてのユーザーが自由にレポートを生成できます
+- APIキーはサーバー側で管理され、クライアントには公開されません
 
 ## 📝 ライセンス
 
-このプロジェクトは商用利用を想定した有料サービスです。
+このプロジェクトは商用利用を想定したサービスです。
 
 ## 🤝 サポート
 
 技術的な問題や質問については、開発チームまでお問い合わせください。
+
+## 📖 関連ドキュメント
+
+- `PROMPT_MAINTENANCE_GUIDE.md`: プロンプトテンプレートの管理方法
+- `API_SPEC.md`: API仕様詳細
+- `SETUP.md`: 詳細なセットアップ手順（開発者向け）
