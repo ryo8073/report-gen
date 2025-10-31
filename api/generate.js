@@ -2548,10 +2548,9 @@ async function analyzeWithGPT4Vision(file, reportType) {
   // Note: Direct PDF support in GPT-4o is limited, but images work well
   
   if (file.type === 'application/pdf') {
-    console.log(`[GPT-4V] PDF file detected, attempting to process (may require conversion)`);
-    // Note: For PDFs, ideally convert to images first, but for now we'll skip GPT-4V for PDFs
-    // and rely on Gemini which has better PDF support
-    throw new Error('GPT-4V PDF support limited, using Gemini instead');
+    console.log(`[GPT-4V] PDF file detected - gpt-4o can process PDFs, attempting analysis`);
+    // gpt-4o has improved PDF support, try processing it
+    // Note: For best results, PDF should be high quality and text-based
   }
 
   if (!file.type.startsWith('image/')) {
@@ -2565,24 +2564,39 @@ async function analyzeWithGPT4Vision(file, reportType) {
     // Use gpt-4o (latest model) or gpt-4-turbo for better vision capabilities
     const visionModel = "gpt-4o"; // Updated to use gpt-4o which has better vision and PDF support
     
+      // Build content array - support both images and PDFs
+      const contentArray = [
+        {
+          type: "text",
+          text: analysisPrompt
+        }
+      ];
+      
+      // For PDFs, use document type; for images, use image_url
+      if (file.type === 'application/pdf') {
+        contentArray.push({
+          type: "document",
+          document: {
+            type: "pdf",
+            data: file.data
+          }
+        });
+      } else {
+        contentArray.push({
+          type: "image_url",
+          image_url: {
+            url: `data:${file.type};base64,${file.data}`,
+            detail: "high" // High detail for accurate numerical extraction
+          }
+        });
+      }
+      
       const completion = await openai.chat.completions.create({
         model: visionModel,
         messages: [
           {
             role: "user",
-            content: [
-              {
-                type: "text",
-                text: analysisPrompt
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:${file.type};base64,${file.data}`,
-                  detail: "high" // High detail for accurate numerical extraction
-                }
-              }
-            ]
+            content: contentArray
           }
         ],
         max_tokens: 6000, // Increased further for comprehensive numerical extraction
@@ -3596,7 +3610,7 @@ function getOptimizedSystemMessage(reportType, service) {
   } else if (service === 'gemini') {
     // Gemini-specific optimizations
     const geminiOptimizations = {
-      jp_investment_4part: `Role: 機関投資家レベル不動産投資専門コンサルタント（20年以上経験）\n\nTask: 添付ファイルから投資指標を抽出し、4部構成の投資分析レポートを作成\n\n【CRITICAL OUTPUT FORMAT REQUIREMENTS - MUST FOLLOW STRICTLY】\n- 出力は「1. Executive Summary（投資概要）」から即座に開始。冒頭に「承知いたしました」「はい」「添付されたファイルを分析し」「以下」「以下の」などの導入文、挨拶文、前置き、説明文を一切含めないこと。レポートのタイトルも不要。\n- 最後に「以上が」「ご不明な点がございましたら」などの結び文を一切含めないこと。\n- 指定された構成（1. Executive Summary、2. Benefits、3. Risks、4. Evidence）の内容のみを記述。\n- 投資推奨度は必ず日本語で記述（「推奨」「強く推奨」「条件付き推奨」「非推奨」など）。英語表記（RECOMMENDED、NOT_RECOMMENDEDなど）は一切使用禁止。\n- 投資グレードも日本語で記述（「優良」「良好」「普通」「要改善」など）。\n\n【CRITICAL NUMERICAL DATA EXTRACTION】\n- 添付されたPDFや画像ファイル、またはVision AIによる抽出結果から、以下の5つの指標を必ず具体的な数値で表示してください：\n  1. FCR（総収益率）: [%]\n  2. K%（ローン定数）: [%]\n  3. CCR（自己資金配当率、キャッシュオンキャッシュ）: [%] ※特に重要、必ず抽出\n  4. DCR（借入金償還余裕率）: [倍]\n  5. BER（損益分岐入居率）: [%]\n- IRR指標は必ず以下の表形式で提示してください：\n\n| 項目 | 融資利用時 | 全額自己資金時 |\n|------|------------|----------------|\n| 税引前IRR | [%] | [%] |\n| 税引後IRR | [%] | [%] |\n\n- 「不明」「データ不足」と表示する前に、Vision AIによる抽出結果や添付ファイルを詳細に確認してください\n- 指標の説明だけではなく、実際の数値データに基づいた具体的な分析を行ってください\n\nQuality Requirements:\n- 数値精度の絶対性（FCR、K%、CCR、DCR、BER、IRR、NPV）- 添付ファイルやVision AI抽出結果から必ず数値を抽出\n- イールドギャップ計算の正確性（FCR - K%）\n- レバレッジ判定の厳密性：FCR > K% なら必ずポジティブ・レバレッジと判定。FCRとK%を直接数値比較し、誤ってネガティブと判断しない\n- CCR（自己資金配当率）の明示：FCR > K%の場合、CCR > FCRとなることを必ず説明\n- レバレッジ効果の定量化\n- 実務的投資判断の提供\n- 適切なリスク評価\n\nOutput: 機関投資家が実際の投資判断に使用できる高品質分析レポート`,
+      jp_investment_4part: `Role: 機関投資家レベル不動産投資専門コンサルタント（20年以上経験）\n\nTask: 添付ファイルから投資指標を抽出し、4部構成の投資分析レポートを作成\n\n【CRITICAL OUTPUT FORMAT REQUIREMENTS - MUST FOLLOW STRICTLY】\n- 出力は「1. Executive Summary（投資概要）」から即座に開始。冒頭に「承知いたしました」「はい」「添付されたファイルを分析し」「以下」「以下の」などの導入文、挨拶文、前置き、説明文を一切含めないこと。レポートのタイトルも不要。\n- 最後に「以上が」「ご不明な点がございましたら」などの結び文を一切含めないこと。\n- 指定された構成（1. Executive Summary、2. Benefits、3. Risks、4. Evidence）の内容のみを記述。\n- 投資推奨度は必ず日本語で記述（「推奨」「強く推奨」「条件付き推奨」「非推奨」など）。英語表記（RECOMMENDED、NOT_RECOMMENDEDなど）は一切使用禁止。\n- 投資グレードも日本語で記述（「優良」「良好」「普通」「要改善」など）。\n\n【CRITICAL NUMERICAL DATA EXTRACTION】\n- 添付されたPDFや画像ファイル、またはGPT-4o Vision AIによる抽出結果から、以下の5つの指標を必ず具体的な数値で表示してください（小数点以下2桁まで正確に）：\n  1. FCR（総収益率）: [具体的な数値、例：5.97%] ※%は小数点以下2桁まで\n  2. K%（ローン定数）: [具体的な数値、例：5.06%] ※%は小数点以下2桁まで\n  3. CCR（自己資金配当率、キャッシュオンキャッシュ）: [具体的な数値、例：8.45%] ※特に重要、必ず抽出、%は小数点以下2桁まで\n  4. DCR（借入金償還余裕率）: [具体的な数値、例：1.58倍] ※小数点以下2桁まで\n  5. BER（損益分岐入居率）: [具体的な数値、例：65.72%] ※%は小数点以下2桁まで\n- IRR指標は必ず以下の表形式で提示してください（小数点以下2桁まで）：\n\n| 項目 | 融資利用時 | 全額自己資金時 |\n|------|------------|----------------|\n| 税引前IRR | [具体的な数値、例：7.29%] | [具体的な数値、例：4.07%] |\n| 税引後IRR | [具体的な数値、例：6.45%] | [具体的な数値、例：3.29%] |\n\n- NPV（正味現在価値）: [具体的な数値、例：2,682,559円] ※円単位で正確な数値、3桁区切りで表示\n- 「不明」「データ不足」「例：」などの表現は使用せず、実際に抽出した数値のみを記載してください\n- Vision AIによる抽出結果を詳細に確認し、すべての数値を具体的に記載してください\n- 指標の説明だけではなく、実際の数値データに基づいた具体的な分析を行ってください\n\n【EXECUTIVE SUMMARY REQUIREMENTS】\n- Executive Summaryでは、抽出した数値データに基づいて投資評価を行ってください\n- 例：「FCRが5.97%、K%が5.06%であることから、ポジティブ・レバレッジが確認できます。税引前IRRは7.29%、税引後IRRは6.45%と期待収益率を上回る結果となっており、投資価値があると評価されます。」\n- 実際の数値データを使用して投資判断の根拠を明示してください\n\nQuality Requirements:\n- 数値精度の絶対性（FCR、K%、CCR、DCR、BER、IRR、NPV）- 添付ファイルやGPT-4o Vision AI抽出結果から必ず数値を抽出、小数点以下2桁まで正確に\n- イールドギャップ計算の正確性（FCR - K%）\n- レバレッジ判定の厳密性：FCR > K% なら必ずポジティブ・レバレッジと判定。FCRとK%を直接数値比較し、誤ってネガティブと判断しない\n- CCR（自己資金配当率）の明示：FCR > K%の場合、CCR > FCRとなることを必ず説明\n- Executive Summaryで実際の数値に基づいた投資評価を実施\n- レバレッジ効果の定量化\n- 実務的投資判断の提供\n- 適切なリスク評価\n\nOutput: 機関投資家が実際の投資判断に使用できる高品質分析レポート`,
       jp_tax_strategy: `Role: 日本税制精通タックスストラテジスト（Big4税理士法人パートナーレベル）\n\nTask: 不動産投資による税務最適化戦略の分析\n\n【CRITICAL OUTPUT FORMAT REQUIREMENTS - MUST FOLLOW STRICTLY】\n- 出力は最初のセクションから即座に開始。冒頭に「承知いたしました」「はい」「添付されたファイルを分析し」「以下」「以下の」などの導入文、挨拶文、前置き、説明文を一切含めないこと。レポートのタイトルも不要。\n- 最後に「以上が」「ご不明な点がございましたら」などの結び文を一切含めないこと。\n- 指定された構成の内容のみを記述。\n\nFocus: 減価償却費活用による所得税・住民税の合法的軽減\n\nOutput: 定量的根拠に基づく税務戦略レポート`,
       jp_inheritance_strategy: `Role: エステートプランニング専門コンサルタント（30年以上経験）\n\nTask: 収益不動産レバレッジを核とした相続対策戦略分析\n\n【CRITICAL OUTPUT FORMAT REQUIREMENTS - MUST FOLLOW STRICTLY】\n- 出力は最初のセクションから即座に開始。冒頭に「承知いたしました」「はい」「添付されたファイルを分析し」「以下」「以下の」などの導入文、挨拶文、前置き、説明文を一切含めないこと。レポートのタイトルも不要。\n- 最後に「以上が」「ご不明な点がございましたら」などの結び文を一切含めないこと。\n- 指定された構成の内容のみを記述。\n- 数値判定の厳密性：FCR > I% なら必ず「CF創出力あり」と判定。FCRとI%を直接数値比較し、誤って「CF創出力なし」と判断しない\n\nFocus: 相続税評価額圧縮と債務控除最適化\n\nOutput: 次世代資産承継最適化レポート`,
       comparison_analysis: `Role: 不動産投資比較分析専門家（30年以上経験）\n\nTask: 複数投資物件の多角的比較分析\n\n【CRITICAL OUTPUT FORMAT REQUIREMENTS - MUST FOLLOW STRICTLY】\n- 出力は最初のセクションから即座に開始。冒頭に「承知いたしました」「はい」「添付されたファイルを分析し」「以下」「以下の」などの導入文、挨拶文、前置き、説明文を一切含めないこと。レポートのタイトルも不要。\n- 最後に「以上が」「ご不明な点がございましたら」などの結び文を一切含めないこと。\n- 指定された構成の内容のみを記述。\n- 投資推奨度や推奨物件は必ず日本語で記述（「推奨」「強く推奨」「条件付き推奨」「非推奨」など）。英語表記（RECOMMENDED、NOT_RECOMMENDEDなど）は一切使用禁止。\n- レバレッジ判定の厳密性：FCR > K% なら必ずポジティブ・レバレッジと判定。FCRとK%を直接数値比較し、誤ってネガティブと判断しない\n\nFocus: レバレッジの質・強度・持続可能性\n\nOutput: データ基づく客観的投資推奨レポート`,
