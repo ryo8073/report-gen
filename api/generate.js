@@ -2417,11 +2417,24 @@ async function processFilesWithVision(files, reportType) {
   }
 
   // Combine all vision results
+  // Format vision results with clear structure and ensure content is properly extracted
   const combinedContent = visionResults.map(result => {
     if (result.error) {
-      return result.content;
+      return `\n=== ${result.fileName || 'ファイル'} の処理エラー ===\n${result.content || result.error}\n`;
     }
-    return `\n=== ${result.fileName} の分析結果 ===\n${result.content}\n`;
+    // Ensure content is extracted properly - result.content might be nested
+    let content = '';
+    if (typeof result.content === 'string') {
+      content = result.content;
+    } else if (result.content && typeof result.content === 'object') {
+      // If content is an object, try to extract the text
+      content = result.content.content || result.content.text || JSON.stringify(result.content);
+    }
+    
+    const fileName = result.fileName || result.model || 'ファイル';
+    const model = result.model ? ` (${result.model})` : '';
+    
+    return `\n=== ${fileName} の分析結果${model} ===\n${content}\n`;
   }).join('\n');
 
   console.log(`[VISION] Successfully processed ${processedFiles.length}/${files.length} files`);
@@ -2434,25 +2447,31 @@ async function analyzeFileWithVision(file, reportType) {
   
   try {
     // Try Gemini 1.5 Pro first (better for documents and numerical analysis)
+    console.log(`[VISION] Attempting Gemini Vision analysis for ${file.name}`);
     const geminiResult = await analyzeWithGeminiVision(file, reportType);
+    console.log(`[VISION] Gemini Vision analysis successful for ${file.name}, result length: ${geminiResult ? geminiResult.length : 0}`);
     return {
       fileName: file.name,
       content: geminiResult,
       model: 'gemini-1.5-pro'
     };
   } catch (geminiError) {
-    console.log(`[VISION] Gemini failed for ${file.name}, trying GPT-4V:`, geminiError.message);
+    console.log(`[VISION] Gemini failed for ${file.name}, trying GPT-4o:`, geminiError.message);
     
     try {
-      // Fallback to GPT-4V
+      // Fallback to GPT-4o (updated from GPT-4V)
+      console.log(`[VISION] Attempting GPT-4o Vision analysis for ${file.name}`);
       const gptResult = await analyzeWithGPT4Vision(file, reportType);
+      console.log(`[VISION] GPT-4o Vision analysis successful for ${file.name}, result length: ${gptResult ? gptResult.length : 0}`);
       return {
         fileName: file.name,
         content: gptResult,
-        model: 'gpt-4-vision'
+        model: 'gpt-4o'
       };
     } catch (gptError) {
       console.error(`[VISION] Both vision models failed for ${file.name}`);
+      console.error(`[VISION] Gemini error:`, geminiError.message);
+      console.error(`[VISION] GPT-4o error:`, gptError.message);
       throw new Error(`Vision analysis failed: ${geminiError.message}`);
     }
   }
