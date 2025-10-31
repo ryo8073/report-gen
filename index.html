@@ -4067,7 +4067,19 @@ ${inputText || ''}`;
 
         // Initialize template system
         function initializeTemplateSystem() {
-            if (typeof TemplateSelectionSystem !== 'undefined' && typeof BusinessDocumentFormatter !== 'undefined') {
+            try {
+                // Check for required dependencies
+                if (typeof TemplateSelectionSystem === 'undefined') {
+                    console.warn('TemplateSelectionSystem not available, skipping template system initialization');
+                    return false;
+                }
+                
+                if (typeof BusinessDocumentFormatter === 'undefined') {
+                    console.warn('BusinessDocumentFormatter not available, skipping template system initialization');
+                    return false;
+                }
+                
+                // Initialize template system
                 templateSystem = new TemplateSelectionSystem();
                 documentFormatter = new BusinessDocumentFormatter();
                 
@@ -4075,10 +4087,12 @@ ${inputText || ''}`;
                     onTemplateChange: handleTemplateChange
                 });
                 
-                console.log('Template system initialized');
+                console.log('Template system initialized successfully');
                 return true;
+            } catch (error) {
+                console.warn('Failed to initialize template system:', error.message);
+                return false;
             }
-            return false;
         }
 
         // Apply document template
@@ -4345,15 +4359,21 @@ ${inputText || ''}`;
 
             // Initialize template system
             try {
-                if (initializeTemplateSystem()) {
-                    console.log('Template system initialized successfully');
-                    
-                    // Apply default template
-                    setTimeout(() => {
-                        applyDocumentTemplate();
-                    }, 100);
+                if (typeof initializeTemplateSystem === 'function') {
+                    if (initializeTemplateSystem()) {
+                        console.log('Template system initialized successfully');
+                        
+                        // Apply default template
+                        setTimeout(() => {
+                            if (typeof applyDocumentTemplate === 'function') {
+                                applyDocumentTemplate();
+                            }
+                        }, 100);
+                    } else {
+                        console.warn('Template system dependencies not available, continuing without template system');
+                    }
                 } else {
-                    console.warn('Template system dependencies not available');
+                    console.warn('initializeTemplateSystem function not defined, continuing without template system');
                 }
             } catch (error) {
                 console.error('Failed to initialize Template System:', error);

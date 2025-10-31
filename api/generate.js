@@ -116,8 +116,8 @@ async function handleComparisonAnalysis(req, res) {
       resultFormat: resultFormat || '表形式での比較と推奨順位'
     };
     
-    // Build comparison prompt
-    const comparisonPrompt = promptManager.buildFullPrompt(
+    // Build comparison prompt (await to ensure prompts are loaded)
+    const comparisonPrompt = await promptManager.buildFullPrompt(
       'comparison_analysis',
       null, // No single input text for comparison
       null, // Files handled separately
@@ -449,6 +449,8 @@ class PromptManager {
     this.loadTimestamp = null;
     this.maxCacheSize = 100; // Maximum number of cached prompts
     this.maxFileCacheSize = 50; // Maximum number of cached files
+    this.loadingPromise = null; // Track loading state
+    this.isLoaded = false; // Flag to indicate if prompts are loaded
     this.cacheStats = {
       hits: 0,
       misses: 0,
@@ -484,7 +486,22 @@ class PromptManager {
         description: 'カスタム要件に基づく投資分析'
       }
     };
-    this.loadPrompts();
+    // Start loading prompts and store the promise
+    this.loadingPromise = this.loadPrompts();
+  }
+  
+  // Ensure prompts are loaded before use
+  async ensureLoaded() {
+    if (this.isLoaded) {
+      return;
+    }
+    if (this.loadingPromise) {
+      await this.loadingPromise;
+    } else {
+      // If for some reason loading wasn't started, start it now
+      this.loadingPromise = this.loadPrompts();
+      await this.loadingPromise;
+    }
   }
   
   // Generate cache key for built prompts
@@ -523,6 +540,15 @@ class PromptManager {
       evictions: 0 
     };
     console.log('[PROMPT MANAGER] All caches cleared');
+  }
+  
+  // Reload prompts from files
+  async reloadPrompts() {
+    console.log('[PROMPT MANAGER] Reloading prompts from PROMPTS folder');
+    this.isLoaded = false;
+    this.loadingPromise = this.loadPrompts();
+    await this.loadingPromise;
+    console.log('[PROMPT MANAGER] Prompts reloaded successfully');
   }
 
   // Manage cache size with LRU eviction
@@ -658,11 +684,17 @@ class PromptManager {
       const stats = this.getCacheStats();
       console.log(`[PROMPT MANAGER] Cache stats - File cache: ${stats.fileCache.size}/${stats.fileCache.maxSize} (${stats.fileCache.hitRate} hit rate)`);
       
+      // Mark as loaded
+      this.isLoaded = true;
+      console.log(`[PROMPT MANAGER] Prompt loading complete. Loaded ${this.prompts.size} prompts.`);
+      
     } catch (error) {
       console.error('[PROMPT MANAGER] Failed to read PROMPTS directory:', error.message);
       console.log('[PROMPT MANAGER] Using fallback prompts due to directory read failure');
       // Load fallback prompts if directory read fails
       this.loadFallbackPrompts();
+      // Mark as loaded even with fallback
+      this.isLoaded = true;
     }
   }
 
@@ -821,7 +853,10 @@ class PromptManager {
     this.clearCache();
   }
   
-  getPrompt(reportType) {
+  async getPrompt(reportType) {
+    // Ensure prompts are loaded before retrieving
+    await this.ensureLoaded();
+    
     const promptFile = this.reportTypes[reportType]?.promptFile || 'jp_investment_4part.md';
     const prompt = this.prompts.get(promptFile);
     const metadata = this.promptMetadata.get(promptFile);
@@ -854,13 +889,17 @@ class PromptManager {
   }
   
   // Get prompt metadata
-  getPromptMetadata(reportType) {
+  async getPromptMetadata(reportType) {
+    // Ensure prompts are loaded before retrieving metadata
+    await this.ensureLoaded();
     const promptFile = this.reportTypes[reportType]?.promptFile || 'jp_investment_4part.md';
     return this.promptMetadata.get(promptFile) || null;
   }
   
   // Validate prompt integrity
-  validatePrompt(reportType) {
+  async validatePrompt(reportType) {
+    // Ensure prompts are loaded before validating
+    await this.ensureLoaded();
     const promptFile = this.reportTypes[reportType]?.promptFile || 'jp_investment_4part.md';
     const prompt = this.prompts.get(promptFile);
     const metadata = this.promptMetadata.get(promptFile);
@@ -910,8 +949,11 @@ class PromptManager {
     return true;
   }
   
-  buildFullPrompt(reportType, inputText, files, additionalInfo, comparisonData = null) {
+  async buildFullPrompt(reportType, inputText, files, additionalInfo, comparisonData = null) {
     console.log(`[PROMPT MANAGER] Building full prompt for report type: ${reportType}`);
+    
+    // Ensure prompts are loaded before building
+    await this.ensureLoaded();
     
     try {
       // Generate cache key
@@ -935,7 +977,7 @@ class PromptManager {
       this.cacheStats.builds++;
       
       // Validate prompt before building
-      const validation = this.validatePrompt(reportType);
+      const validation = await this.validatePrompt(reportType);
       if (!validation.exists) {
         console.error(`[PROMPT MANAGER] Prompt validation failed for ${reportType}:`, validation);
         throw new Error(`Prompt not available for report type: ${reportType}`);
@@ -945,8 +987,8 @@ class PromptManager {
         console.warn(`[PROMPT MANAGER] Prompt has parsing errors for ${reportType}, proceeding with caution`);
       }
       
-      const basePrompt = this.getPrompt(reportType);
-      const metadata = this.getPromptMetadata(reportType);
+      const basePrompt = await this.getPrompt(reportType);
+      const metadata = await this.getPromptMetadata(reportType);
       
       // Log prompt quality information
       if (metadata) {
@@ -984,6 +1026,7 @@ class PromptManager {
       // Attempt fallback to default prompt
       try {
         console.log(`[PROMPT MANAGER] Attempting fallback prompt for ${reportType}`);
+        await this.ensureLoaded();
         const fallbackPrompt = this.prompts.get('jp_investment_4part.md') || REPORT_PROMPTS.jp_investment_4part;
         
         if (reportType === 'custom') {
@@ -1157,12 +1200,15 @@ class PromptManager {
   }
 
   // Build service-optimized prompt
-  buildServiceOptimizedPrompt(reportType, inputText, files, additionalInfo, service, comparisonData = null) {
+  async buildServiceOptimizedPrompt(reportType, inputText, files, additionalInfo, service, comparisonData = null) {
     console.log(`[PROMPT MANAGER] Building ${service}-optimized prompt for ${reportType}`);
     
+    // Ensure prompts are loaded before building
+    await this.ensureLoaded();
+    
     // Get base prompt
-    const basePrompt = this.buildFullPrompt(reportType, inputText, files, additionalInfo, comparisonData);
-    const metadata = this.getPromptMetadata(reportType);
+    const basePrompt = await this.buildFullPrompt(reportType, inputText, files, additionalInfo, comparisonData);
+    const metadata = await this.getPromptMetadata(reportType);
     
     // Apply service-specific optimizations
     let optimizedPrompt;
@@ -1885,6 +1931,7 @@ export default async (req, res) => {
 async function generateReport({ reportType, inputText, files, additionalInfo, options }) {
   let aiService = 'openai';
   let report;
+  let investmentAnalysis = null;
   
   // Log file processing info for debugging
   if (files && files.length > 0) {
@@ -1892,6 +1939,34 @@ async function generateReport({ reportType, inputText, files, additionalInfo, op
     files.forEach((file, index) => {
       console.log(`[FILE ${index + 1}] Name: ${file.name}, Type: ${file.type}, Size: ${file.data ? Math.round(file.data.length * 0.75 / 1024) : 0}KB`);
     });
+  }
+  
+  // Perform investment analysis for investment-related reports
+  if (reportType && (reportType.includes('investment') || reportType.includes('jp_investment'))) {
+    try {
+      // Import and use investment analysis engine
+      const InvestmentAnalysisEngineModule = await import('../lib/investment-analysis-engine.js');
+      const InvestmentAnalysisEngine = InvestmentAnalysisEngineModule.default || InvestmentAnalysisEngineModule.InvestmentAnalysisEngine;
+      const analysisEngine = new InvestmentAnalysisEngine();
+      
+      // Analyze investment data from input text and files
+      const fileData = files && files.length > 0 ? files[0] : null;
+      investmentAnalysis = analysisEngine.analyzeInvestmentData(inputText, fileData);
+      
+      console.log('[INVESTMENT ANALYSIS] Analysis completed:', {
+        hasMetrics: !!investmentAnalysis.metrics,
+        leverageType: investmentAnalysis.leverageAnalysis?.type,
+        investmentGrade: investmentAnalysis.summary?.investmentGrade
+      });
+      
+      // Enhance input text with analysis results
+      const analysisText = analysisEngine.formatForReport();
+      if (analysisText) {
+        inputText = `${inputText}\n\n=== 投資分析結果 ===\n${analysisText}`;
+      }
+    } catch (error) {
+      console.warn('[INVESTMENT ANALYSIS] Failed to perform investment analysis:', error.message);
+    }
   }
   
   try {
@@ -1928,6 +2003,12 @@ async function generateReport({ reportType, inputText, files, additionalInfo, op
   
   // Add service indicator to response
   report.aiService = aiService;
+  
+  // Add investment analysis to response if available
+  if (investmentAnalysis) {
+    report.investmentAnalysis = investmentAnalysis;
+  }
+  
   return report;
 }
 
@@ -1935,8 +2016,8 @@ async function generateWithOpenAI({ reportType, inputText, files, additionalInfo
   const startTime = Date.now();
   
   try {
-    // Get the OpenAI-optimized prompt using PromptManager
-    let fullPrompt = promptManager.buildServiceOptimizedPrompt(reportType, inputText, files, additionalInfo, 'openai');
+    // Get the OpenAI-optimized prompt using PromptManager (await to ensure prompts are loaded)
+    let fullPrompt = await promptManager.buildServiceOptimizedPrompt(reportType, inputText, files, additionalInfo, 'openai');
   
     // Process files with enhanced multimodal capabilities
     let fileContent = '';
@@ -2020,8 +2101,8 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
       throw new Error('Gemini API is not available');
     }
 
-    // Get the Gemini-optimized prompt using PromptManager
-    let fullPrompt = promptManager.buildServiceOptimizedPrompt(reportType, inputText, files, additionalInfo, 'gemini');
+    // Get the Gemini-optimized prompt using PromptManager (await to ensure prompts are loaded)
+    let fullPrompt = await promptManager.buildServiceOptimizedPrompt(reportType, inputText, files, additionalInfo, 'gemini');
     
     // Gemini 2.0 Flash supports direct multimodal input - re-enabling carefully
     let parts = [{ text: fullPrompt }];
