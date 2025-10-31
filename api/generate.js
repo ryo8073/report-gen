@@ -2106,14 +2106,30 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
     // Get the Gemini-optimized prompt using PromptManager (await to ensure prompts are loaded)
     let fullPrompt = await promptManager.buildServiceOptimizedPrompt(reportType, inputText, files, additionalInfo, 'gemini');
     
-    // Gemini 1.5 Pro supports direct multimodal input - re-enabling carefully
-    let parts = [{ text: fullPrompt }];
+    // CRITICAL: Process files with Vision analysis FIRST to extract content accurately
+    let fileContent = '';
+    let parts = [];
     
     if (files && files.length > 0) {
-      console.log(`[GEMINI] Processing ${files.length} files with native multimodal support`);
+      console.log(`[GEMINI] Processing ${files.length} files with Vision analysis first`);
       
-      // Add files directly to Gemini (native multimodal support)
-      for (const file of files) {
+      try {
+        // CRITICAL: Use Vision analysis to extract file content first
+        // This ensures accurate numerical data extraction from PDFs
+        const visionAnalysisResult = await processFilesWithVision(files, reportType);
+        fileContent = visionAnalysisResult;
+        console.log(`[GEMINI] Vision analysis completed, extracted content length: ${fileContent.length} chars`);
+        
+        // Add extracted file content to prompt with explicit instructions
+        fullPrompt += `\n\n【添付ファイル分析結果（Vision AIによる抽出）】\n${fileContent}\n\n上記のファイル分析結果から、すべての数値データ（FCR、K%、DCR、BER、IRR、NPV等）を正確に抽出し、レポートに反映してください。数値が「不明」や「データ不足」とならないよう、ファイル分析結果を詳細に確認してください。`;
+      } catch (visionError) {
+        console.error('[GEMINI] Vision analysis failed, falling back to direct multimodal:', visionError);
+        console.error('[GEMINI] Vision error details:', visionError.message);
+        
+        // Fallback: Add files directly as multimodal input
+        console.log(`[GEMINI] Falling back to direct multimodal input for ${files.length} files`);
+        
+        for (const file of files) {
         try {
           // Validate file structure
           if (!file.name || !file.type || !file.data) {
@@ -2176,10 +2192,18 @@ async function generateWithGemini({ reportType, inputText, files, additionalInfo
             text: `\n\n【ファイル処理エラー: ${file.name}】\n${fileError.message}\nファイルタイプ: ${file.type}\nデータタイプ: ${typeof file.data}\nデータ長: ${file.data?.length || 0}`
           });
         }
+        }
+        
+        if (fileContent) {
+          fullPrompt += `\n\n【添付ファイル内容】\n${fileContent}`;
+        }
       }
       
-      console.log(`[GEMINI] Prepared ${parts.length} parts for multimodal generation`);
+      console.log(`[GEMINI] Prepared prompt with file content, multimodal parts: ${parts.length}`);
     }
+    
+    // Add prompt text as first part (always include the prompt)
+    parts.unshift({ text: fullPrompt });
 
   // Call Gemini API with optimized settings for report generation
       console.log(`[GEMINI] Calling Gemini 1.5 Pro with ${parts.length} parts and optimized settings`);
@@ -2478,6 +2502,13 @@ async function analyzeWithGeminiVision(file, reportType) {
     return text;
   } catch (error) {
     console.error(`[GEMINI VISION] API error for ${file.name}:`, error);
+    console.error(`[GEMINI VISION] Error details:`, {
+      message: error.message,
+      stack: error.stack,
+      fileName: file.name,
+      fileType: file.type,
+      dataLength: file.data?.length || 0
+    });
     throw new Error(`Gemini vision analysis failed: ${error.message}`);
   }
 }
@@ -2548,19 +2579,50 @@ async function analyzeWithGPT4Vision(file, reportType) {
 
 // Get vision analysis prompt based on report type
 function getVisionAnalysisPrompt(reportType, fileType) {
-  const basePrompt = `この${fileType === 'application/pdf' ? 'PDF文書' : '画像'}を詳細に分析し、以下の情報を抽出してください：
+  const isPDF = fileType === 'application/pdf';
+  const isImage = fileType.startsWith('image/');
+  
+  const basePrompt = isPDF 
+    ? `このPDFファイルから、すべての数値データを正確に抽出してください。特に以下の指標に注意してください：
 
-1. **数値データ**: FCR、DCR、BER、IRR、NPV、K%、利回り、価格、賃料などの投資指標
-2. **物件情報**: 物件名、所在地、構造、築年数、面積、最寄り駅などの基本情報
-3. **財務データ**: 収入、支出、キャッシュフロー、融資条件などの財務情報
-4. **表やグラフ**: 数値表、グラフ、チャートに含まれるデータ
-5. **その他重要情報**: 投資分析に関連するあらゆる情報
+【必須抽出項目】
+- FCR（総収益率）: [%]
+- K%（ローン定数）: [%]
+- DCR（借入金償還余裕率）: [倍]
+- BER（損益分岐入居率）: [%]
+- IRR（内部収益率）: 税引前・融資利用時、税引後・融資利用時、税引前・全額自己資金時、税引後・全額自己資金時 [%]
+- NPV（正味現在価値）: [円]
+- 物件名、所在地、構造・築年数などの基本情報
+- その他すべての数値データ
 
-**重要**: 
-- 数値は正確に読み取り、単位も含めて記載してください
-- 表の構造も保持して出力してください
-- 不明瞭な部分は「推定」として記載してください
-- 日本語で詳細に分析結果を出力してください`;
+【抽出要件】
+1. すべての数値を正確に読み取り、推定値は使用しないこと
+2. 表やグラフからも数値を抽出すること
+3. 数値が不明な場合は「データ不足」と明記すること
+4. 数値の単位（%、円、倍など）も正確に記録すること
+5. PDFの全ページを確認し、見落としがないようにすること
+
+抽出したデータを構造化された形式で出力してください。`
+    : `この画像ファイルから、すべての数値データを正確に抽出してください。特に以下の指標に注意してください：
+
+【必須抽出項目】
+- FCR（総収益率）: [%]
+- K%（ローン定数）: [%]
+- DCR（借入金償還余裕率）: [倍]
+- BER（損益分岐入居率）: [%]
+- IRR（内部収益率）: 税引前・融資利用時、税引後・融資利用時、税引前・全額自己資金時、税引後・全額自己資金時 [%]
+- NPV（正味現在価値）: [円]
+- 物件名、所在地、構造・築年数などの基本情報
+- その他すべての数値データ
+
+【抽出要件】
+1. すべての数値を正確に読み取り、推定値は使用しないこと
+2. 表やグラフからも数値を抽出すること
+3. 数値が不明な場合は「データ不足」と明記すること
+4. 数値の単位（%、円、倍など）も正確に記録すること
+5. 画像全体を詳細に確認し、見落としがないようにすること
+
+抽出したデータを構造化された形式で出力してください。`;
 
   if (reportType === 'jp_investment_4part') {
     return basePrompt + `
