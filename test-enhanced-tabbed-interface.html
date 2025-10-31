@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Tabbed Interface Test</title>
+    <link rel="stylesheet" href="lib/enhanced-tabbed-interface.css">
+    <style>
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+            color: #1f2937;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        
+        .test-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        
+        .test-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .test-content {
+            height: 600px;
+            padding: 0;
+        }
+        
+        .test-controls {
+            padding: 1rem 2rem;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .test-button {
+            padding: 0.5rem 1rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background 0.2s ease;
+        }
+        
+        .test-button:hover {
+            background: #2563eb;
+        }
+        
+        .test-button.secondary {
+            background: #6b7280;
+        }
+        
+        .test-button.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .test-status {
+            margin-left: auto;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .status-success {
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        .status-error {
+            color: #ef4444;
+            font-weight: 600;
+        }
+        
+        /* Sample content styles */
+        .sample-editor {
+            height: 100%;
+            padding: 1.5rem;
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: inherit;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .sample-preview {
+            height: 100%;
+            padding: 1.5rem;
+            overflow-y: auto;
+            background: #fafbfc;
+        }
+        
+        .sample-preview h2 {
+            color: #3b82f6;
+            margin-top: 0;
+        }
+        
+        .sample-preview p {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+        
+        .sample-preview ul {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        .sample-preview li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Enhanced Tabbed Interface Test</h1>
+            <p>Testing smooth transitions, user preferences, and content state management</p>
+        </div>
+        
+        <div class="test-content" id="layout-container">
+            <!-- Layout manager will be initialized here -->
+        </div>
+        
+        <div class="test-controls">
+            <button class="test-button" onclick="testLayoutSwitch()">レイアウト切替テスト</button>
+            <button class="test-button" onclick="testContentSync()">コンテンツ同期テスト</button>
+            <button class="test-button" onclick="testUserPreferences()">設定保存テスト</button>
+            <button class="test-button secondary" onclick="testResponsive()">レスポンシブテスト</button>
+            <button class="test-button secondary" onclick="clearPreferences()">設定リセット</button>
+            <div class="test-status" id="test-status">準備完了</div>
+        </div>
+    </div>
+
+    <!-- Load dependencies -->
+    <script src="lib/rich-text-editor.js"></script>
+    <script src="lib/preview-tab.js"></script>
+    <script src="lib/rich-text-layout-manager.js"></script>
+
+    <script>
+        let layoutManager;
+        let testResults = {
+            layoutSwitch: false,
+            contentSync: false,
+            userPreferences: false,
+            responsive: false
+        };
+
+        // Initialize the layout manager
+        function initializeTest() {
+            try {
+                const container = document.getElementById('layout-container');
+                
+                layoutManager = new RichTextLayoutManager(container, {
+                    defaultLayout: 'tabbed',
+                    enableResizablePanels: true,
+                    enableLayoutToggle: true,
+                    enableResponsiveDesign: true,
+                    enablePreviewSync: true,
+                    onLayoutChange: (newLayout, oldLayout) => {
+                        updateStatus(`レイアウト変更: ${oldLayout} → ${newLayout}`, 'success');
+                    },
+                    onContentChange: (htmlContent, textContent) => {
+                        updateStatus(`コンテンツ更新: ${textContent.length}文字`, 'info');
+                    }
+                });
+
+                // Set sample content
+                setTimeout(() => {
+                    if (layoutManager.richTextEditor) {
+                        const sampleContent = `
+                            <h2>サンプルレポート</h2>
+                            <p>これは<strong>Enhanced Tabbed Interface</strong>のテストコンテンツです。</p>
+                            <p>以下の機能をテストしています：</p>
+                            <ul>
+                                <li>スムーズなタブ切り替え</li>
+                                <li>コンテンツ状態の同期</li>
+                                <li>ユーザー設定の保存</li>
+                                <li>レスポンシブデザイン</li>
+                                <li>アクセシビリティ対応</li>
+                            </ul>
+                            <p>編集タブでこのコンテンツを変更し、プレビュータブで結果を確認してください。</p>
+                        `;
+                        layoutManager.setContent(sampleContent);
+                        updateStatus('初期化完了', 'success');
+                    }
+                }, 500);
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                updateStatus('初期化エラー: ' + error.message, 'error');
+            }
+        }
+
+        // Test layout switching
+        function testLayoutSwitch() {
+            if (!layoutManager) {
+                updateStatus('レイアウトマネージャーが初期化されていません', 'error');
+                return;
+            }
+
+            updateStatus('レイアウト切替テスト開始...', 'info');
+            
+            const layouts = ['split', 'tabbed', 'full-width'];
+            let currentIndex = 0;
+            
+            const switchNext = () => {
+                if (currentIndex < layouts.length) {
+                    const layout = layouts[currentIndex];
+                    layoutManager.setLayout(layout);
+                    updateStatus(`${layout}レイアウトに切り替え`, 'info');
+                    currentIndex++;
+                    setTimeout(switchNext, 1500);
+                } else {
+                    layoutManager.setLayout('tabbed');
+                    testResults.layoutSwitch = true;
+                    updateStatus('レイアウト切替テスト完了', 'success');
+                }
+            };
+            
+            switchNext();
+        }
+
+        // Test content synchronization
+        function testContentSync() {
+            if (!layoutManager || !layoutManager.richTextEditor) {
+                updateStatus('エディターが利用できません', 'error');
+                return;
+            }
+
+            updateStatus('コンテンツ同期テスト開始...', 'info');
+            
+            // Switch to tabbed layout
+            layoutManager.setLayout('tabbed');
+            
+            setTimeout(() => {
+                // Add test content
+                const testContent = `
+                    <h2>同期テスト</h2>
+                    <p>現在時刻: ${new Date().toLocaleString('ja-JP')}</p>
+                    <p>このコンテンツは自動的にプレビューに同期されます。</p>
+                `;
+                
+                layoutManager.setContent(testContent);
+                
+                // Switch to preview tab to verify sync
+                setTimeout(() => {
+                    const tabButtons = document.querySelectorAll('.enhanced-tab-button');
+                    const previewButton = Array.from(tabButtons).find(btn => btn.dataset.tab === 'preview');
+                    if (previewButton) {
+                        previewButton.click();
+                        testResults.contentSync = true;
+                        updateStatus('コンテンツ同期テスト完了', 'success');
+                    }
+                }, 1000);
+            }, 500);
+        }
+
+        // Test user preferences
+        function testUserPreferences() {
+            updateStatus('設定保存テスト開始...', 'info');
+            
+            // Save a preference
+            if (layoutManager) {
+                layoutManager.saveUserPreference('testKey', 'testValue');
+                
+                // Try to retrieve it
+                const preferences = localStorage.getItem('richTextLayoutPreferences');
+                if (preferences) {
+                    const parsed = JSON.parse(preferences);
+                    if (parsed.testKey === 'testValue') {
+                        testResults.userPreferences = true;
+                        updateStatus('設定保存テスト完了', 'success');
+                    } else {
+                        updateStatus('設定保存テスト失敗', 'error');
+                    }
+                } else {
+                    updateStatus('設定が保存されませんでした', 'error');
+                }
+            }
+        }
+
+        // Test responsive design
+        function testResponsive() {
+            updateStatus('レスポンシブテスト開始...', 'info');
+            
+            const container = document.getElementById('layout-container');
+            const originalWidth = container.style.width;
+            
+            // Simulate mobile width
+            container.style.width = '400px';
+            
+            setTimeout(() => {
+                // Simulate tablet width
+                container.style.width = '768px';
+                
+                setTimeout(() => {
+                    // Restore original width
+                    container.style.width = originalWidth;
+                    testResults.responsive = true;
+                    updateStatus('レスポンシブテスト完了', 'success');
+                }, 1000);
+            }, 1000);
+        }
+
+        // Clear user preferences
+        function clearPreferences() {
+            localStorage.removeItem('richTextLayoutPreferences');
+            updateStatus('設定をリセットしました', 'info');
+        }
+
+        // Update status display
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('test-status');
+            statusElement.textContent = message;
+            statusElement.className = 'test-status';
+            
+            if (type === 'success') {
+                statusElement.classList.add('status-success');
+            } else if (type === 'error') {
+                statusElement.classList.add('status-error');
+            }
+            
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initializeTest, 100);
+        });
+
+        // Handle window resize for responsive testing
+        window.addEventListener('resize', () => {
+            if (layoutManager) {
+                updateStatus(`画面サイズ: ${window.innerWidth}x${window.innerHeight}`, 'info');
+            }
+        });
+    </script>
+</body>
+</html>

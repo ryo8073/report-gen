@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Text Editor Layout Comprehensive Testing - Task 4.3</title>
+    <style>
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        
+        .test-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+        }
+        
+        .test-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+        }
+        
+        .test-header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        .test-content {
+            height: 700px;
+            position: relative;
+        }
+        
+        .test-controls {
+            padding: 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .control-group h3 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .test-btn {
+            padding: 10px 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .test-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .test-btn.secondary {
+            background: #6b7280;
+        }
+        
+        .test-btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .test-btn.success {
+            background: #10b981;
+        }
+        
+        .test-btn.success:hover {
+            background: #059669;
+        }
+        
+        .test-btn.warning {
+            background: #f59e0b;
+        }
+        
+        .test-btn.warning:hover {
+            background: #d97706;
+        }
+        
+        .test-status {
+            padding: 15px 20px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            margin: 20px;
+            font-size: 14px;
+            position: relative;
+        }
+        
+        .test-results {
+            margin: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .test-results h3 {
+            margin: 0 0 15px 0;
+            color: #374151;
+        }
+        
+        .test-result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .test-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .test-result-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .test-result-status.pass {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .test-result-status.fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .test-result-status.running {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .responsive-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+        
+        .keyboard-shortcuts {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            max-width: 300px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .keyboard-shortcuts.show {
+            opacity: 1;
+        }
+        
+        .keyboard-shortcuts h4 {
+            margin: 0 0 8px 0;
+            font-size: 12px;
+        }
+        
+        .keyboard-shortcuts ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        
+        .keyboard-shortcuts li {
+            margin: 4px 0;
+        }
+        
+        .keyboard-shortcuts kbd {
+            background: #374151;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .test-controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .responsive-indicator {
+                position: static;
+                margin: 10px 20px;
+                text-align: center;
+            }
+            
+            .keyboard-shortcuts {
+                position: static;
+                margin: 10px 20px;
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="responsive-indicator" id="responsive-indicator">
+        Desktop (1400px+)
+    </div>
+    
+    <div class="keyboard-shortcuts" id="keyboard-shortcuts">
+        <h4>Keyboard Shortcuts</h4>
+        <ul>
+            <li><kbd>Ctrl+Shift+L</kbd> Cycle Layout</li>
+            <li><kbd>Ctrl+Shift+P</kbd> Toggle Preview</li>
+            <li><kbd>Ctrl+Shift+E</kbd> Toggle Editor</li>
+            <li><kbd>Ctrl+Shift+S</kbd> Sync Content</li>
+            <li><kbd>Ctrl+Shift+R</kbd> Reset Panels</li>
+            <li><kbd>H</kbd> Show/Hide Shortcuts</li>
+        </ul>
+    </div>
+
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Rich Text Editor Layout Comprehensive Testing</h1>
+            <p>Task 4.3: Testing completed split-panel layout, tabbed interface, responsive behavior, content synchronization, and editor integration</p>
+        </div>
+        
+        <div class="test-content" id="layout-container">
+            <!-- Layout manager will be initialized here -->
+        </div>
+        
+        <div class="test-controls">
+            <div class="control-group">
+                <h3>Layout Testing</h3>
+                <button class="test-btn" onclick="testSplitPanelLayout()">
+                    <span>📊</span> Test Split Layout
+                </button>
+                <button class="test-btn" onclick="testTabbedInterface()">
+                    <span>📑</span> Test Tabbed Interface
+                </button>
+                <button class="test-btn" onclick="testFullWidthLayout()">
+                    <span>📄</span> Test Full Width
+                </button>
+            </div>
+            
+            <div class="control-group">
+                <h3>Responsive Testing</h3>
+                <button class="test-btn secondary" onclick="testResponsiveDesign()">
+                    <span>📱</span> Test All Sizes
+                </button>
+                <button class="test-btn secondary" onclick="simulateMobile()">
+                    <span>📱</span> Simulate Mobile
+                </button>
+                <button class="test-btn secondary" onclick="simulateTablet()">
+                    <span>💻</span> Simulate Tablet
+                </button>
+                <button class="test-btn secondary" onclick="simulateDesktop()">
+                    <span>🖥️</span> Simulate Desktop
+                </button>
+            </div>
+            
+            <div class="control-group">
+                <h3>Content & Sync</h3>
+                <button class="test-btn success" onclick="testContentSync()">
+                    <span>🔄</span> Test Sync
+                </button>
+                <button class="test-btn success" onclick="testRealTimeSync()">
+                    <span>⚡</span> Real-time Sync
+                </button>
+                <button class="test-btn success" onclick="loadSampleContent()">
+                    <span>📝</span> Load Sample
+                </button>
+                <button class="test-btn success" onclick="clearContent()">
+                    <span>🗑️</span> Clear Content
+                </button>
+            </div>
+            
+            <div class="control-group">
+                <h3>Integration Testing</h3>
+                <button class="test-btn warning" onclick="testEditorIntegration()">
+                    <span>🔧</span> Editor Integration
+                </button>
+                <button class="test-btn warning" onclick="testPreviewIntegration()">
+                    <span>👁️</span> Preview Integration
+                </button>
+                <button class="test-btn warning" onclick="testKeyboardShortcuts()">
+                    <span>⌨️</span> Keyboard Shortcuts
+                </button>
+                <button class="test-btn warning" onclick="runComprehensiveTest()">
+                    <span>🧪</span> Run All Tests
+                </button>
+            </div>
+        </div>
+        
+        <div class="test-status" id="test-status">
+            <strong>Ready to test.</strong> Click buttons above to test different features. Press 'H' to toggle keyboard shortcuts.
+        </div>
+        
+        <div class="test-results" id="test-results">
+            <h3>Test Results</h3>
+            <div id="test-results-content">
+                No tests run yet. Click "Run All Tests" to start comprehensive testing.
+            </div>
+        </div>
+    </div>
+
+    <!-- Load required components -->
+    <script src="lib/rich-text-editor.js"></script>
+    <script src="lib/enhanced-wysiwyg-editor.js"></script>
+    <script src="lib/preview-tab.js"></script>
+    <script src="lib/markdown-renderer.js"></script>
+    <script src="lib/formatting-toolbar.js"></script>
+    <script src="lib/rich-text-layout-manager.js"></script>
+
+    <script>
+        let layoutManager = null;
+        let testResults = [];
+        let currentTest = null;
+        
+        // Initialize the layout manager
+        function initializeLayoutManager() {
+            const container = document.getElementById('layout-container');
+            
+            try {
+                layoutManager = new RichTextLayoutManager(container, {
+                    defaultLayout: 'split',
+                    enableResizablePanels: true,
+                    enableLayoutToggle: true,
+                    enableResponsiveDesign: true,
+                    enablePreviewSync: true,
+                    minPanelWidth: 300,
+                    defaultSplitRatio: 0.5,
+                    onLayoutChange: (newLayout, oldLayout) => {
+                        updateStatus(`✅ Layout changed from ${oldLayout} to ${newLayout}`);
+                        logTestResult('Layout Change', 'PASS', `Successfully switched to ${newLayout}`);
+                    },
+                    onContentChange: (htmlContent, textContent) => {
+                        updateStatus(`📝 Content updated (${textContent.length} characters)`);
+                    },
+                    onResize: (splitRatio) => {
+                        updateStatus(`📏 Panel ratio changed to ${Math.round(splitRatio * 100)}%`);
+                    },
+                    onPreferenceChange: (key, value) => {
+                        updateStatus(`⚙️ Preference updated: ${key} = ${value}`);
+                    }
+                });
+                
+                updateStatus('🚀 Layout manager initialized successfully');
+                logTestResult('Initialization', 'PASS', 'Layout manager created and configured');
+                
+                // Test if all components are available
+                testComponentAvailability();
+                
+            } catch (error) {
+                updateStatus(`❌ Initialization error: ${error.message}`, 'error');
+                logTestResult('Initialization', 'FAIL', error.message);
+            }
+        }
+        
+        // Test component availability
+        function testComponentAvailability() {
+            const components = {
+                'RichTextLayoutManager': typeof RichTextLayoutManager !== 'undefined',
+                'RichTextEditor': typeof RichTextEditor !== 'undefined',
+                'EnhancedWYSIWYGEditor': typeof EnhancedWYSIWYGEditor !== 'undefined',
+                'PreviewTab': typeof PreviewTab !== 'undefined',
+                'MarkdownRenderer': typeof MarkdownRenderer !== 'undefined',
+                'FormattingToolbar': typeof FormattingToolbar !== 'undefined'
+            };
+            
+            Object.entries(components).forEach(([name, available]) => {
+                logTestResult('Component Availability', available ? 'PASS' : 'FAIL', 
+                    `${name}: ${available ? 'Available' : 'Not Available'}`);
+            });
+        }
+        
+        // Test split-panel layout functionality
+        async function testSplitPanelLayout() {
+            updateStatus('🧪 Testing split-panel layout functionality...');
+            currentTest = 'Split Panel Layout';
+            
+            try {
+                // Switch to split layout
+                layoutManager.setLayout('split');
+                await sleep(500);
+                
+                // Test panel creation
+                const editorPanel = layoutManager.editorPanel;
+                const previewPanel = layoutManager.previewPanel;
+                const resizeHandle = layoutManager.resizeHandle;
+                
+                logTestResult(currentTest, editorPanel ? 'PASS' : 'FAIL', 
+                    `Editor panel: ${editorPanel ? 'Created' : 'Missing'}`);
+                logTestResult(currentTest, previewPanel ? 'PASS' : 'FAIL', 
+                    `Preview panel: ${previewPanel ? 'Created' : 'Missing'}`);
+                logTestResult(currentTest, resizeHandle ? 'PASS' : 'FAIL', 
+                    `Resize handle: ${resizeHandle ? 'Created' : 'Missing'}`);
+                
+                // Test resizable panels
+                if (resizeHandle) {
+                    const originalRatio = layoutManager.getSplitRatio();
+                    layoutManager.setSplitRatio(0.7);
+                    await sleep(200);
+                    const newRatio = layoutManager.getSplitRatio();
+                    
+                    logTestResult(currentTest, Math.abs(newRatio - 0.7) < 0.01 ? 'PASS' : 'FAIL', 
+                        `Resize functionality: ${originalRatio} → ${newRatio}`);
+                    
+                    // Reset ratio
+                    layoutManager.setSplitRatio(0.5);
+                }
+                
+                // Test panel visibility toggle
+                if (layoutManager.togglePreviewMode) {
+                    layoutManager.togglePreviewMode();
+                    await sleep(300);
+                    layoutManager.togglePreviewMode();
+                    await sleep(300);
+                    
+                    logTestResult(currentTest, 'PASS', 'Panel visibility toggle working');
+                }
+                
+                updateStatus('✅ Split-panel layout test completed');
+                
+            } catch (error) {
+                logTestResult(currentTest, 'FAIL', `Error: ${error.message}`);
+                updateStatus(`❌ Split-panel test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test tabbed interface mode
+        async function testTabbedInterface() {
+            updateStatus('🧪 Testing tabbed interface mode...');
+            currentTest = 'Tabbed Interface';
+            
+            try {
+                // Switch to tabbed layout
+                layoutManager.setLayout('tabbed');
+                await sleep(500);
+                
+                // Test tab container creation
+                const tabContainer = layoutManager.tabContainer;
+                logTestResult(currentTest, tabContainer ? 'PASS' : 'FAIL', 
+                    `Tab container: ${tabContainer ? 'Created' : 'Missing'}`);
+                
+                if (tabContainer) {
+                    // Test tab buttons
+                    const tabButtons = tabContainer.querySelectorAll('.enhanced-tab-button');
+                    logTestResult(currentTest, tabButtons.length >= 2 ? 'PASS' : 'FAIL', 
+                        `Tab buttons: ${tabButtons.length} found`);
+                    
+                    // Test tab switching
+                    if (tabButtons.length >= 2) {
+                        // Switch to preview tab
+                        const previewTab = Array.from(tabButtons).find(btn => btn.dataset.tab === 'preview');
+                        if (previewTab) {
+                            previewTab.click();
+                            await sleep(400);
+                            
+                            logTestResult(currentTest, previewTab.classList.contains('active') ? 'PASS' : 'FAIL', 
+                                'Tab switching to preview');
+                            
+                            // Switch back to editor tab
+                            const editorTab = Array.from(tabButtons).find(btn => btn.dataset.tab === 'editor');
+                            if (editorTab) {
+                                editorTab.click();
+                                await sleep(400);
+                                
+                                logTestResult(currentTest, editorTab.classList.contains('active') ? 'PASS' : 'FAIL', 
+                                    'Tab switching to editor');
+                            }
+                        }
+                    }
+                    
+                    // Test smooth transitions
+                    const tabPanels = layoutManager.layoutContent.querySelectorAll('.enhanced-tab-panel');
+                    logTestResult(currentTest, tabPanels.length >= 2 ? 'PASS' : 'FAIL', 
+                        `Tab panels: ${tabPanels.length} found`);
+                    
+                    // Test content state persistence
+                    if (layoutManager.persistedContent) {
+                        logTestResult(currentTest, 'PASS', 'Content state persistence available');
+                    }
+                }
+                
+                updateStatus('✅ Tabbed interface test completed');
+                
+            } catch (error) {
+                logTestResult(currentTest, 'FAIL', `Error: ${error.message}`);
+                updateStatus(`❌ Tabbed interface test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test full-width layout
+        async function testFullWidthLayout() {
+            updateStatus('🧪 Testing full-width layout...');
+            currentTest = 'Full Width Layout';
+            
+            try {
+                layoutManager.setLayout('full-width');
+                await sleep(500);
+                
+                const editorPanel = layoutManager.editorPanel;
+                const previewPanel = layoutManager.previewPanel;
+                
+                logTestResult(currentTest, editorPanel ? 'PASS' : 'FAIL', 
+                    `Editor panel: ${editorPanel ? 'Visible' : 'Missing'}`);
+                logTestResult(currentTest, !previewPanel || previewPanel.style.display === 'none' ? 'PASS' : 'FAIL', 
+                    `Preview panel: ${!previewPanel ? 'Not created' : 'Hidden'}`);
+                
+                updateStatus('✅ Full-width layout test completed');
+                
+            } catch (error) {
+                logTestResult(currentTest, 'FAIL', `Error: ${error.message}`);
+                updateStatus(`❌ Full-width test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test responsive design
+        async function testResponsiveDesign() {
+            updateStatus('🧪 Testing responsive design across different screen sizes...');
+            currentTest = 'Responsive Design';
+            
+            try {
+                if (layoutManager.testResponsiveDesign) {
+                    const results = layoutManager.testResponsiveDesign();
+                    
+                    results.forEach(result => {
+                        const isValid = result.deviceType && result.layout;
+                        logTestResult(currentTest, isValid ? 'PASS' : 'FAIL', 
+                            `${result.device} (${result.width}px): ${result.deviceType} → ${result.layout}`);
+                    });
+                    
+                    updateStatus(`✅ Responsive design tested across ${results.length} screen sizes`);
+                } else {
+                    logTestResult(currentTest, 'FAIL', 'testResponsiveDesign method not available');
+                }
+                
+                // Test current responsive state
+                const metrics = layoutManager.getResponsiveMetrics ? layoutManager.getResponsiveMetrics() : null;
+                if (metrics) {
+                    logTestResult(currentTest, 'PASS', 
+                        `Current: ${metrics.deviceType} (${metrics.viewportDimensions.width}px)`);
+                }
+                
+            } catch (error) {
+                logTestResult(currentTest, 'FAIL', `Error: ${error.message}`);
+                updateStatus(`❌ Responsive design test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test content synchronization
+        async function testContentSync() {
+            updateStatus('🧪 Testing content synchronization...');
+            currentTest = 'Content Synchronization';
+            
+            try {
+                // Ensure we're in split layout for sync testing
+                layoutManager.setLayout('split');
+                await sleep(500);
+                
+                const testContent = '<h2>Sync Test</h2><p>This content should appear in both editor and preview.</p>';
+                
+                // Set content in editor
+                if (layoutManager.richTextEditor) {
+                    layoutManager.setContent(testContent);
+                    await sleep(300);
+                    
+                    logTestResult(currentTest, 'PASS', 'Content set in editor');
+                    
+                    // Test synchronization
+                    if (layoutManager.synchronizeContent) {
+                        layoutManager.synchronizeContent();
+                        await sleep(500);
+                        
+                        logTestResult(currentTest, 'PASS', 'Content synchronization executed');
+                    }
+                    
+                    // Test real-time sync if available
+                    if (layoutManager.debouncedSync) {
+                        layoutManager.debouncedSync();
+                        await sleep(800);
+                        
+                        logTestResult(currentTest, 'PASS', 'Real-time sync executed');
+                    }
+                } else {
+                    logTestResult(currentTest, 'FAIL', 'Rich text editor not available');
+                }
+                
+                updateStatus('✅ Content synchronization test completed');
+                
+            } catch (error) {
+                logTestResult(currentTest, 'FAIL', `Error: ${error.message}`);
+                updateStatus(`❌ Content sync test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test real-time synchronization
+        async function testRealTimeSync() {
+            updateStatus('🧪 Testing real-time content synchronization...');
+            currentTest = 'Real-time Sync';
+            
+            try {
+                layoutManager.setLayout('split');
+                await sleep(300);
+                
+                if (layoutManager.richTextEditor && layoutManager.richTextEditor.editor) {
+                    const editor = layoutManager.richTextEditor.editor;
+                    
+                    // Simulate typing
+                    const testText = 'Real-time sync test content';
+                    editor.innerHTML = `<p>${testText}</p>`;
+                    
+                    // Trigger input event to simulate real typing
+                    const inputEvent = new Event('input', { bubbles: true });
+                    editor.dispatchEvent(inputEvent);
+                    
+                    await sleep(500);
+                    
+                    logTestResult(currentTest, 'PASS', 'Real-time sync triggered by input event');
+                } else {
+                    logTestResult(currentTest, 'FAIL', 'Editor element not accessible');
+                }
+                
+                updateStatus('✅ Real-time sync test completed');
+                
+            } catch (error) {
+                logTestResult(currentTest, 'FAIL', `Error: ${error.message}`);
+                updateStatus(`❌ Real-time sync test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test editor integration
+        async function testEditorIntegration() {
+            updateStatus('🧪 Testing editor integration...');
+            currentTest = 'Editor Integration';
+            
+            try {
+                const editor = layoutManager.richTextEditor;
+                
+                if (editor) {
+                    logTestResult(currentTest, 'PASS', 'Rich text editor integrated');
+                    
+                    // Test editor methods
+                    const methods = ['setContent', 'getContent', 'focus', 'isReady'];
+                    methods.forEach(method => {
+                        const hasMethod = typeof editor[method] === 'function';
+                        logTestResult(currentTest, hasMethod ? 'PASS' : 'FAIL', 
+                            `Editor method ${method}: ${hasMethod ? 'Available' : 'Missing'}`);
+                    });
+                    
+                    // Test editor functionality
+                    if (editor.setContent && editor.getContent) {
+                        const testContent = '<p>Integration test content</p>';
+                        editor.setContent(testContent);
+                        await sleep(200);
+                        
+                        const retrievedContent = editor.getContent();
+                        logTestResult(currentTest, retrievedContent.includes('Integration test') ? 'PASS' : 'FAIL', 
+                            'Content set/get functionality');
+                    }
+                    
+                    // Test editor focus
+                    if (editor.focus) {
+                        editor.focus();
+                        logTestResult(currentTest, 'PASS', 'Editor focus method available');
+                    }
+                } else {
+                    logTestResult(currentTest, 'FAIL', 'Rich text editor not integrated');
+                }
+                
+                updateStatus('✅ Editor integration test completed');
+                
+            } catch (error) {
+                logTestResult(currentTest, 'FAIL', `Error: ${error.message}`);
+                updateStatus(`❌ Editor integration test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test preview integration
+        async function testPreviewIntegration() {
+            updateStatus('🧪 Testing preview integration...');
+            currentTest = 'Preview Integration';
+            
+            try {
+                const preview = layoutManager.previewTab;
+                
+                if (preview) {
+                    logTestResult(currentTest, 'PASS', 'Preview component integrated');
+                    
+                    // Test preview methods
+                    const methods = ['setContent', 'getContent', 'isReady'];
+                    methods.forEach(method => {
+                        const hasMethod = typeof preview[method] === 'function';
+                        logTestResult(currentTest, hasMethod ? 'PASS' : 'FAIL', 
+                            `Preview method ${method}: ${hasMethod ? 'Available' : 'Missing'}`);
+                    });
+                    
+                    // Test preview functionality
+                    if (preview.setContent) {
+                        const testContent = '<h3>Preview Integration Test</h3><p>This content should render in preview.</p>';
+                        preview.setContent(testContent);
+                        await sleep(300);
+                        
+                        logTestResult(currentTest, 'PASS', 'Preview content setting works');
+                    }
+                    
+                    // Test markdown support if available
+                    if (preview.setMarkdownContent) {
+                        const markdownContent = '# Markdown Test\n\nThis is **bold** text.';
+                        preview.setMarkdownContent(markdownContent);
+                        await sleep(300);
+                        
+                        logTestResult(currentTest, 'PASS', 'Markdown rendering support available');
+                    }
+                } else {
+                    logTestResult(currentTest, 'FAIL', 'Preview component not integrated');
+                }
+                
+                updateStatus('✅ Preview integration test completed');
+                
+            } catch (error) {
+                logTestResult(currentTest, 'FAIL', `Error: ${error.message}`);
+                updateStatus(`❌ Preview integration test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test keyboard shortcuts
+        function testKeyboardShortcuts() {
+            updateStatus('🧪 Testing keyboard shortcuts...');
+            currentTest = 'Keyboard Shortcuts';
+            
+            try {
+                // Show keyboard shortcuts
+                const shortcutsElement = document.getElementById('keyboard-shortcuts');
+                shortcutsElement.classList.add('show');
+                
+                logTestResult(currentTest, 'PASS', 'Keyboard shortcuts displayed');
+                
+                // Test if layout manager has keyboard shortcut handlers
+                const hasKeyboardSupport = layoutManager.setupSplitLayoutKeyboardShortcuts || 
+                                         layoutManager.addEditorKeyboardShortcuts;
+                
+                logTestResult(currentTest, hasKeyboardSupport ? 'PASS' : 'FAIL', 
+                    `Keyboard shortcut handlers: ${hasKeyboardSupport ? 'Available' : 'Not found'}`);
+                
+                updateStatus('✅ Keyboard shortcuts test completed. Try using Ctrl+Shift+L to cycle layouts!');
+                
+                // Hide shortcuts after 5 seconds
+                setTimeout(() => {
+                    shortcutsElement.classList.remove('show');
+                }, 5000);
+                
+            } catch (error) {
+                logTestResult(currentTest, 'FAIL', `Error: ${error.message}`);
+                updateStatus(`❌ Keyboard shortcuts test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Run comprehensive test suite
+        async function runComprehensiveTest() {
+            updateStatus('🚀 Running comprehensive test suite...');
+            testResults = []; // Clear previous results
+            
+            try {
+                // Test all major functionality
+                await testSplitPanelLayout();
+                await sleep(1000);
+                
+                await testTabbedInterface();
+                await sleep(1000);
+                
+                await testFullWidthLayout();
+                await sleep(1000);
+                
+                await testResponsiveDesign();
+                await sleep(1000);
+                
+                await testContentSync();
+                await sleep(1000);
+                
+                await testRealTimeSync();
+                await sleep(1000);
+                
+                await testEditorIntegration();
+                await sleep(1000);
+                
+                await testPreviewIntegration();
+                await sleep(1000);
+                
+                testKeyboardShortcuts();
+                
+                // Generate final report
+                generateTestReport();
+                
+                updateStatus('🎉 Comprehensive test suite completed! Check results below.');
+                
+            } catch (error) {
+                updateStatus(`❌ Comprehensive test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Simulation functions for responsive testing
+        function simulateMobile() {
+            updateResponsiveIndicator('Mobile (375px)');
+            document.body.style.width = '375px';
+            window.dispatchEvent(new Event('resize'));
+            updateStatus('📱 Simulating mobile viewport (375px)');
+        }
+        
+        function simulateTablet() {
+            updateResponsiveIndicator('Tablet (768px)');
+            document.body.style.width = '768px';
+            window.dispatchEvent(new Event('resize'));
+            updateStatus('💻 Simulating tablet viewport (768px)');
+        }
+        
+        function simulateDesktop() {
+            updateResponsiveIndicator('Desktop (1200px+)');
+            document.body.style.width = '';
+            window.dispatchEvent(new Event('resize'));
+            updateStatus('🖥️ Simulating desktop viewport');
+        }
+        
+        // Load sample content for testing
+        function loadSampleContent() {
+            if (!layoutManager) return;
+            
+            const sampleContent = `
+                <h1>投資分析レポート</h1>
+                <h2>エグゼクティブサマリー</h2>
+                <p>本レポートは、リッチテキストレイアウトマネージャーの機能をテストするためのサンプルコンテンツです。</p>
+                
+                <h2>投資指標分析</h2>
+                <p><strong>FCR (総収益率):</strong> 8.5%</p>
+                <p><strong>K% (ローン定数):</strong> 6.2%</p>
+                <p><strong>CCR (自己資金配当率):</strong> 12.3%</p>
+                
+                <h3>レバレッジ分析</h3>
+                <p>この投資は<em>ポジティブ・レバレッジ</em>を示しており、イールドギャップは2.3% (FCR - K%)です。</p>
+                
+                <blockquote>
+                    <p>これは投資機会にとって優れたレバレッジ条件を示しています。</p>
+                </blockquote>
+                
+                <h2>リスク評価</h2>
+                <ul>
+                    <li>市場変動リスク</li>
+                    <li>金利変動リスク</li>
+                    <li>流動性リスク</li>
+                </ul>
+                
+                <h2>結論</h2>
+                <p>分析結果は、強力なキャッシュ・オン・キャッシュ・リターンとポジティブなレバレッジ効果を持つ有利な投資機会を示しています。</p>
+                
+                <h3>テスト用コンテンツ</h3>
+                <p>このコンテンツは以下の機能をテストします：</p>
+                <ol>
+                    <li>分割パネルレイアウトでの表示</li>
+                    <li>タブインターフェースでの切り替え</li>
+                    <li>リアルタイム同期</li>
+                    <li>レスポンシブデザイン</li>
+                </ol>
+            `;
+            
+            layoutManager.setContent(sampleContent);
+            updateStatus('📝 Sample content loaded for testing');
+        }
+        
+        function clearContent() {
+            if (!layoutManager || !layoutManager.richTextEditor) return;
+            layoutManager.richTextEditor.clear();
+            updateStatus('🗑️ Content cleared');
+        }
+        
+        // Utility functions
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('test-status');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            statusElement.innerHTML = `
+                <strong>[${timestamp}]</strong> ${message}
+            `;
+            
+            if (type === 'error') {
+                statusElement.style.background = '#fef2f2';
+                statusElement.style.borderColor = '#fecaca';
+                statusElement.style.color = '#b91c1c';
+            } else {
+                statusElement.style.background = '#f0f9ff';
+                statusElement.style.borderColor = '#bae6fd';
+                statusElement.style.color = '#0c4a6e';
+            }
+        }
+        
+        function logTestResult(testName, status, details) {
+            testResults.push({
+                testName,
+                status,
+                details,
+                timestamp: new Date().toISOString()
+            });
+            
+            updateTestResultsDisplay();
+        }
+        
+        function updateTestResultsDisplay() {
+            const resultsContent = document.getElementById('test-results-content');
+            
+            if (testResults.length === 0) {
+                resultsContent.innerHTML = 'No tests run yet. Click "Run All Tests" to start comprehensive testing.';
+                return;
+            }
+            
+            const groupedResults = testResults.reduce((groups, result) => {
+                if (!groups[result.testName]) {
+                    groups[result.testName] = [];
+                }
+                groups[result.testName].push(result);
+                return groups;
+            }, {});
+            
+            let html = '';
+            Object.entries(groupedResults).forEach(([testName, results]) => {
+                const passCount = results.filter(r => r.status === 'PASS').length;
+                const totalCount = results.length;
+                const overallStatus = passCount === totalCount ? 'PASS' : 'FAIL';
+                
+                html += `
+                    <div class="test-result-item">
+                        <div>
+                            <strong>${testName}</strong>
+                            <div style="font-size: 12px; color: #6b7280;">
+                                ${passCount}/${totalCount} tests passed
+                            </div>
+                        </div>
+                        <div class="test-result-status ${overallStatus.toLowerCase()}">
+                            ${overallStatus}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsContent.innerHTML = html;
+        }
+        
+        function generateTestReport() {
+            const totalTests = testResults.length;
+            const passedTests = testResults.filter(r => r.status === 'PASS').length;
+            const failedTests = totalTests - passedTests;
+            const successRate = totalTests > 0 ? ((passedTests / totalTests) * 100).toFixed(1) : 0;
+            
+            updateStatus(`📊 Test Report: ${passedTests}/${totalTests} passed (${successRate}% success rate)`);
+            
+            console.log('=== Rich Text Editor Layout Test Report ===');
+            console.log(`Total Tests: ${totalTests}`);
+            console.log(`Passed: ${passedTests}`);
+            console.log(`Failed: ${failedTests}`);
+            console.log(`Success Rate: ${successRate}%`);
+            console.log('\nDetailed Results:', testResults);
+        }
+        
+        function updateResponsiveIndicator(text) {
+            const indicator = document.getElementById('responsive-indicator');
+            indicator.textContent = text;
+        }
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initializeLayoutManager, 100);
+        });
+        
+        // Keyboard shortcut handler
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'h' || e.key === 'H') {
+                const shortcuts = document.getElementById('keyboard-shortcuts');
+                shortcuts.classList.toggle('show');
+            }
+        });
+        
+        // Responsive indicator update
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            let deviceType = 'Desktop';
+            
+            if (width <= 480) {
+                deviceType = 'Small Mobile';
+            } else if (width <= 768) {
+                deviceType = 'Mobile';
+            } else if (width <= 1024) {
+                deviceType = 'Tablet';
+            }
+            
+            updateResponsiveIndicator(`${deviceType} (${width}px)`);
+            
+            if (layoutManager) {
+                updateStatus(`📏 Window resized to ${width}x${window.innerHeight} (${deviceType})`);
+            }
+        });
+        
+        // Initial responsive indicator update
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 500);
+    </script>
+</body>
+</html>

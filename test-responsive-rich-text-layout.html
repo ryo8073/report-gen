@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Rich Text Layout Test</title>
+    <style>
+        :root {
+            --color-primary: #3b82f6;
+            --color-gray-50: #f9fafb;
+            --color-gray-100: #f3f4f6;
+            --color-gray-200: #e5e7eb;
+            --color-gray-300: #d1d5db;
+            --color-gray-400: #9ca3af;
+            --color-gray-500: #6b7280;
+            --color-gray-600: #4b5563;
+            --color-gray-700: #374151;
+            --color-gray-800: #1f2937;
+            --color-gray-900: #111827;
+            --color-white: #ffffff;
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --radius-sm: 0.125rem;
+            --radius-md: 0.375rem;
+            --radius-lg: 0.5rem;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --transition-fast: 0.15s ease;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--color-gray-200);
+        }
+
+        .test-header h1 {
+            color: var(--color-gray-900);
+            margin: 0 0 10px 0;
+        }
+
+        .test-header p {
+            color: var(--color-gray-600);
+            margin: 0;
+        }
+
+        .layout-test-container {
+            height: 600px;
+            border: 2px solid var(--color-gray-300);
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .test-btn {
+            padding: 10px 20px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+
+        .test-btn:hover {
+            background: #2563eb;
+        }
+
+        .test-btn.secondary {
+            background: var(--color-gray-600);
+        }
+
+        .test-btn.secondary:hover {
+            background: var(--color-gray-700);
+        }
+
+        .test-results {
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--color-gray-50);
+            border-radius: 8px;
+            border: 1px solid var(--color-gray-200);
+        }
+
+        .test-results h3 {
+            margin: 0 0 15px 0;
+            color: var(--color-gray-900);
+        }
+
+        .test-results pre {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--color-gray-300);
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .device-simulator {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .device-btn {
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid var(--color-gray-300);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .device-btn:hover {
+            border-color: var(--color-primary);
+            background: var(--color-gray-50);
+        }
+
+        .device-btn.active {
+            border-color: var(--color-primary);
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.success {
+            background: #10b981;
+        }
+
+        .status-indicator.warning {
+            background: #f59e0b;
+        }
+
+        .status-indicator.error {
+            background: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .test-container {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .layout-test-container {
+                height: 400px;
+            }
+
+            .test-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .test-btn {
+                margin: 5px 0;
+            }
+
+            .device-simulator {
+                flex-direction: column;
+            }
+
+            .device-btn {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Responsive Rich Text Layout Test</h1>
+            <p>レスポンシブリッチテキストレイアウトの動作テスト</p>
+        </div>
+
+        <div class="device-simulator">
+            <button class="device-btn" data-width="320" data-height="568">iPhone SE (320px)</button>
+            <button class="device-btn" data-width="375" data-height="667">iPhone 8 (375px)</button>
+            <button class="device-btn" data-width="414" data-height="896">iPhone 11 Pro Max (414px)</button>
+            <button class="device-btn" data-width="768" data-height="1024">iPad (768px)</button>
+            <button class="device-btn" data-width="1024" data-height="768">iPad Landscape (1024px)</button>
+            <button class="device-btn active" data-width="1200" data-height="800">Desktop (1200px)</button>
+        </div>
+
+        <div class="layout-test-container" id="layoutContainer">
+            <!-- Rich text layout will be inserted here -->
+        </div>
+
+        <div class="test-controls">
+            <button class="test-btn" onclick="testResponsiveDesign()">レスポンシブテスト実行</button>
+            <button class="test-btn" onclick="validateDesign()">デザイン検証</button>
+            <button class="test-btn" onclick="getMetrics()">メトリクス取得</button>
+            <button class="test-btn secondary" onclick="toggleLayout()">レイアウト切替</button>
+            <button class="test-btn secondary" onclick="simulateTouchDevice()">タッチデバイス模擬</button>
+        </div>
+
+        <div class="test-results" id="testResults" style="display: none;">
+            <h3>テスト結果</h3>
+            <pre id="resultsContent"></pre>
+        </div>
+    </div>
+
+    <!-- Load required dependencies -->
+    <script src="./lib/rich-text-layout-manager.js"></script>
+    <script src="./lib/enhanced-wysiwyg-editor.js"></script>
+    <script src="./lib/preview-tab.js"></script>
+
+    <script>
+        let layoutManager = null;
+        let currentDeviceWidth = 1200;
+
+        // Initialize the layout manager
+        function initializeLayout() {
+            const container = document.getElementById('layoutContainer');
+            
+            try {
+                layoutManager = new RichTextLayoutManager(container, {
+                    defaultLayout: 'split',
+                    enableResponsiveDesign: true,
+                    enableResizablePanels: true,
+                    enableLayoutToggle: true,
+                    enablePreviewSync: true,
+                    onLayoutChange: (newLayout, oldLayout) => {
+                        console.log(`Layout changed: ${oldLayout} → ${newLayout}`);
+                        updateStatus(`レイアウト変更: ${oldLayout} → ${newLayout}`);
+                    },
+                    onResize: (ratio) => {
+                        console.log(`Panel ratio changed: ${ratio}`);
+                    }
+                });
+
+                // Set some sample content
+                setTimeout(() => {
+                    if (layoutManager && layoutManager.isReady()) {
+                        layoutManager.setContent(`
+                            <h1>サンプル投資レポート</h1>
+                            <h2>投資概要</h2>
+                            <p>この物件は東京都心部に位置する収益性の高い投資物件です。</p>
+                            <h3>財務指標</h3>
+                            <ul>
+                                <li>FCR (総収益率): 8.5%</li>
+                                <li>K% (ローン定数): 6.2%</li>
+                                <li>CCR (自己資金配当率): 12.3%</li>
+                            </ul>
+                            <h3>レバレッジ分析</h3>
+                            <p>FCR > K% のため、ポジティブ・レバレッジ効果が期待できます。</p>
+                        `);
+                    }
+                }, 500);
+
+                updateStatus('レイアウトマネージャーが正常に初期化されました');
+            } catch (error) {
+                console.error('Layout initialization error:', error);
+                updateStatus('初期化エラー: ' + error.message, 'error');
+            }
+        }
+
+        // Device simulation
+        function simulateDevice(width, height) {
+            currentDeviceWidth = width;
+            const container = document.getElementById('layoutContainer');
+            
+            // Update container size
+            container.style.width = width + 'px';
+            container.style.height = height + 'px';
+            container.style.margin = '0 auto';
+            container.style.border = '2px solid #ccc';
+            
+            // Simulate window resize
+            if (layoutManager) {
+                // Mock window dimensions
+                Object.defineProperty(window, 'innerWidth', {
+                    writable: true,
+                    configurable: true,
+                    value: width
+                });
+                
+                Object.defineProperty(window, 'innerHeight', {
+                    writable: true,
+                    configurable: true,
+                    value: height
+                });
+                
+                // Trigger resize handling
+                layoutManager.handleWindowResize();
+                
+                updateStatus(`デバイス模擬: ${width}x${height}px`);
+            }
+        }
+
+        // Test functions
+        function testResponsiveDesign() {
+            if (!layoutManager) {
+                updateStatus('レイアウトマネージャーが初期化されていません', 'error');
+                return;
+            }
+
+            const results = layoutManager.testResponsiveDesign();
+            showResults('レスポンシブデザインテスト結果', results);
+        }
+
+        function validateDesign() {
+            if (!layoutManager) {
+                updateStatus('レイアウトマネージャーが初期化されていません', 'error');
+                return;
+            }
+
+            const validation = layoutManager.validateResponsiveDesign();
+            showResults('デザイン検証結果', validation);
+        }
+
+        function getMetrics() {
+            if (!layoutManager) {
+                updateStatus('レイアウトマネージャーが初期化されていません', 'error');
+                return;
+            }
+
+            const metrics = layoutManager.getResponsiveMetrics();
+            showResults('レスポンシブメトリクス', metrics);
+        }
+
+        function toggleLayout() {
+            if (!layoutManager) {
+                updateStatus('レイアウトマネージャーが初期化されていません', 'error');
+                return;
+            }
+
+            const layouts = ['split', 'tabbed', 'full-width'];
+            const currentLayout = layoutManager.getCurrentLayout();
+            const currentIndex = layouts.indexOf(currentLayout);
+            const nextLayout = layouts[(currentIndex + 1) % layouts.length];
+            
+            layoutManager.setLayout(nextLayout);
+            updateStatus(`レイアウト切替: ${currentLayout} → ${nextLayout}`);
+        }
+
+        function simulateTouchDevice() {
+            // Add touch simulation
+            document.body.classList.toggle('touch-simulation');
+            
+            if (document.body.classList.contains('touch-simulation')) {
+                // Mock touch capabilities
+                Object.defineProperty(navigator, 'maxTouchPoints', {
+                    writable: true,
+                    configurable: true,
+                    value: 5
+                });
+                updateStatus('タッチデバイス模擬: 有効');
+            } else {
+                Object.defineProperty(navigator, 'maxTouchPoints', {
+                    writable: true,
+                    configurable: true,
+                    value: 0
+                });
+                updateStatus('タッチデバイス模擬: 無効');
+            }
+            
+            // Re-detect device capabilities
+            if (layoutManager) {
+                layoutManager.detectDeviceCapabilities();
+            }
+        }
+
+        // Utility functions
+        function showResults(title, data) {
+            const resultsDiv = document.getElementById('testResults');
+            const contentDiv = document.getElementById('resultsContent');
+            
+            contentDiv.textContent = JSON.stringify(data, null, 2);
+            resultsDiv.style.display = 'block';
+            
+            // Scroll to results
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateStatus(message, type = 'success') {
+            console.log(message);
+            
+            // Create status indicator
+            const indicator = document.createElement('div');
+            indicator.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 10px 15px;
+                background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#10b981'};
+                color: white;
+                border-radius: 6px;
+                font-size: 14px;
+                z-index: 1000;
+                max-width: 300px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            `;
+            indicator.textContent = message;
+            
+            document.body.appendChild(indicator);
+            
+            setTimeout(() => {
+                if (indicator.parentNode) {
+                    indicator.style.opacity = '0';
+                    indicator.style.transform = 'translateX(100%)';
+                    indicator.style.transition = 'all 0.3s ease';
+                    setTimeout(() => {
+                        indicator.parentNode.removeChild(indicator);
+                    }, 300);
+                }
+            }, 3000);
+        }
+
+        // Device button handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize layout
+            initializeLayout();
+            
+            // Setup device simulation buttons
+            const deviceButtons = document.querySelectorAll('.device-btn');
+            deviceButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    deviceButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Simulate device
+                    const width = parseInt(this.dataset.width);
+                    const height = parseInt(this.dataset.height);
+                    simulateDevice(width, height);
+                });
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (layoutManager) {
+                    layoutManager.handleWindowResize();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+</content>
+</invoke>

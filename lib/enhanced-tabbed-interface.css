@@ -1,0 +1,545 @@
+/**
+ * Enhanced Tabbed Interface Styles
+ * Provides smooth transitions and enhanced UX for tabbed layout
+ * Implements requirements 3.1, 3.2, 3.4 for improved editor layout
+ */
+
+/* Enhanced Tab Container */
+.enhanced-tab-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Tab Navigation Bar */
+.enhanced-tab-nav {
+    display: flex;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-bottom: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+}
+
+.enhanced-tab-nav::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.enhanced-tab-nav.active::before {
+    transform: scaleX(1);
+}
+
+/* Enhanced Tab Buttons */
+.enhanced-tab-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: transparent;
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.enhanced-tab-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s ease;
+}
+
+.enhanced-tab-button:hover::before {
+    left: 100%;
+}
+
+.enhanced-tab-button:hover {
+    color: #475569;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+.enhanced-tab-button.active {
+    color: #3b82f6;
+    background: white;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.enhanced-tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 2px 2px 0 0;
+}
+
+/* Tab Button Icons */
+.enhanced-tab-button .tab-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+}
+
+.enhanced-tab-button:hover .tab-icon {
+    transform: scale(1.1);
+}
+
+.enhanced-tab-button.active .tab-icon {
+    transform: scale(1.15);
+}
+
+/* Tab Content Area */
+.enhanced-tab-content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #fafbfc;
+}
+
+/* Enhanced Tab Panels */
+.enhanced-tab-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(20px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    overflow: hidden;
+}
+
+.enhanced-tab-panel.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.enhanced-tab-panel.slide-out-left {
+    transform: translateX(-20px);
+}
+
+.enhanced-tab-panel.slide-out-right {
+    transform: translateX(20px);
+}
+
+/* Tab Panel Content */
+.enhanced-tab-panel-content {
+    height: 100%;
+    padding: 1.5rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.enhanced-tab-panel-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.enhanced-tab-panel-content::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.enhanced-tab-panel-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.enhanced-tab-panel-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Layout Mode Selector */
+.layout-mode-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.layout-mode-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.layout-mode-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.layout-mode-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.layout-mode-button:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: scale(1.05);
+}
+
+.layout-mode-button.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.layout-mode-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Content State Indicators */
+.content-state-indicator {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: #64748b;
+    z-index: 10;
+}
+
+.state-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    transition: background 0.3s ease;
+}
+
+.state-dot.synced {
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+.state-dot.dirty {
+    background: #f59e0b;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+}
+
+.state-dot.error {
+    background: #ef4444;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Smooth Transitions */
+.enhanced-tab-transition-enter {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+}
+
+.enhanced-tab-transition-enter-active {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.enhanced-tab-transition-exit {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+}
+
+.enhanced-tab-transition-exit-active {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* User Preference Indicators */
+.user-preference-badge {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 600;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.enhanced-tab-container:hover .user-preference-badge {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Responsive Design */
+/* Tablet Layout (768px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .enhanced-tab-button {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.8rem;
+    }
+    
+    .enhanced-tab-button .tab-icon {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .enhanced-tab-panel-content {
+        padding: 1.25rem;
+    }
+    
+    .layout-mode-selector {
+        padding: 0.75rem;
+    }
+    
+    .layout-mode-button {
+        width: 36px;
+        height: 36px;
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .layout-mode-button svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .enhanced-tab-button {
+        padding: 0.75rem 1rem;
+        font-size: 0.75rem;
+        min-height: 44px;
+    }
+    
+    .enhanced-tab-button .tab-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .enhanced-tab-panel-content {
+        padding: 1rem;
+    }
+    
+    .layout-mode-selector {
+        padding: 0.5rem;
+    }
+    
+    .layout-mode-button {
+        width: 28px;
+        height: 28px;
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .layout-mode-button svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .enhanced-tab-button {
+        padding: 0.5rem;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .enhanced-tab-button .tab-text {
+        font-size: 0.625rem;
+    }
+    
+    .enhanced-tab-panel-content {
+        padding: 0.75rem;
+    }
+    
+    .content-state-indicator {
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.625rem;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .enhanced-tab-nav {
+        background: #ffffff;
+        border-bottom: 2px solid #000000;
+    }
+    
+    .enhanced-tab-button {
+        border: 1px solid #000000;
+        color: #000000;
+    }
+    
+    .enhanced-tab-button.active {
+        background: #000000;
+        color: #ffffff;
+    }
+    
+    .enhanced-tab-panel {
+        border: 1px solid #000000;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .enhanced-tab-button,
+    .enhanced-tab-panel,
+    .enhanced-tab-transition-enter-active,
+    .enhanced-tab-transition-exit-active,
+    .tab-icon,
+    .state-dot,
+    .user-preference-badge {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    .enhanced-tab-button::before {
+        display: none;
+    }
+}
+
+/* Focus and Accessibility */
+.enhanced-tab-button:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    z-index: 1;
+}
+
+.enhanced-tab-button:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.enhanced-tab-panel:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
+}
+
+/* Loading State */
+.enhanced-tab-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: #64748b;
+}
+
+.enhanced-tab-loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e2e8f0;
+    border-top: 3px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tab Animation Keyframes */
+@keyframes tabEnter {
+    0% {
+        transform: translateY(0) scale(1);
+        box-shadow: none;
+    }
+    50% {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    }
+    100% {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+    }
+}
+
+@keyframes tabExit {
+    0% {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        box-shadow: none;
+    }
+}
+
+/* Tab Animation Classes */
+.tab-entering {
+    animation: tabEnter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-exiting {
+    animation: tabExit 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Error State */
+.enhanced-tab-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    padding: 2rem;
+    text-align: center;
+    color: #ef4444;
+}
+
+.enhanced-tab-error-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}

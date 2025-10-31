@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Text Layout Manager Integration Test</title>
+    <style>
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            padding: 20px;
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .test-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .test-content {
+            height: 600px;
+        }
+        
+        .test-controls {
+            padding: 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .test-btn:hover {
+            background: #2563eb;
+        }
+        
+        .test-btn.secondary {
+            background: #6b7280;
+        }
+        
+        .test-btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .test-status {
+            padding: 10px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Rich Text Layout Manager Integration Test</h1>
+            <p>Testing split-panel layout, tabbed interface, and editor integration</p>
+        </div>
+        
+        <div class="test-content" id="layout-container">
+            <!-- Layout manager will be initialized here -->
+        </div>
+        
+        <div class="test-controls">
+            <button class="test-btn" onclick="testSplitLayout()">Test Split Layout</button>
+            <button class="test-btn" onclick="testTabbedLayout()">Test Tabbed Layout</button>
+            <button class="test-btn" onclick="testFullWidthLayout()">Test Full Width</button>
+            <button class="test-btn secondary" onclick="testContentSync()">Test Content Sync</button>
+            <button class="test-btn secondary" onclick="testResponsiveDesign()">Test Responsive</button>
+            <button class="test-btn secondary" onclick="testKeyboardShortcuts()">Test Shortcuts</button>
+            <button class="test-btn secondary" onclick="clearContent()">Clear Content</button>
+            <button class="test-btn secondary" onclick="loadSampleContent()">Load Sample</button>
+        </div>
+        
+        <div class="test-status" id="test-status">
+            Ready to test. Click buttons above to test different features.
+        </div>
+    </div>
+
+    <!-- Load required components -->
+    <script src="lib/rich-text-editor.js"></script>
+    <script src="lib/enhanced-wysiwyg-editor.js"></script>
+    <script src="lib/preview-tab.js"></script>
+    <script src="lib/markdown-renderer.js"></script>
+    <script src="lib/formatting-toolbar.js"></script>
+    <script src="lib/rich-text-layout-manager.js"></script>
+
+    <script>
+        let layoutManager = null;
+        
+        // Initialize the layout manager
+        function initializeLayoutManager() {
+            const container = document.getElementById('layout-container');
+            
+            try {
+                layoutManager = new RichTextLayoutManager(container, {
+                    defaultLayout: 'split',
+                    enableResizablePanels: true,
+                    enableLayoutToggle: true,
+                    enableResponsiveDesign: true,
+                    enablePreviewSync: true,
+                    onLayoutChange: (newLayout, oldLayout) => {
+                        updateStatus(`Layout changed from ${oldLayout} to ${newLayout}`);
+                    },
+                    onContentChange: (htmlContent, textContent) => {
+                        updateStatus(`Content updated (${textContent.length} characters)`);
+                    },
+                    onResize: (splitRatio) => {
+                        updateStatus(`Panel ratio changed to ${Math.round(splitRatio * 100)}%`);
+                    }
+                });
+                
+                updateStatus('Layout manager initialized successfully');
+            } catch (error) {
+                updateStatus(`Initialization error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test functions
+        function testSplitLayout() {
+            if (!layoutManager) return;
+            layoutManager.setLayout('split');
+            updateStatus('Switched to split layout');
+        }
+        
+        function testTabbedLayout() {
+            if (!layoutManager) return;
+            layoutManager.setLayout('tabbed');
+            updateStatus('Switched to tabbed layout');
+        }
+        
+        function testFullWidthLayout() {
+            if (!layoutManager) return;
+            layoutManager.setLayout('full-width');
+            updateStatus('Switched to full-width layout');
+        }
+        
+        function testContentSync() {
+            if (!layoutManager || !layoutManager.richTextEditor) return;
+            
+            const sampleContent = '<h2>Content Sync Test</h2><p>This content should appear in both editor and preview.</p>';
+            layoutManager.setContent(sampleContent);
+            
+            setTimeout(() => {
+                layoutManager.synchronizeContent();
+                updateStatus('Content synchronization tested');
+            }, 500);
+        }
+        
+        function testResponsiveDesign() {
+            if (!layoutManager) return;
+            
+            const results = layoutManager.testResponsiveDesign();
+            updateStatus(`Responsive design tested across ${results.length} screen sizes`);
+            console.log('Responsive test results:', results);
+        }
+        
+        function testKeyboardShortcuts() {
+            updateStatus('Keyboard shortcuts available: Ctrl+Shift+L (cycle layout), Ctrl+Shift+P (toggle preview), Ctrl+Shift+E (toggle editor), Ctrl+Shift+S (sync content)');
+        }
+        
+        function clearContent() {
+            if (!layoutManager || !layoutManager.richTextEditor) return;
+            layoutManager.richTextEditor.clear();
+            updateStatus('Content cleared');
+        }
+        
+        function loadSampleContent() {
+            if (!layoutManager) return;
+            
+            const sampleContent = `
+                <h1>Sample Report Content</h1>
+                <h2>Executive Summary</h2>
+                <p>This is a sample investment analysis report demonstrating the rich text layout manager capabilities.</p>
+                
+                <h2>Investment Analysis</h2>
+                <p><strong>FCR (総収益率):</strong> 8.5%</p>
+                <p><strong>K% (ローン定数):</strong> 6.2%</p>
+                <p><strong>CCR (自己資金配当率):</strong> 12.3%</p>
+                
+                <h3>Leverage Analysis</h3>
+                <p>The investment shows <em>positive leverage</em> with a yield gap of 2.3% (FCR - K%).</p>
+                
+                <blockquote>
+                    <p>This demonstrates excellent leverage conditions for the investment opportunity.</p>
+                </blockquote>
+                
+                <h2>Risk Assessment</h2>
+                <ul>
+                    <li>Market volatility risk</li>
+                    <li>Interest rate risk</li>
+                    <li>Liquidity risk</li>
+                </ul>
+                
+                <h2>Conclusion</h2>
+                <p>The analysis indicates a favorable investment opportunity with strong cash-on-cash returns and positive leverage effects.</p>
+            `;
+            
+            layoutManager.setContent(sampleContent);
+            updateStatus('Sample content loaded');
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('test-status');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            statusElement.innerHTML = `
+                <strong>[${timestamp}]</strong> ${message}
+            `;
+            
+            if (type === 'error') {
+                statusElement.style.background = '#fef2f2';
+                statusElement.style.borderColor = '#fecaca';
+                statusElement.style.color = '#b91c1c';
+            } else {
+                statusElement.style.background = '#f0f9ff';
+                statusElement.style.borderColor = '#bae6fd';
+                statusElement.style.color = '#0c4a6e';
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait a bit for all scripts to load
+            setTimeout(initializeLayoutManager, 100);
+        });
+        
+        // Handle window resize for responsive testing
+        window.addEventListener('resize', () => {
+            if (layoutManager) {
+                updateStatus(`Window resized to ${window.innerWidth}x${window.innerHeight}`);
+            }
+        });
+    </script>
+</body>
+</html>
