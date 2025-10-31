@@ -18,6 +18,9 @@
     <script src="/lib/formatting-toolbar.js"></script>
     <script src="/lib/rich-text-editor.js"></script>
     <!-- Tiptap WYSIWYG Editor (replaces enhanced-wysiwyg-editor) -->
+    <!-- Use real Tiptap implementation if npm packages are installed -->
+    <script type="module" src="/lib/tiptap-wysiwyg-editor-real.js"></script>
+    <!-- Fallback to original implementation -->
     <script src="/lib/tiptap-wysiwyg-editor.js"></script>
     <script src="/lib/enhanced-wysiwyg-editor.js"></script>
     <script src="/lib/tab-navigation.js"></script>

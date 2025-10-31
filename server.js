@@ -26,6 +26,9 @@ app.use(express.static('.'));
 app.use('/lib', express.static('lib'));
 app.use('/public', express.static('public'));
 
+// Serve node_modules for ES modules (for Tiptap)
+app.use('/node_modules', express.static('node_modules'));
+
 // API routes - dynamically import API handlers
 app.use('/api', async (req, res, next) => {
     try {

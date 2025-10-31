@@ -35,6 +35,9 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@tiptap/core": "^3.10.1",
+    "@tiptap/pm": "^3.10.1",
+    "@tiptap/starter-kit": "^3.10.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
